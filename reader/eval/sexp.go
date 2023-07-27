@@ -191,14 +191,11 @@ func (cell *_cons_cell) String() string {
 		if lookCell.GetCdr().Type() != "cons_cell" {
 			if lookCell.GetCdr().Type() != "nil" {
 				joinedString.WriteString(" . " + lookCell.GetCdr().String())
-				joinedString.WriteString(")")
 			}
+			joinedString.WriteString(")")
 			break
 		}
 		lookCell = (lookCell.GetCdr()).(ConsCell)
-		if lookCell.GetCdr().Type() == "nil" {
-			joinedString.WriteString(")")
-		}
 	}
 	return joinedString.String()
 }
