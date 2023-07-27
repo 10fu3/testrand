@@ -43,3 +43,18 @@ func TestSimpleTree(t *testing.T) {
 	}
 	fmt.Println(result.String())
 }
+
+func TestDotTree(t *testing.T) {
+	sample := strings.NewReader("(a . (b . c))\n")
+	read := reader.New(bufio.NewReader(sample))
+	result, err := read.Read()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Type() != "cons_cell" {
+		t.Fatal("type error")
+	}
+	if result.String() != "(a b . c)" {
+		t.Fatal("be: (a b . c) but got " + result.String())
+	}
+}
