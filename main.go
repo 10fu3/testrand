@@ -19,11 +19,12 @@ func main() {
 		result, err := read.Read()
 		if err != nil {
 			fmt.Println(err.Error())
-			break
+			continue
 		}
 		result, err = eval.Eval(result, env)
 		if err != nil {
 			fmt.Println(err.Error())
+			continue
 		}
 		fmt.Println(result)
 	}

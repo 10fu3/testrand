@@ -20,7 +20,7 @@ func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
 		return value, nil
 	}
 	if e.parent == nil {
-		return NewNil(), nil
+		return nil, errors.New("UndefinedEvaluate")
 	}
 	return e.parent.GetValue(symbol)
 }
