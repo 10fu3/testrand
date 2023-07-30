@@ -10,11 +10,12 @@ import (
 
 func main() {
 
+	eval.StartMockServer()
+
 	env := eval.NewGlobalEnvironment()
 
 	stdin := bufio.NewReader(os.Stdin)
 	read := reader.New(stdin)
-
 	for {
 		result, err := read.Read()
 		if err != nil {
