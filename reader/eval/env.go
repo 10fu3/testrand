@@ -54,7 +54,11 @@ func NewGlobalEnvironment() Environment {
 			"or":     NewOr(),
 			"if":     NewIf(),
 			"eq?":    NewIsEq(),
+			"not":    NewIsNot(),
 			"define": NewDefine(),
+			"set":    NewSet(),
+			"loop":   NewLoop(),
+			"+":      NewAdd(),
 		},
 		parent: nil,
 	}
