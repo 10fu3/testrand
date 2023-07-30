@@ -31,6 +31,6 @@ func StartReceiveServer() func(reqId string, onReceive SExpression) {
 	}()
 
 	return func(reqId string, onReceive SExpression) {
-		m.Store(m, onReceive)
+		m.Store(reqId, onReceive)
 	}
 }
