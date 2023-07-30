@@ -108,11 +108,14 @@ func (l *lexer) GetNextToken() (token.Token, error) {
 			}
 			r = l.nextRune
 		}
-		maybeBooleanSymbol := string(temp)
-		if "#t" == maybeBooleanSymbol {
+		temporarySymbol := string(temp)
+		switch temporarySymbol {
+		case "#t":
 			return token.NewTokenByBool(true), nil
-		} else if "#f" == maybeBooleanSymbol {
+		case "#f":
 			return token.NewTokenByBool(false), nil
+		case "#nil":
+			return token.NewTokenByNil(), nil
 		}
 		return nil, errors.New("invalid # constant")
 	}

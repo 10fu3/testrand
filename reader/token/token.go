@@ -15,6 +15,7 @@ const (
 	TokenKindRPAREN
 	TokenKindDot
 	TokenKindQuote
+	TokenKindNil
 )
 
 type token struct {
@@ -113,4 +114,8 @@ func NewTokenByKind(kind TokenKind) Token {
 	return &token{
 		_kind: kind,
 	}
+}
+
+func NewTokenByNil() Token {
+	return &token{_kind: TokenKindNil}
 }

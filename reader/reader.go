@@ -77,6 +77,16 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 		}
 		return eval.NewBool(value), nil
 	}
+	if r.Token.GetKind() == token.TokenKindNil {
+		if r.nestingLevel != 0 {
+			nextToken, err := r.GetNextToken()
+			if err != nil {
+				return nil, err
+			}
+			r.Token = nextToken
+		}
+		return eval.NewNil(), nil
+	}
 	if r.Token.GetKind() == token.TokenKindQuote {
 		nextToken, err := r.GetNextToken()
 		if err != nil {
