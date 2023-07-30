@@ -58,6 +58,7 @@ func NewGlobalEnvironment() Environment {
 			"define": NewDefine(),
 			"set":    NewSet(),
 			"loop":   NewLoop(),
+			"wait":   NewWait(),
 			"+":      NewAdd(),
 		},
 		parent: nil,
