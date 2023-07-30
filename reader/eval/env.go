@@ -60,6 +60,7 @@ func NewGlobalEnvironment() Environment {
 			"loop":   NewLoop(),
 			"wait":   NewWait(),
 			"+":      NewAdd(),
+			"begin":  NewBegin(),
 		},
 		parent: nil,
 	}
