@@ -1,6 +1,8 @@
 package eval
 
-import "errors"
+import (
+	"errors"
+)
 
 type Environment interface {
 	GetValue(symbol Symbol) (SExpression, error)
@@ -18,7 +20,7 @@ func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
 		return value, nil
 	}
 	if e.parent == nil {
-		return nil, errors.New("UndefinedEvaluate")
+		return NewNil(), nil
 	}
 	return e.parent.GetValue(symbol)
 }
@@ -42,5 +44,18 @@ func NewEnvironment(parent Environment) Environment {
 	return &environment{
 		frame:  map[string]SExpression{},
 		parent: parent,
+	}
+}
+
+func NewGlobalEnvironment() Environment {
+	return &environment{
+		frame: map[string]SExpression{
+			"and":    NewAnd(),
+			"or":     NewOr(),
+			"if":     NewIf(),
+			"eq?":    NewIsEq(),
+			"define": NewDefine(),
+		},
+		parent: nil,
 	}
 }

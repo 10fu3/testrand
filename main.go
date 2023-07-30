@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"os"
 	"testrand/reader"
+	"testrand/reader/eval"
 )
 
 func main() {
+
+	env := eval.NewGlobalEnvironment()
+
 	stdin := bufio.NewReader(os.Stdin)
 	read := reader.New(stdin)
 
@@ -17,6 +21,10 @@ func main() {
 			fmt.Println(err.Error())
 			break
 		}
-		fmt.Println(result.String())
+		result, err = eval.Eval(result, env)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Println(result)
 	}
 }

@@ -1,7 +1,6 @@
 package eval
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -11,11 +10,7 @@ type SExpression interface {
 	Type() string
 	String() string
 	IsList() bool
-}
-
-type Atom interface {
-	SExpression
-	Equals(atom Atom) bool
+	Equals(sexp SExpression) bool
 }
 
 type Subroutine interface {
@@ -24,7 +19,7 @@ type Subroutine interface {
 }
 
 type Symbol interface {
-	Atom
+	SExpression
 	GetValue() string
 }
 
@@ -44,11 +39,11 @@ func (s *symbol) String() string {
 	return s.name
 }
 
-func (s *symbol) Equals(atom Atom) bool {
-	if atom.Type() != "atom" {
+func (s *symbol) Equals(sexp SExpression) bool {
+	if sexp.Type() != "symbol" {
 		return false
 	}
-	return s.name == (atom).(Symbol).GetValue()
+	return s.name == (sexp).(Symbol).GetValue()
 }
 
 func (s *symbol) GetValue() string {
@@ -79,13 +74,20 @@ func (i *_int) IsList() bool {
 	return false
 }
 
-type Int interface {
+func (i *_int) Equals(sexp SExpression) bool {
+	if "number" != sexp.Type() {
+		return false
+	}
+	return i.GetValue() == sexp.(Number).GetValue()
+}
+
+type Number interface {
 	GetValue() int64
 	String() string
 	SExpression
 }
 
-func NewInt(val int64) Int {
+func NewInt(val int64) Number {
 	return &_int{
 		Value: val,
 	}
@@ -99,6 +101,14 @@ type Bool interface {
 
 type _bool struct {
 	Value bool
+}
+
+func (b *_bool) Equals(sexp SExpression) bool {
+	if "bool" != sexp.Type() {
+		return false
+	}
+
+	return b.Value == sexp.(Bool).GetValue()
 }
 
 func (b *_bool) GetValue() bool {
@@ -120,8 +130,14 @@ func (b *_bool) IsList() bool {
 	return false
 }
 
+var trueSexp = &_bool{Value: true}
+var falseSexp = &_bool{Value: false}
+
 func NewBool(b bool) Bool {
-	return &_bool{Value: b}
+	if b {
+		return trueSexp
+	}
+	return falseSexp
 }
 
 type Nil interface {
@@ -129,6 +145,10 @@ type Nil interface {
 }
 
 type _nil struct {
+}
+
+func (n *_nil) Equals(sexp SExpression) bool {
+	return "nil" == sexp.Type()
 }
 
 func (n *_nil) Type() string {
@@ -151,12 +171,22 @@ type ConsCell interface {
 	SExpression
 	GetCar() SExpression
 	GetCdr() SExpression
-	ToArray(sexp SExpression) ([]SExpression, error)
 }
 
 type _cons_cell struct {
 	Car SExpression
 	Cdr SExpression
+}
+
+func (cell *_cons_cell) Equals(sexp SExpression) bool {
+	if "cons_cell" != sexp.Type() {
+		return false
+	}
+	c := sexp.(ConsCell)
+	if !cell.Car.Equals(c.GetCar()) {
+		return false
+	}
+	return !cell.Cdr.Equals(c.GetCdr())
 }
 
 func NewConsCell(car SExpression, cdr SExpression) ConsCell {
@@ -200,17 +230,23 @@ func (cell *_cons_cell) String() string {
 	return joinedString.String()
 }
 
-func (cell *_cons_cell) ToArray(sexp SExpression) ([]SExpression, error) {
+func ToArray(sexp SExpression) ([]SExpression, error) {
 	var cons = sexp
 	var list []SExpression
 	var temp ConsCell = nil
-	for cons.Type() != "nil" {
-		if cons.Type() != "cons_cell" {
-			return nil, errors.New("type error: " + cons.Type())
+
+	if "cons_cell" != cons.Type() {
+		return list, nil
+	}
+
+	for "cons_cell" == cons.Type() {
+		consList := cons.(ConsCell)
+		if consList.GetCar().Type() == "nil" && consList.GetCdr().Type() == "nil" {
+			break
 		}
 		temp = (cons).(ConsCell)
 		list = append(list, temp.GetCar())
-		cons = temp.GetCdr()
+		cons = consList.GetCdr()
 	}
 	return list, nil
 }
@@ -242,4 +278,13 @@ func ToConsCell(list []SExpression) ConsCell {
 		beforeLook.Cdr = NewNil()
 	}
 	return head
+}
+
+func IsEmptyList(list SExpression) bool {
+	if "cons_cell" != list.Type() {
+		return false
+	}
+	tmp := (list).(ConsCell)
+
+	return "nil" == tmp.GetCar().Type() && "nil" == tmp.GetCdr().Type()
 }
