@@ -76,7 +76,8 @@ func NewGlobalEnvironment() Environment {
 			"quote":      NewQuote(),
 			"quasiquote": NewQuasiquote(),
 			"heavy":      NewHeavy(),
-			"print":      NewPrintln(),
+			"print":      NewPrint(),
+			"println":    NewPrintln(),
 		},
 		parent: nil,
 	}

@@ -43,11 +43,10 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 			log.Fatal(err)
 		}
 	}(res.Body)
-	body, err := ioutil.ReadAll(res.Body)
+	_, err = ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("[body] " + string(body))
 }
 
 type _heavy struct{}
