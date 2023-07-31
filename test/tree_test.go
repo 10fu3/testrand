@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"testrand/reader"
 	"testrand/reader/eval"
 )
 
 func TestFailedTree(t *testing.T) {
 	sample := strings.NewReader("1\n")
-	read := reader.New(bufio.NewReader(sample))
+	read := eval.New(bufio.NewReader(sample))
 	result, err := read.Read()
 	if err != nil {
 		t.Fatal(err)
@@ -23,7 +22,7 @@ func TestFailedTree(t *testing.T) {
 
 func TestSimpleTree(t *testing.T) {
 	sample := strings.NewReader("(1 2 34 55 666)\n")
-	read := reader.New(bufio.NewReader(sample))
+	read := eval.New(bufio.NewReader(sample))
 	result, err := read.Read()
 	if err != nil {
 		t.Fatal(err)
@@ -46,7 +45,7 @@ func TestSimpleTree(t *testing.T) {
 
 func TestDotTree(t *testing.T) {
 	sample := strings.NewReader("(a . (b . c))\n")
-	read := reader.New(bufio.NewReader(sample))
+	read := eval.New(bufio.NewReader(sample))
 	result, err := read.Read()
 	if err != nil {
 		t.Fatal(err)

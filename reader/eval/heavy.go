@@ -1,5 +1,55 @@
 package eval
 
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/google/uuid"
+	"io"
+	"io/ioutil"
+	"log"
+	"net"
+	"net/http"
+)
+
+func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environment, port int) {
+	reqId := uuid.NewString()
+	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
+
+	values, err := json.Marshal(TaskAddRequest{
+		Body:        sendSexp.String(),
+		ReceivePort: &port,
+	})
+
+	transport := http.Transport{
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			dialer := &net.Dialer{}
+			return dialer.DialContext(ctx, "tcp4", addr)
+		},
+	}
+
+	client := http.Client{
+		Transport: &transport,
+	}
+
+	res, err := client.Post(fmt.Sprintf("http://localhost:8080/add-task/%s", reqId), "application/json", bytes.NewBuffer(values))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("[body] " + string(body))
+}
+
 type _heavy struct{}
 
 func (_ *_heavy) Type() string {
@@ -26,7 +76,14 @@ func (_ *_heavy) Apply(env Environment, arguments SExpression) (SExpression, err
 	}
 
 	if 1 == len(args) {
-
+		SendSExpression(args[0], nil, env, 4040)
+	}
+	if 2 == len(args) {
+		SendSExpression(args[0], nil, env, 4040)
 	}
 	return nil, err
+}
+
+func NewHeavy() SExpression {
+	return &_heavy{}
 }

@@ -4,18 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"testrand/reader"
 	"testrand/reader/eval"
 )
 
 func main() {
 
-	reader.StartMockServer()
-	reader.SetupPutReceiveQueueMethod(reader.StartReceiveServer())
+	eval.StartMockServer()
+	eval.SetupPutReceiveQueueMethod(eval.StartReceiveServer())
 	env := eval.NewGlobalEnvironment()
 
 	stdin := bufio.NewReader(os.Stdin)
-	read := reader.New(stdin)
+	read := eval.New(stdin)
 	for {
 		result, err := read.Read()
 		if err != nil {

@@ -30,6 +30,8 @@ var signs = map[rune]bool{
 	'_': true,
 	'~': true,
 	'|': true,
+	'`': true,
+	',': true,
 }
 
 type lexer struct {
@@ -124,6 +126,12 @@ func (l *lexer) GetNextToken() (token.Token, error) {
 			return nil, err
 		}
 		return token.NewTokenByKind(token.TokenKindQuote), nil
+	}
+	if r == '`' {
+		if err := l.updateNextChar(); err != nil {
+			return nil, err
+		}
+		return token.NewTokenByKind(token.TokenKindQuasiquote), nil
 	}
 	if isSymbolChar(r) {
 		isBeginWithDigit := isDigit(r)

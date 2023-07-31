@@ -7,14 +7,20 @@ import (
 )
 
 type _closure struct {
-	id      string
-	body    SExpression
-	formals SExpression
-	env     Environment
+	id           string
+	body         SExpression
+	formals      SExpression
+	env          Environment
+	formalsCount int
 }
 
-func NewClosure(body SExpression, formals SExpression, env Environment) Callable {
-	return &_closure{body: body, formals: formals, env: env, id: uuid.NewString()}
+type Closure interface {
+	SExpression
+	GetFormalsCount() int
+}
+
+func NewClosure(body SExpression, formals SExpression, env Environment, formalsCount int) Callable {
+	return &_closure{body: body, formals: formals, env: env, id: uuid.NewString(), formalsCount: formalsCount}
 }
 
 func (c *_closure) Type() string {
@@ -34,6 +40,10 @@ func (c *_closure) Equals(args SExpression) bool {
 		return false
 	}
 	return c.id == args.(*_closure).id
+}
+
+func (c *_closure) GetFormalsCount() int {
+	return c.formalsCount
 }
 
 func (c *_closure) Apply(_ Environment, args SExpression) (SExpression, error) {

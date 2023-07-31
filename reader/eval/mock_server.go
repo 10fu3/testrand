@@ -1,4 +1,4 @@
-package reader
+package eval
 
 import (
 	"bufio"
@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
-	"testrand/reader/eval"
 	"time"
 )
 
@@ -22,7 +21,7 @@ func StartMockServer() {
 		engine := gin.Default()
 		engine.POST("/add-task/:id", func(c *gin.Context) {
 			requestId := c.Param("id")
-			from := c.ClientIP()
+			from := c.RemoteIP()
 			var req TaskAddRequest
 			err := c.ShouldBind(&req)
 			if requestId == "" {
@@ -44,7 +43,7 @@ func StartMockServer() {
 					fmt.Println("req err: " + err.Error())
 					return
 				}
-				env := eval.NewGlobalEnvironment()
+				env := NewGlobalEnvironment()
 				input := strings.NewReader(fmt.Sprintf("%s\n", req.Body))
 				read := New(bufio.NewReader(input))
 				readSexp, err := read.Read()
@@ -52,7 +51,11 @@ func StartMockServer() {
 					fmt.Println("read err: " + err.Error())
 					return
 				}
-				result, err := eval.Eval(readSexp, env)
+				result, err := Eval(readSexp, env)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
 				sendBody := struct {
 					Result string `json:"result"`
 				}{
@@ -60,7 +63,12 @@ func StartMockServer() {
 				}
 				sendBodyBytes, err := json.Marshal(&sendBody)
 				sendBodyBuff := bytes.NewBuffer(sendBodyBytes)
-				_, err = http.Post(fmt.Sprintf("%s:%d/receive/%s", from, *req.ReceivePort, requestId), "application/json", sendBodyBuff)
+
+				_, err = http.Post(fmt.Sprintf("http://%s:%d/receive/%s", from, *req.ReceivePort, requestId), "application/json", sendBodyBuff)
+
+				if err != nil {
+					fmt.Println(err)
+				}
 				for i := 0; i < 5; i++ {
 					if err == nil {
 						break

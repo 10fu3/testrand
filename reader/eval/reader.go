@@ -1,10 +1,9 @@
-package reader
+package eval
 
 import (
 	"bufio"
 	"errors"
 	"strconv"
-	"testrand/reader/eval"
 	"testrand/reader/lexer"
 	"testrand/reader/token"
 )
@@ -16,12 +15,12 @@ type reader struct {
 }
 
 type Reader interface {
-	Read() (eval.SExpression, error)
+	Read() (SExpression, error)
 }
 
-func (r *reader) getCdr() (eval.SExpression, error) {
+func (r *reader) getCdr() (SExpression, error) {
 	if r.Token.GetKind() == token.TokenKindRPAREN {
-		return eval.NewConsCell(eval.NewNil(), eval.NewNil()), nil
+		return NewConsCell(NewNil(), NewNil()), nil
 	}
 	if r.Token.GetKind() == token.TokenKindDot {
 		nextToken, err := r.Lexer.GetNextToken()
@@ -40,10 +39,10 @@ func (r *reader) getCdr() (eval.SExpression, error) {
 		return nil, err
 	}
 	cdr, err := r.getCdr()
-	return eval.NewConsCell(car, cdr), nil
+	return NewConsCell(car, cdr), nil
 }
 
-func (r *reader) sExpression() (eval.SExpression, error) {
+func (r *reader) sExpression() (SExpression, error) {
 	if r.Token.GetKind() == token.TokenKindNumber {
 		value := r.GetInt()
 		if r.nestingLevel != 0 {
@@ -53,7 +52,7 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 			}
 			r.Token = nextToken
 		}
-		return eval.NewInt(value), nil
+		return NewInt(value), nil
 	}
 	if r.Token.GetKind() == token.TokenKindSymbol {
 		value := r.GetSymbol()
@@ -64,7 +63,7 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 			}
 			r.Token = nextToken
 		}
-		return eval.NewSymbol(value), nil
+		return NewSymbol(value), nil
 	}
 	if r.Token.GetKind() == token.TokenKindBoolean {
 		value := r.GetBool()
@@ -75,7 +74,7 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 			}
 			r.Token = nextToken
 		}
-		return eval.NewBool(value), nil
+		return NewBool(value), nil
 	}
 	if r.Token.GetKind() == token.TokenKindNil {
 		if r.nestingLevel != 0 {
@@ -85,7 +84,7 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 			}
 			r.Token = nextToken
 		}
-		return eval.NewNil(), nil
+		return NewNil(), nil
 	}
 	if r.Token.GetKind() == token.TokenKindQuote {
 		nextToken, err := r.GetNextToken()
@@ -97,7 +96,19 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 		if err != nil {
 			return nil, err
 		}
-		return eval.NewConsCell(eval.NewSymbol("quote"), eval.NewConsCell(sexp, eval.NewNil())), nil
+		return NewConsCell(NewSymbol("quote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+	}
+	if r.Token.GetKind() == token.TokenKindQuasiquote {
+		nextToken, err := r.GetNextToken()
+		if err != nil {
+			return nil, err
+		}
+		r.Token = nextToken
+		sexp, err := r.sExpression()
+		if err != nil {
+			return nil, err
+		}
+		return NewConsCell(NewSymbol("quasiquote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
 	}
 	if r.Token.GetKind() == token.TokenKindLparen {
 		r.nestingLevel += 1
@@ -115,7 +126,7 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 				}
 				r.Token = nextToken
 			}
-			return eval.NewConsCell(eval.NewNil(), eval.NewNil()), nil
+			return NewConsCell(NewNil(), NewNil()), nil
 		}
 		car, err := r.sExpression()
 		if err != nil {
@@ -133,12 +144,12 @@ func (r *reader) sExpression() (eval.SExpression, error) {
 			}
 			r.Token = nextToken
 		}
-		return eval.NewConsCell(car, cdr), nil
+		return NewConsCell(car, cdr), nil
 	}
 	return nil, errors.New("Invalid expression: " + strconv.Itoa(int(r.GetKind())))
 }
 
-func (r *reader) Read() (eval.SExpression, error) {
+func (r *reader) Read() (SExpression, error) {
 	r.nestingLevel = 0
 	t, err := r.Lexer.GetNextToken()
 	if err != nil {

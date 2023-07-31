@@ -33,7 +33,13 @@ func (_ *_lambda) Apply(env Environment, arguments SExpression) (SExpression, er
 	params := args[0]
 	body := args[1]
 
-	return NewClosure(body, params, env), nil
+	formalsArr, err := ToArray(params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewClosure(body, params, env, len(formalsArr)), nil
 }
 
 func NewLambda() SExpression {

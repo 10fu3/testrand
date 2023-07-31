@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -231,22 +232,15 @@ func (cell *_cons_cell) String() string {
 }
 
 func ToArray(sexp SExpression) ([]SExpression, error) {
-	var cons = sexp
-	var list []SExpression
-	var temp ConsCell = nil
+	list := make([]SExpression, 0)
+	look := sexp
 
-	if "cons_cell" != cons.Type() {
-		return list, nil
-	}
-
-	for "cons_cell" == cons.Type() {
-		consList := cons.(ConsCell)
-		if consList.GetCar().Type() == "nil" && consList.GetCdr().Type() == "nil" {
-			break
+	for !IsEmptyList(look) {
+		if "cons_cell" != look.Type() {
+			return nil, errors.New("need list")
 		}
-		temp = (cons).(ConsCell)
-		list = append(list, temp.GetCar())
-		cons = consList.GetCdr()
+		list = append(list, look.(ConsCell).GetCar())
+		look = look.(ConsCell).GetCdr()
 	}
 	return list, nil
 }

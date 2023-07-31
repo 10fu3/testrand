@@ -15,6 +15,7 @@ const (
 	TokenKindRPAREN
 	TokenKindDot
 	TokenKindQuote
+	TokenKindQuasiquote
 	TokenKindNil
 )
 
@@ -75,6 +76,7 @@ func (t *token) String() string {
 	if t._kind == TokenKindQuote {
 		return "Token (Quote)"
 	}
+
 	return "Token (Unknown)"
 }
 
