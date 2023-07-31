@@ -239,6 +239,10 @@ func ToArray(sexp SExpression) ([]SExpression, error) {
 		if "cons_cell" != look.Type() {
 			return nil, errors.New("need list")
 		}
+		if look.(ConsCell).GetCdr().Type() != "cons_cell" {
+			list = append(list, NewConsCell(look.(ConsCell).GetCar(), look.(ConsCell).GetCdr()))
+			return list, nil
+		}
 		list = append(list, look.(ConsCell).GetCar())
 		look = look.(ConsCell).GetCdr()
 	}
