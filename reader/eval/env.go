@@ -73,6 +73,7 @@ func NewGlobalEnvironment() Environment {
 			"+":      NewAdd(),
 			"begin":  NewBegin(),
 			"lambda": NewLambda(),
+			"quote":  NewQuote(),
 		},
 		parent: nil,
 	}
