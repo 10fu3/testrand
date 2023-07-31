@@ -9,16 +9,13 @@ import (
 )
 
 func main() {
-	alreadyFlagChan := make(chan struct{})
+	fmt.Println("light client")
 	gin.SetMode(gin.ReleaseMode)
+	completed, addMethod := eval.StartReceiveServer()
+	eval.SetupPutReceiveQueueMethod(addMethod)
 	go func() {
-		eval.StartMockServer()
-		completed, addMethod := eval.StartReceiveServer()
-		eval.SetupPutReceiveQueueMethod(addMethod)
-		alreadyFlagChan <- struct{}{}
 		completed()
 	}()
-	<-alreadyFlagChan
 	env := eval.NewGlobalEnvironment()
 
 	stdin := bufio.NewReader(os.Stdin)
