@@ -1,4 +1,4 @@
-package eval
+package reader
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
-	"testrand/reader"
+	"testrand/reader/eval"
 	"time"
 )
 
@@ -44,15 +44,15 @@ func StartMockServer() {
 					fmt.Println("req err: " + err.Error())
 					return
 				}
-				env := NewGlobalEnvironment()
+				env := eval.NewGlobalEnvironment()
 				input := strings.NewReader(fmt.Sprintf("%s\n", req.Body))
-				read := reader.New(bufio.NewReader(input))
+				read := New(bufio.NewReader(input))
 				readSexp, err := read.Read()
 				if err != nil {
 					fmt.Println("read err: " + err.Error())
 					return
 				}
-				result, err := Eval(readSexp, env)
+				result, err := eval.Eval(readSexp, env)
 				sendBody := struct {
 					Result string `json:"result"`
 				}{

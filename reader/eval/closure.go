@@ -18,7 +18,7 @@ func NewClosure(body SExpression, formals SExpression, env Environment) Callable
 }
 
 func (c *_closure) Type() string {
-	return "callable.closure"
+	return "closure"
 }
 
 func (c *_closure) String() string {
@@ -30,7 +30,7 @@ func (c *_closure) IsList() bool {
 }
 
 func (c *_closure) Equals(args SExpression) bool {
-	if "callable.closure" != args.Type() {
+	if "closure" != args.Type() {
 		return false
 	}
 	return c.id == args.(*_closure).id
@@ -42,32 +42,28 @@ func (c *_closure) Apply(_ Environment, args SExpression) (SExpression, error) {
 	env := NewEnvironment(c.env)
 
 	for {
-		if "cons_cell" == loopFormals.Type() {
-			f := loopFormals.(ConsCell)
-			if "nil" == f.GetCar().Type() && "nil" == f.GetCdr().Type() {
-				if "cons_cell" == loopArgs.Type() {
-					a := loopArgs.(ConsCell)
-					if "nil" == a.GetCar().Type() && "nil" == a.GetCdr().Type() {
-						break
-					}
-				}
-				return nil, errors.New("argument size more than formals")
+		if IsEmptyList(loopFormals) {
+			if IsEmptyList(loopArgs) {
+				break
 			}
-
-			if "symbol" != f.GetCar().Type() {
-				return nil, errors.New("type error: " + f.GetCar().String())
+			return nil, errors.New("argument size more than formals")
+		}
+		if "symbol" == loopFormals.Type() {
+			env.Define(loopFormals.(Symbol), loopArgs)
+			break
+		}
+		if "cons_cell" == loopFormals.Type() {
+			cellFormals := loopFormals.(ConsCell)
+			if "symbol" != cellFormals.GetCar().Type() {
+				return nil, errors.New("need symbol")
 			}
 			if "cons_cell" != loopArgs.Type() {
 				return nil, errors.New("argument size less than formals")
 			}
 			cellArgs := loopArgs.(ConsCell)
-			env.Define(f.GetCar().(Symbol), cellArgs.GetCar())
-			loopFormals = f.GetCdr()
+			env.Define(cellFormals.GetCar().(Symbol), cellArgs.GetCar())
+			loopFormals = cellFormals.GetCdr()
 			loopArgs = cellArgs.GetCdr()
-		}
-		if "symbol" == loopFormals.Type() {
-			env.Define(loopFormals.(Symbol), loopArgs)
-			break
 		}
 	}
 	return Eval(c.body, env)

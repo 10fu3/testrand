@@ -10,8 +10,8 @@ import (
 
 func main() {
 
-	eval.StartMockServer()
-
+	reader.StartMockServer()
+	reader.SetupPutReceiveQueueMethod(reader.StartReceiveServer())
 	env := eval.NewGlobalEnvironment()
 
 	stdin := bufio.NewReader(os.Stdin)

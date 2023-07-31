@@ -21,7 +21,7 @@ func Eval(sexp SExpression, env Environment) (SExpression, error) {
 		if err != nil {
 			return nil, err
 		}
-		if strings.HasPrefix(applied.Type(), "closure.") || strings.HasPrefix(applied.Type(), "subroutine.") {
+		if strings.HasPrefix(applied.Type(), "closure") || strings.HasPrefix(applied.Type(), "subroutine.") {
 			appliedArgs, err := evalArgument(cell.GetCdr(), env)
 			if err != nil {
 				return nil, err

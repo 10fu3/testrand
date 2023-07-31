@@ -2,15 +2,19 @@ package eval
 
 import (
 	"errors"
+	"github.com/google/uuid"
+	"testrand/reader/globalEnv"
 )
 
 type Environment interface {
+	GetId() string
 	GetValue(symbol Symbol) (SExpression, error)
 	Define(symbol Symbol, sexp SExpression)
 	Set(symbol Symbol, sexp SExpression) error
 }
 
 type environment struct {
+	id     string
 	frame  map[string]SExpression
 	parent Environment
 }
@@ -40,15 +44,22 @@ func (e *environment) Set(symbol Symbol, sexp SExpression) error {
 	return e.parent.Set(symbol, sexp)
 }
 
+func (e *environment) GetId() string {
+	return e.id
+}
+
 func NewEnvironment(parent Environment) Environment {
-	return &environment{
+	env := &environment{
+		id:     uuid.NewString(),
 		frame:  map[string]SExpression{},
 		parent: parent,
 	}
+	globalEnv.Put(env.id, env)
+	return env
 }
 
 func NewGlobalEnvironment() Environment {
-	return &environment{
+	env := &environment{
 		frame: map[string]SExpression{
 			"and":    NewAnd(),
 			"or":     NewOr(),
@@ -61,7 +72,10 @@ func NewGlobalEnvironment() Environment {
 			"wait":   NewWait(),
 			"+":      NewAdd(),
 			"begin":  NewBegin(),
+			"lambda": NewLambda(),
 		},
 		parent: nil,
 	}
+	globalEnv.Put(env.id, env)
+	return env
 }
