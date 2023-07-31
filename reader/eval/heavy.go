@@ -78,7 +78,7 @@ func (_ *_heavy) Apply(env Environment, arguments SExpression) (SExpression, err
 		SendSExpression(args[0], nil, env, 4040)
 	}
 	if 2 == len(args) {
-		SendSExpression(args[0], nil, env, 4040)
+		SendSExpression(args[0], args[1], env, 4040)
 	}
 	return nil, err
 }
