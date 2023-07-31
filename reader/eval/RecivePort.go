@@ -33,7 +33,6 @@ func StartReceiveServer() (func(), func(evnId string, reqId string, onReceive SE
 		sample := strings.NewReader(fmt.Sprintf("%s\n", req.Result))
 		read := New(bufio.NewReader(sample))
 		result, err := read.Read()
-		fmt.Println(result)
 		storedSExpressionEnv, ok := m.Load(reqId)
 
 		if !ok {
