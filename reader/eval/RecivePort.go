@@ -57,7 +57,6 @@ func StartReceiveServer() func(evnId string, reqId string, onReceive SExpression
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println(result)
 		})
 		router.Run(":4040")
 	}()
