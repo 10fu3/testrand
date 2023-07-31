@@ -12,7 +12,9 @@ func main() {
 	alreadyFlagChan := make(chan struct{})
 	gin.SetMode(gin.ReleaseMode)
 	go func() {
-		eval.StartMockServer()
+		go func() {
+			eval.StartMockServer()
+		}()
 		completed, addMethod := eval.StartReceiveServer()
 		eval.SetupPutReceiveQueueMethod(addMethod)
 		alreadyFlagChan <- struct{}{}
