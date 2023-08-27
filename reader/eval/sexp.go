@@ -250,7 +250,13 @@ func ToArray(sexp SExpression) ([]SExpression, error) {
 }
 
 func (cell *_cons_cell) IsList() bool {
-	return cell.GetCdr().IsList()
+	if "cons_cell" == cell.Cdr.Type() {
+		if IsEmptyList(cell.Cdr) {
+			return true
+		}
+		return cell.Cdr.IsList()
+	}
+	return false
 }
 
 func (cell *_cons_cell) GetCar() SExpression {
