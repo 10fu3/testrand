@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"fmt"
 )
@@ -23,7 +24,7 @@ func (l *_loop) Equals(sexp SExpression) bool {
 	return l.Type() == sexp.Type()
 }
 
-func (_ *_loop) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_loop) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	if "cons_cell" != args.Type() {
 		return nil, errors.New("need arguments")
 	}
@@ -41,7 +42,7 @@ func (_ *_loop) Apply(env Environment, args SExpression) (SExpression, error) {
 	var err error
 
 	for {
-		evaluatedCond, err = Eval(arguments.GetCar(), env)
+		evaluatedCond, err = Eval(ctx, arguments.GetCar(), env)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +55,7 @@ func (_ *_loop) Apply(env Environment, args SExpression) (SExpression, error) {
 			return nil, nil
 		}
 
-		result, err := Eval(rawForms.GetCar(), env)
+		result, err := Eval(ctx, rawForms.GetCar(), env)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue

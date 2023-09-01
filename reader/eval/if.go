@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"fmt"
 )
@@ -28,7 +29,7 @@ func (i *_if) Equals(sexp SExpression) bool {
 	return i.Type() == sexp.Type()
 }
 
-func (_ *_if) Apply(env Environment, argument SExpression) (SExpression, error) {
+func (_ *_if) Apply(ctx context.Context, env Environment, argument SExpression) (SExpression, error) {
 	args, err := ToArray(argument)
 
 	if err != nil {
@@ -44,9 +45,9 @@ func (_ *_if) Apply(env Environment, argument SExpression) (SExpression, error) 
 	argsIndex++
 	onTrue := args[argsIndex]
 
-	evaluated, err := Eval(statement, env)
+	evaluated, err := Eval(ctx, statement, env)
 	if err != nil {
-		return Eval(statement, env)
+		return Eval(ctx, statement, env)
 	}
 
 	if evaluated.Equals(NewBool(false)) {
@@ -55,7 +56,7 @@ func (_ *_if) Apply(env Environment, argument SExpression) (SExpression, error) 
 		}
 		argsIndex++
 		onFalse := args[argsIndex]
-		return Eval(onFalse, env)
+		return Eval(ctx, onFalse, env)
 	}
-	return Eval(onTrue, env)
+	return Eval(ctx, onTrue, env)
 }

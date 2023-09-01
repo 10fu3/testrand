@@ -1,6 +1,8 @@
 package eval
 
+import "context"
+
 type Callable interface {
 	SExpression
-	Apply(env Environment, args SExpression) (SExpression, error)
+	Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error)
 }

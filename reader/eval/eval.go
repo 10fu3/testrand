@@ -1,11 +1,12 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"strings"
 )
 
-func Eval(sexp SExpression, env Environment) (SExpression, error) {
+func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
 	switch sexp.Type() {
 	case "number":
 		return sexp, nil
@@ -17,41 +18,41 @@ func Eval(sexp SExpression, env Environment) (SExpression, error) {
 		return env.GetValue(sexp.(Symbol))
 	case "cons_cell":
 		cell := sexp.(ConsCell)
-		applied, err := Eval(cell.GetCar(), env)
+		applied, err := Eval(ctx, cell.GetCar(), env)
 		if err != nil {
 			return nil, err
 		}
 		if strings.HasPrefix(applied.Type(), "closure") || strings.HasPrefix(applied.Type(), "subroutine.") {
-			appliedArgs, err := evalArgument(cell.GetCdr(), env)
+			appliedArgs, err := evalArgument(ctx, cell.GetCdr(), env)
 			if err != nil {
 				return nil, err
 			}
-			return applied.(Callable).Apply(env, appliedArgs)
+			return applied.(Callable).Apply(ctx, env, appliedArgs)
 		}
 		if strings.HasPrefix(applied.Type(), "special_form.") {
 			if err != nil {
 				return nil, err
 			}
-			return applied.(Callable).Apply(env, cell.GetCdr())
+			return applied.(Callable).Apply(ctx, env, cell.GetCdr())
 		}
 
 	}
 	return nil, errors.New("unknown eval")
 }
 
-func evalArgument(sexp SExpression, env Environment) (SExpression, error) {
+func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
 	if "cons_cell" != sexp.Type() {
-		return Eval(sexp, env)
+		return Eval(ctx, sexp, env)
 	}
 
 	cell := sexp.(ConsCell)
 
-	carEvaluated, err := Eval(cell.GetCar(), env)
+	carEvaluated, err := Eval(ctx, cell.GetCar(), env)
 	if err != nil {
 		return nil, err
 	}
 
-	cdrEvaluated, err := evalArgument(cell.GetCdr(), env)
+	cdrEvaluated, err := evalArgument(ctx, cell.GetCdr(), env)
 	if err != nil {
 		return nil, err
 	}

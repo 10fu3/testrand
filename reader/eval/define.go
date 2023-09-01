@@ -1,6 +1,9 @@
 package eval
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type _define struct{}
 
@@ -20,7 +23,7 @@ func (d *_define) Equals(sexp SExpression) bool {
 	return d.Type() == sexp.Type()
 }
 
-func onSymbolCall(env Environment, arguments SExpression) (SExpression, error) {
+func onSymbolCall(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
 
 	if "cons_cell" != arguments.Type() {
 		return nil, errors.New("type error")
@@ -40,7 +43,7 @@ func onSymbolCall(env Environment, arguments SExpression) (SExpression, error) {
 	if !IsEmptyList(initValue.GetCdr()) {
 		return nil, errors.New("need less than 3 params")
 	}
-	evaluatedInitValue, err := Eval(initValue.GetCar(), env)
+	evaluatedInitValue, err := Eval(ctx, initValue.GetCar(), env)
 
 	if err != nil {
 		return nil, err
@@ -49,8 +52,8 @@ func onSymbolCall(env Environment, arguments SExpression) (SExpression, error) {
 	return name, nil
 }
 
-func (_ *_define) Apply(env Environment, arguments SExpression) (SExpression, error) {
-	return onSymbolCall(env, arguments)
+func (_ *_define) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+	return onSymbolCall(ctx, env, arguments)
 }
 
 func NewDefine() SExpression {

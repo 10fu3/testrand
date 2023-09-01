@@ -1,6 +1,9 @@
 package eval
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type _quasiquote struct {
 }
@@ -21,7 +24,7 @@ func (q *_quasiquote) Equals(sexp SExpression) bool {
 	return q.Type() == sexp.Type()
 }
 
-func (_ *_quasiquote) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_quasiquote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	arr, err := ToArray(args)
 
 	if err != nil {

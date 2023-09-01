@@ -1,5 +1,7 @@
 package eval
 
+import "context"
+
 type _begin struct{}
 
 func (_ *_begin) Type() string {
@@ -18,7 +20,7 @@ func (b *_begin) Equals(sexp SExpression) bool {
 	return b.Type() == sexp.Type()
 }
 
-func (_ *_begin) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_begin) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	arr, err := ToArray(args)
 
 	if err != nil {
@@ -28,7 +30,7 @@ func (_ *_begin) Apply(env Environment, args SExpression) (SExpression, error) {
 	last := NewNil()
 
 	for _, sexp := range arr {
-		last, err = Eval(sexp, env)
+		last, err = Eval(ctx, sexp, env)
 		if err != nil {
 			return nil, err
 		}

@@ -3,6 +3,7 @@ package eval
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,7 @@ type TaskAddRequest struct {
 	ReceivePort *int   `json:"receive_port"`
 }
 
-func StartMockServer() {
+func StartMockServer(ctx context.Context) {
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
 		c.JSON(200, struct{ Message string }{Message: "OK"})
@@ -53,7 +54,7 @@ func StartMockServer() {
 				fmt.Println("read err: " + err.Error())
 				return
 			}
-			result, err := Eval(readSexp, env)
+			result, err := Eval(ctx, readSexp, env)
 			if err != nil {
 				fmt.Println(err)
 				return

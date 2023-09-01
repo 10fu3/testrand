@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"fmt"
 )
@@ -23,7 +24,7 @@ func (p *_println) Equals(sexp SExpression) bool {
 	return p.Type() == sexp.Type()
 }
 
-func (_ *_println) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_println) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	arr, err := ToArray(args)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,9 @@
 package eval
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type _set struct{}
 
@@ -20,7 +23,7 @@ func (s *_set) Equals(sexp SExpression) bool {
 	return s.Type() == sexp.Type()
 }
 
-func (_ *_set) Apply(env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_set) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
 	if "cons_cell" != arguments.Type() {
 		return nil, errors.New("type error")
 	}
@@ -38,7 +41,7 @@ func (_ *_set) Apply(env Environment, arguments SExpression) (SExpression, error
 	if !IsEmptyList(initValue.GetCdr()) {
 		return nil, errors.New("need less than 3 params")
 	}
-	evaluatedInitValue, err := Eval(initValue.GetCar(), env)
+	evaluatedInitValue, err := Eval(ctx, initValue.GetCar(), env)
 
 	if err != nil {
 		return nil, err

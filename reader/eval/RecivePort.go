@@ -2,6 +2,7 @@ package eval
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -9,15 +10,9 @@ import (
 	"testrand/reader/globalEnv"
 )
 
-var PutReceiveQueueMethod = func(evnId string, reqId string, onReceive SExpression) {
-	return
-}
+var PutReceiveQueueMethod func(evnId string, reqId string, onReceive SExpression)
 
-func SetupPutReceiveQueueMethod(f func(evnId string, reqId string, onReceive SExpression)) {
-	PutReceiveQueueMethod = f
-}
-
-func StartReceiveServer() (func(), func(evnId string, reqId string, onReceive SExpression)) {
+func StartReceiveServer(ctx context.Context) (func(), func(evnId string, reqId string, onReceive SExpression)) {
 	m := sync.Map{}
 	router := gin.Default()
 	router.POST("/receive/:id", func(c *gin.Context) {
@@ -50,7 +45,7 @@ func StartReceiveServer() (func(), func(evnId string, reqId string, onReceive SE
 				NewConsCell(result,
 					NewConsCell(NewNil(), NewNil())))
 
-		result, err = Eval(createSExpressionOnReceive, globalEnv.Get(sExpressionEnv.envId).(Environment))
+		result, err = Eval(ctx, createSExpressionOnReceive, globalEnv.Get(sExpressionEnv.envId).(Environment))
 
 		if err != nil {
 			fmt.Println(err)

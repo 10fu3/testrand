@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"os"
@@ -11,8 +12,9 @@ import (
 func main() {
 	fmt.Println("light client")
 	gin.SetMode(gin.ReleaseMode)
-	completed, addMethod := eval.StartReceiveServer()
-	eval.SetupPutReceiveQueueMethod(addMethod)
+	ctx := context.Background()
+	completed, addMethod := eval.StartReceiveServer(ctx)
+	eval.PutReceiveQueueMethod = addMethod
 	go func() {
 		completed()
 	}()
@@ -26,7 +28,7 @@ func main() {
 			fmt.Println(err.Error())
 			continue
 		}
-		result, err = eval.Eval(result, env)
+		result, err = eval.Eval(ctx, result, env)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue

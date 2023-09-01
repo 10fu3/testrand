@@ -1,5 +1,7 @@
 package eval
 
+import "context"
+
 type _and struct {
 }
 
@@ -19,7 +21,7 @@ func (a _and) Equals(sexp SExpression) bool {
 	return a.Type() == sexp.Type()
 }
 
-func (_ _and) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ _and) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 
 	if IsEmptyList(args) {
 		return NewBool(true), nil
@@ -34,7 +36,7 @@ func (_ _and) Apply(env Environment, args SExpression) (SExpression, error) {
 	evaluatedElm := NewConsCell(NewNil(), NewNil()).(SExpression)
 
 	for i := 0; i < len(arr); i++ {
-		evaluatedElm, err = Eval(arr[i], env)
+		evaluatedElm, err = Eval(ctx, arr[i], env)
 		if err != nil {
 			return nil, err
 		}

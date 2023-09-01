@@ -1,6 +1,9 @@
 package eval
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type _is_equals struct {
 }
@@ -21,7 +24,7 @@ func (i *_is_equals) Equals(sexp SExpression) bool {
 	return i.Type() == sexp.Type()
 }
 
-func (_ *_is_equals) Apply(env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_is_equals) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
 	if "cons_cell" != arguments.Type() {
 		return nil, errors.New("type error")
 	}

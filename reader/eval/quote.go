@@ -1,6 +1,9 @@
 package eval
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type _quote struct{}
 
@@ -20,7 +23,7 @@ func (q *_quote) Equals(sexp SExpression) bool {
 	return q.Type() == sexp.Type()
 }
 
-func (_ *_quote) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_quote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	arr, err := ToArray(args)
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -46,7 +47,7 @@ func (c *_closure) GetFormalsCount() int {
 	return c.formalsCount
 }
 
-func (c *_closure) Apply(_ Environment, args SExpression) (SExpression, error) {
+func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
 	loopFormals := c.formals
 	loopArgs := args
 	env := NewEnvironment(c.env)
@@ -76,5 +77,5 @@ func (c *_closure) Apply(_ Environment, args SExpression) (SExpression, error) {
 			loopArgs = cellArgs.GetCdr()
 		}
 	}
-	return Eval(c.body, env)
+	return Eval(ctx, c.body, env)
 }

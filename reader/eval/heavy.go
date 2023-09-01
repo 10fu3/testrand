@@ -67,7 +67,7 @@ func (h *_heavy) Equals(sexp SExpression) bool {
 	return h.Type() == sexp.Type()
 }
 
-func (_ *_heavy) Apply(env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
 	args, err := ToArray(arguments)
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -23,7 +24,7 @@ func (l *_wait) Equals(sexp SExpression) bool {
 	return l.Type() == sexp.Type()
 }
 
-func (_ *_wait) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_wait) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	if "cons_cell" != args.Type() {
 		return nil, errors.New("need arguments")
 	}
@@ -33,7 +34,7 @@ func (_ *_wait) Apply(env Environment, args SExpression) (SExpression, error) {
 		return nil, errors.New("need arguments length is 1")
 	}
 
-	waitTime, err := Eval(arguments.GetCar(), env)
+	waitTime, err := Eval(ctx, arguments.GetCar(), env)
 	if err != nil {
 		return nil, err
 	}
