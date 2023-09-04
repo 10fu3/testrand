@@ -15,7 +15,7 @@ func main() {
 	ctx := context.Background()
 	go func() {
 		go func() {
-			eval.StartMockServer()
+			eval.StartMockServer(ctx)
 		}()
 		completed, addMethod := eval.StartReceiveServer(ctx)
 		eval.PutReceiveQueueMethod = addMethod
