@@ -9,14 +9,16 @@ import (
 type Environment interface {
 	GetId() string
 	GetValue(symbol Symbol) (SExpression, error)
+	GetGlobalEnv() Environment
 	Define(symbol Symbol, sexp SExpression)
 	Set(symbol Symbol, sexp SExpression) error
 }
 
 type environment struct {
-	id     string
-	frame  map[string]SExpression
-	parent Environment
+	id        string
+	frame     map[string]SExpression
+	parent    Environment
+	globalEnv Environment
 }
 
 func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
@@ -27,6 +29,10 @@ func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
 		return nil, errors.New("UndefinedEvaluate")
 	}
 	return e.parent.GetValue(symbol)
+}
+
+func (e *environment) GetGlobalEnv() Environment {
+	return e.globalEnv
 }
 
 func (e *environment) Define(symbol Symbol, sexp SExpression) {
@@ -50,9 +56,10 @@ func (e *environment) GetId() string {
 
 func NewEnvironment(parent Environment) Environment {
 	env := &environment{
-		id:     uuid.NewString(),
-		frame:  map[string]SExpression{},
-		parent: parent,
+		id:        uuid.NewString(),
+		frame:     map[string]SExpression{},
+		parent:    parent,
+		globalEnv: parent.GetGlobalEnv(),
 	}
 	globalEnv.Put(env.id, env)
 	return env
@@ -79,8 +86,10 @@ func NewGlobalEnvironment() Environment {
 			"print":      NewPrint(),
 			"println":    NewPrintln(),
 		},
-		parent: nil,
+		parent:    nil,
+		globalEnv: nil,
 	}
+	env.globalEnv = env
 	globalEnv.Put(env.id, env)
 	return env
 }
