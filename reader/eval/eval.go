@@ -15,6 +15,12 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 	case "nil":
 		return sexp, nil
 	case "symbol":
+		if v, _ := env.GetValue(sexp.(Symbol)); v == nil {
+			if ctx.Value("transaction") == nil {
+				return nil, errors.New("unknown symbol")
+			}
+
+		}
 		return env.GetValue(sexp.(Symbol))
 	case "cons_cell":
 		cell := sexp.(ConsCell)
