@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -21,6 +22,9 @@ func StartMockServer(ctx context.Context) {
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
 		c.JSON(200, struct{ Message string }{Message: "OK"})
+	})
+	engine.GET("/routine-count", func(c *gin.Context) {
+		c.JSON(200, struct{ Count int }{Count: runtime.NumGoroutine()})
 	})
 	engine.POST("/add-task/:id", func(c *gin.Context) {
 		requestId := c.Param("id")
