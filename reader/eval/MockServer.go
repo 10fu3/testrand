@@ -14,8 +14,8 @@ import (
 )
 
 type TaskAddRequest struct {
-	Body        string `json:"body"`
-	ReceivePort *int   `json:"receive_port"`
+	Body string  `json:"body"`
+	From *string `json:"from"`
 }
 
 func StartMockServer(ctx context.Context) {
@@ -26,9 +26,11 @@ func StartMockServer(ctx context.Context) {
 	engine.GET("/routine-count", func(c *gin.Context) {
 		c.JSON(200, struct{ Count int }{Count: runtime.NumGoroutine()})
 	})
+	engine.GET("/health", func(c *gin.Context) {
+		c.JSON(200, struct{ Status string }{Status: "OK"})
+	})
 	engine.POST("/add-task/:id", func(c *gin.Context) {
 		requestId := c.Param("id")
-		from := c.RemoteIP()
 		var req TaskAddRequest
 		err := c.ShouldBind(&req)
 		if requestId == "" {
@@ -38,7 +40,7 @@ func StartMockServer(ctx context.Context) {
 			})
 			return
 		}
-		if req.ReceivePort == nil {
+		if req.From == nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "ng",
 				"message": "not allowed empty port",
@@ -71,7 +73,7 @@ func StartMockServer(ctx context.Context) {
 			sendBodyBytes, err := json.Marshal(&sendBody)
 			sendBodyBuff := bytes.NewBuffer(sendBodyBytes)
 
-			_, err = http.Post(fmt.Sprintf("http://%s:%d/receive/%s", from, *req.ReceivePort, requestId), "application/json", sendBodyBuff)
+			_, err = http.Post(fmt.Sprintf("%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
 
 			if err != nil {
 				fmt.Println(err)
@@ -81,7 +83,7 @@ func StartMockServer(ctx context.Context) {
 					break
 				}
 				time.Sleep(time.Second * 3)
-				_, err = http.Post(fmt.Sprintf("%s:", from), "application/json", sendBodyBuff)
+				_, err = http.Post(fmt.Sprintf("%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
 			}
 		}()
 		c.JSON(http.StatusOK, gin.H{

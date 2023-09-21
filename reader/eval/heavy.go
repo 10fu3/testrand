@@ -16,10 +16,10 @@ import (
 func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environment, port int) {
 	reqId := uuid.NewString()
 	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
-
+	fromAddr := fmt.Sprintf("localhost:%d", port)
 	values, err := json.Marshal(TaskAddRequest{
-		Body:        sendSexp.String(),
-		ReceivePort: &port,
+		Body: sendSexp.String(),
+		From: &fromAddr,
 	})
 
 	transport := http.Transport{
