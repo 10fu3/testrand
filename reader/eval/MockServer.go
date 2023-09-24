@@ -21,13 +21,19 @@ type TaskAddRequest struct {
 func StartMockServer(ctx context.Context) {
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
-		c.JSON(200, struct{ Message string }{Message: "OK"})
+		c.JSON(200, struct {
+			Message string `json:"message"`
+		}{Message: "OK"})
 	})
 	engine.GET("/routine-count", func(c *gin.Context) {
-		c.JSON(200, struct{ Count int }{Count: runtime.NumGoroutine()})
+		c.JSON(200, struct {
+			Count int `json:"count"`
+		}{Count: runtime.NumGoroutine()})
 	})
 	engine.GET("/health", func(c *gin.Context) {
-		c.JSON(200, struct{ Status string }{Status: "OK"})
+		c.JSON(200, struct {
+			Status string `json:"status"`
+		}{Status: "OK"})
 	})
 	engine.POST("/add-task/:id", func(c *gin.Context) {
 		requestId := c.Param("id")
