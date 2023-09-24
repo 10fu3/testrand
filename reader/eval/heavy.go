@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"io"
@@ -72,6 +73,10 @@ func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpressi
 
 	if err != nil {
 		return nil, err
+	}
+
+	if ctx.Value("transaction") != nil {
+		return nil, errors.New("transaction can not use in heavy")
 	}
 
 	if 1 == len(args) {
