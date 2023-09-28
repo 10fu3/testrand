@@ -3,7 +3,6 @@ package eval
 import (
 	"context"
 	"errors"
-	"fmt"
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
@@ -38,12 +37,9 @@ func (_ *_transaction) Apply(ctx context.Context, env Environment, args SExpress
 	}
 
 	ok, err := env.GetSuperGlobalEnv().Transaction(func(stm concurrency.STM) error {
-		sexp, err := Eval(context.WithValue(ctx, "transaction", stm), cell.GetCar(), env)
+		_, err := Eval(context.WithValue(ctx, "transaction", stm), cell.GetCar(), env)
 		if err != nil {
 			return err
-		}
-		if sexp != nil {
-			fmt.Println(sexp.String())
 		}
 		return nil
 	})

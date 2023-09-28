@@ -3,6 +3,7 @@ package eval
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
@@ -53,9 +54,9 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 		var err error
 		if ctx.Value("transaction") != nil {
 			transaction := ctx.Value("transaction").(concurrency.STM)
-			transaction.Put(name.String(), evaluatedInitValue.String())
+			transaction.Put(fmt.Sprintf("/env/%s/%s", env.GetId(), name.String()), evaluatedInitValue.String())
 		} else {
-			err = env.GetSuperGlobalEnv().Put(name.String(), evaluatedInitValue.String())
+			err = env.GetSuperGlobalEnv().Put(fmt.Sprintf("/env/%s/%s", env.GetId(), name.String()), evaluatedInitValue.String())
 		}
 		return err
 	}()

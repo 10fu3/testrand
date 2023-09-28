@@ -78,6 +78,7 @@ func NewGlobalEnvironment() (Environment, error) {
 	superGlobalEnv, err := infra.SetupEtcd()
 
 	env := &environment{
+		id: uuid.NewString(),
 		frame: map[string]SExpression{
 			"and":         NewAnd(),
 			"or":          NewOr(),
