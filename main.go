@@ -4,14 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"os"
 	"testrand/reader/eval"
 )
 
 func main() {
 	alreadyFlagChan := make(chan struct{})
-	gin.SetMode(gin.ReleaseMode)
 	ctx := context.Background()
 	go func() {
 		go func() {
@@ -23,7 +21,11 @@ func main() {
 		completed()
 	}()
 	<-alreadyFlagChan
-	env := eval.NewGlobalEnvironment()
+	env, err := eval.NewGlobalEnvironment()
+
+	if err != nil {
+		panic(err)
+	}
 
 	stdin := bufio.NewReader(os.Stdin)
 	read := eval.New(stdin)

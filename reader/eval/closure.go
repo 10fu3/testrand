@@ -50,7 +50,7 @@ func (c *_closure) GetFormalsCount() int {
 func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
 	loopFormals := c.formals
 	loopArgs := args
-	env := NewEnvironment(c.env)
+	env, _ := NewEnvironment(c.env)
 
 	for {
 		if IsEmptyList(loopFormals) {

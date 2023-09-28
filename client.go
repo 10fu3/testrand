@@ -7,18 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"os"
 	"testrand/reader/eval"
+	"testrand/reader/infra"
 )
 
 func main() {
 	fmt.Println("light client")
 	gin.SetMode(gin.ReleaseMode)
 	ctx := context.Background()
+	infra.SetupEtcd()
 	completed, addMethod := eval.StartReceiveServer(ctx)
 	eval.PutReceiveQueueMethod = addMethod
 	go func() {
 		completed()
 	}()
-	env := eval.NewGlobalEnvironment()
+	env, err := eval.NewGlobalEnvironment()
+
+	if err != nil {
+		panic(err)
+	}
 
 	stdin := bufio.NewReader(os.Stdin)
 	read := eval.New(stdin)

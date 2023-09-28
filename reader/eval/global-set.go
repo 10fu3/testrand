@@ -3,8 +3,7 @@ package eval
 import (
 	"context"
 	"errors"
-	"go.etcd.io/etcd/clientv3/concurrency"
-	"testrand/reader/infra"
+	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
 type _global_set struct {
@@ -56,7 +55,7 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 			transaction := ctx.Value("transaction").(concurrency.STM)
 			transaction.Put(name.String(), evaluatedInitValue.String())
 		} else {
-			err = infra.EtcdClient.Put(name.String(), evaluatedInitValue.String())
+			err = env.GetSuperGlobalEnv().Put(name.String(), evaluatedInitValue.String())
 		}
 		return err
 	}()
@@ -65,4 +64,8 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 		return nil, err
 	}
 	return name, nil
+}
+
+func NewGlobalSet() SExpression {
+	return &_global_set{}
 }

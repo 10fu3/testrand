@@ -1,6 +1,9 @@
 package eval
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type _add struct{}
 
@@ -20,7 +23,7 @@ func (a *_add) Equals(sexp SExpression) bool {
 	return a.Type() == sexp.Type()
 }
 
-func (_ *_add) Apply(env Environment, args SExpression) (SExpression, error) {
+func (_ *_add) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
 	if "cons_cell" != args.Type() {
 		return nil, errors.New("need arguments")
 	}

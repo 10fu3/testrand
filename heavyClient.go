@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"testrand/reader/eval"
@@ -9,5 +10,6 @@ import (
 func main() {
 	fmt.Println("heavy client")
 	gin.SetMode(gin.ReleaseMode)
-	eval.StartMockServer()
+	ctx := context.TODO()
+	eval.StartMockServer(ctx)
 }

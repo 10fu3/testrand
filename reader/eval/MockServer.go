@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net"
 	"net/http"
 	"runtime"
 	"strings"
@@ -18,7 +19,24 @@ type TaskAddRequest struct {
 	From *string `json:"from"`
 }
 
+func createListener() (l net.Listener, close func()) {
+	l, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+	return l, func() {
+		_ = l.Close()
+	}
+}
+
 func StartMockServer(ctx context.Context) {
+
+	ramdomListener, _close := createListener()
+	randomPort := ramdomListener.Addr().(*net.TCPAddr).Port
+	_close()
+
+	LoadBalancingRegister("localhost", randomPort)
+
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
 		c.JSON(200, struct {
@@ -26,11 +44,13 @@ func StartMockServer(ctx context.Context) {
 		}{Message: "OK"})
 	})
 	engine.GET("/routine-count", func(c *gin.Context) {
+		fmt.Printf("health check: %d\n", runtime.NumGoroutine())
 		c.JSON(200, struct {
 			Count int `json:"count"`
 		}{Count: runtime.NumGoroutine()})
 	})
 	engine.GET("/health", func(c *gin.Context) {
+		fmt.Println("health check")
 		c.JSON(200, struct {
 			Status string `json:"status"`
 		}{Status: "OK"})
@@ -58,7 +78,12 @@ func StartMockServer(ctx context.Context) {
 				fmt.Println("req err: " + err.Error())
 				return
 			}
-			env := NewGlobalEnvironment()
+			env, err := NewGlobalEnvironment()
+
+			if err != nil {
+				panic(err)
+			}
+
 			input := strings.NewReader(fmt.Sprintf("%s\n", req.Body))
 			read := New(bufio.NewReader(input))
 			readSexp, err := read.Read()
@@ -79,7 +104,7 @@ func StartMockServer(ctx context.Context) {
 			sendBodyBytes, err := json.Marshal(&sendBody)
 			sendBodyBuff := bytes.NewBuffer(sendBodyBytes)
 
-			_, err = http.Post(fmt.Sprintf("%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
+			_, err = http.Post(fmt.Sprintf("http://%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
 
 			if err != nil {
 				fmt.Println(err)
@@ -89,7 +114,7 @@ func StartMockServer(ctx context.Context) {
 					break
 				}
 				time.Sleep(time.Second * 3)
-				_, err = http.Post(fmt.Sprintf("%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
+				_, err = http.Post(fmt.Sprintf("http://%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
 			}
 		}()
 		c.JSON(http.StatusOK, gin.H{
@@ -97,5 +122,5 @@ func StartMockServer(ctx context.Context) {
 			"id":     requestId,
 		})
 	})
-	engine.Run(":8080")
+	engine.Run(fmt.Sprintf(":%d", randomPort))
 }

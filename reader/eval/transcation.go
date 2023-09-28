@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"go.etcd.io/etcd/client/v3/concurrency"
-	"testrand/reader/infra"
 )
 
 type _transaction struct{}
@@ -38,7 +37,7 @@ func (_ *_transaction) Apply(ctx context.Context, env Environment, args SExpress
 		return nil, errors.New("need less than 2 params")
 	}
 
-	ok, err := infra.EtcdClient.Transaction(func(stm concurrency.STM) error {
+	ok, err := env.GetSuperGlobalEnv().Transaction(func(stm concurrency.STM) error {
 		sexp, err := Eval(context.WithValue(ctx, "transaction", stm), cell.GetCar(), env)
 		if err != nil {
 			return err
@@ -54,4 +53,8 @@ func (_ *_transaction) Apply(ctx context.Context, env Environment, args SExpress
 	}
 
 	return NewConsCell(NewNil(), NewNil()), nil
+}
+
+func NewTransaction() SExpression {
+	return &_transaction{}
 }

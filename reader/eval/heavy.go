@@ -34,7 +34,21 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 		Transport: &transport,
 	}
 
-	res, err := client.Post(fmt.Sprintf("http://localhost:8080/add-task/%s", reqId), "application/json", bytes.NewBuffer(values))
+	sendReqBody := map[string]string{
+		"body": sendSexp.String(),
+		"from": fromAddr,
+	}
+	sendReqBodyByte, err := json.Marshal(sendReqBody)
+	send, err := http.Post("http://localhost/send-request", "application/json", bytes.NewBuffer(sendReqBodyByte))
+	sendTargetResult := struct {
+		Addr string `json:"addr"`
+	}{}
+	sendTargetResultByte, err := ioutil.ReadAll(send.Body)
+	if err := json.Unmarshal(sendTargetResultByte, &sendTargetResult); err != nil {
+		panic(err)
+	}
+
+	res, err := client.Post(fmt.Sprintf("%s/add-task/%s", sendTargetResult.Addr, reqId), "application/json", bytes.NewBuffer(values))
 	if err != nil {
 		log.Fatal(err)
 	}
