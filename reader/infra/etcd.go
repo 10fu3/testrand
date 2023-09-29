@@ -14,16 +14,21 @@ type ISuperGlobalEnv interface {
 	Transaction(func(stm concurrency.STM) error) (bool, error)
 	Put(key string, value string) error
 	Get(key string) (string, error)
+	GetClient() *clientv3.Client
 }
 
 type SuperGlobalEnv struct {
-	etcdClient *clientv3.Client
+	EtcdClient *clientv3.Client
+}
+
+func (env *SuperGlobalEnv) GetClient() *clientv3.Client {
+	return env.EtcdClient
 }
 
 func (env *SuperGlobalEnv) Transaction(f func(stm concurrency.STM) error) (bool, error) {
-	txn, err := concurrency.NewSTM(env.etcdClient, func(stm concurrency.STM) error {
+	txn, err := concurrency.NewSTM(env.EtcdClient, func(stm concurrency.STM) error {
 		return f(stm)
-	})
+	}, concurrency.WithPrefetch())
 	if err != nil {
 		return false, err
 	}
@@ -31,7 +36,7 @@ func (env *SuperGlobalEnv) Transaction(f func(stm concurrency.STM) error) (bool,
 }
 
 func (env *SuperGlobalEnv) Get(key string) (string, error) {
-	r, err := env.etcdClient.Get(context.Background(), key)
+	r, err := env.EtcdClient.Get(context.Background(), key)
 	if err != nil {
 		return "", err
 	}
@@ -42,7 +47,7 @@ func (env *SuperGlobalEnv) Get(key string) (string, error) {
 }
 
 func (env *SuperGlobalEnv) Put(key string, value string) error {
-	_, err := env.etcdClient.Put(context.Background(), key, value)
+	_, err := env.EtcdClient.Put(context.Background(), key, value)
 	return err
 }
 
@@ -57,5 +62,5 @@ func SetupEtcd() (*SuperGlobalEnv, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	return &SuperGlobalEnv{etcdClient: etcdClient}, nil
+	return &SuperGlobalEnv{EtcdClient: etcdClient}, nil
 }

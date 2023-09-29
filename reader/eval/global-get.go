@@ -48,12 +48,12 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 		var result SExpression
 		if ctx.Value("transaction") != nil {
 			transaction := ctx.Value("transaction").(concurrency.STM)
-			var r = transaction.Get(fmt.Sprintf("/env/%s/%s", env.GetId(), name.String()))
+			var r = transaction.Get(fmt.Sprintf("/env/%s", name.String()))
 			input := strings.NewReader(fmt.Sprintf("%s\n", r))
 			reader := New(bufio.NewReader(input))
 			result, err = reader.Read()
 		} else {
-			r, err := env.GetSuperGlobalEnv().Get(fmt.Sprintf("/env/%s/%s", env.GetId(), name.String()))
+			r, err := env.GetSuperGlobalEnv().Get(fmt.Sprintf("/env/%s", name.String()))
 			if err != nil {
 				return nil, err
 			}
