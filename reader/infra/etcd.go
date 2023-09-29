@@ -28,7 +28,7 @@ func (env *SuperGlobalEnv) GetClient() *clientv3.Client {
 func (env *SuperGlobalEnv) Transaction(f func(stm concurrency.STM) error) (bool, error) {
 	txn, err := concurrency.NewSTM(env.EtcdClient, func(stm concurrency.STM) error {
 		return f(stm)
-	}, concurrency.WithPrefetch())
+	})
 	if err != nil {
 		return false, err
 	}
