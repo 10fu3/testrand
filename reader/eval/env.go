@@ -12,6 +12,7 @@ type Environment interface {
 	GetValue(symbol Symbol) (SExpression, error)
 	GetGlobalEnv() Environment
 	GetSuperGlobalEnv() infra.ISuperGlobalEnv
+	GetParentId() string
 	Define(symbol Symbol, sexp SExpression)
 	Set(symbol Symbol, sexp SExpression) error
 }
@@ -22,6 +23,7 @@ type environment struct {
 	parent         Environment
 	globalEnv      Environment
 	superGlobalEnv infra.ISuperGlobalEnv
+	parentId       string
 }
 
 func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
@@ -61,6 +63,10 @@ func (e *environment) GetSuperGlobalEnv() infra.ISuperGlobalEnv {
 	return e.superGlobalEnv
 }
 
+func (e *environment) GetParentId() string {
+	return e.parentId
+}
+
 func NewEnvironment(parent Environment) (Environment, error) {
 	env := &environment{
 		id:             uuid.NewString(),
@@ -68,6 +74,7 @@ func NewEnvironment(parent Environment) (Environment, error) {
 		parent:         parent,
 		globalEnv:      parent.GetGlobalEnv(),
 		superGlobalEnv: parent.GetSuperGlobalEnv(),
+		parentId:       parent.GetParentId(),
 	}
 	globalEnv.Put(env.id, env)
 	return env, nil
@@ -76,9 +83,10 @@ func NewEnvironment(parent Environment) (Environment, error) {
 func NewGlobalEnvironment() (Environment, error) {
 
 	superGlobalEnv, err := infra.SetupEtcd()
-
+	id := uuid.NewString()
 	env := &environment{
-		id: uuid.NewString(),
+		id:       id,
+		parentId: id,
 		frame: map[string]SExpression{
 			"and":         NewAnd(),
 			"or":          NewOr(),
@@ -101,6 +109,44 @@ func NewGlobalEnvironment() (Environment, error) {
 			"global-set":  NewGlobalSet(),
 			"global-get":  NewGlobalGet(),
 		},
+		parent:         nil,
+		globalEnv:      nil,
+		superGlobalEnv: superGlobalEnv,
+	}
+	env.globalEnv = env
+	globalEnv.Put(env.id, env)
+	return env, err
+}
+
+func NewGlobalEnvironmentById(id string) (Environment, error) {
+
+	superGlobalEnv, err := infra.SetupEtcd()
+
+	env := &environment{
+		id: id,
+		frame: map[string]SExpression{
+			"and":         NewAnd(),
+			"or":          NewOr(),
+			"if":          NewIf(),
+			"eq?":         NewIsEq(),
+			"not":         NewIsNot(),
+			"define":      NewDefine(),
+			"set":         NewSet(),
+			"loop":        NewLoop(),
+			"wait":        NewWait(),
+			"+":           NewAdd(),
+			"begin":       NewBegin(),
+			"lambda":      NewLambda(),
+			"quote":       NewQuote(),
+			"quasiquote":  NewQuasiquote(),
+			"heavy":       NewHeavy(),
+			"print":       NewPrint(),
+			"println":     NewPrintln(),
+			"transaction": NewTransaction(),
+			"global-set":  NewGlobalSet(),
+			"global-get":  NewGlobalGet(),
+		},
+		parentId:       id,
 		parent:         nil,
 		globalEnv:      nil,
 		superGlobalEnv: superGlobalEnv,

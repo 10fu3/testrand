@@ -51,17 +51,20 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 		return nil, err
 	}
 
+	resp, err := env.GetSuperGlobalEnv().GetClient().Grant(context.TODO(), 10)
+	if err != nil {
+		return nil, err
+	}
 	err = func() error {
 		var err error
 		if ctx.Value("transaction") != nil {
 			transaction := ctx.Value("transaction").(concurrency.STM)
-			resp, err := env.GetSuperGlobalEnv().GetClient().Grant(context.TODO(), 10)
 			if err != nil {
 				return err
 			}
-			transaction.Put(fmt.Sprintf("/env/%s", name.String()), evaluatedInitValue.String(), clientv3.WithLease(resp.ID))
+			transaction.Put(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()), evaluatedInitValue.String(), clientv3.WithLease(resp.ID))
 		} else {
-			err = env.GetSuperGlobalEnv().Put(fmt.Sprintf("/env/%s", name.String()), evaluatedInitValue.String())
+			err = env.GetSuperGlobalEnv().Put(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()), evaluatedInitValue.String(), clientv3.WithLease(resp.ID))
 		}
 		return err
 	}()

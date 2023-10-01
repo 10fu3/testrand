@@ -15,8 +15,9 @@ import (
 )
 
 type TaskAddRequest struct {
-	Body string  `json:"body"`
-	From *string `json:"from"`
+	Body      *string `json:"body"`
+	From      *string `json:"from"`
+	SessionId *string `json:"session_id"`
 }
 
 func createListener() (l net.Listener, close func()) {
@@ -73,18 +74,32 @@ func StartMockServer(ctx context.Context) {
 			})
 			return
 		}
+		if req.Body == nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "ng",
+				"message": "not allowed empty body",
+			})
+			return
+		}
+		if req.SessionId == nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "ng",
+				"message": "not allowed empty session_id",
+			})
+			return
+		}
 		go func() {
 			if err != nil {
 				fmt.Println("req err: " + err.Error())
 				return
 			}
-			env, err := NewGlobalEnvironment()
+			env, err := NewGlobalEnvironmentById(*req.SessionId)
 
 			if err != nil {
 				panic(err)
 			}
 
-			input := strings.NewReader(fmt.Sprintf("%s\n", req.Body))
+			input := strings.NewReader(fmt.Sprintf("%s\n", *req.Body))
 			read := New(bufio.NewReader(input))
 			readSexp, err := read.Read()
 			if err != nil {

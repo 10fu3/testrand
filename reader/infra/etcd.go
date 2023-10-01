@@ -12,7 +12,7 @@ import (
 
 type ISuperGlobalEnv interface {
 	Transaction(func(stm concurrency.STM) error) (bool, error)
-	Put(key string, value string) error
+	Put(key string, value string, option clientv3.OpOption) error
 	Get(key string) (string, error)
 	GetClient() *clientv3.Client
 }
@@ -46,8 +46,8 @@ func (env *SuperGlobalEnv) Get(key string) (string, error) {
 	return string(r.Kvs[0].Value), nil
 }
 
-func (env *SuperGlobalEnv) Put(key string, value string) error {
-	_, err := env.EtcdClient.Put(context.Background(), key, value)
+func (env *SuperGlobalEnv) Put(key string, value string, option clientv3.OpOption) error {
+	_, err := env.EtcdClient.Put(context.Background(), key, value, option)
 	return err
 }
 
