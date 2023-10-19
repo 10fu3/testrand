@@ -22,6 +22,7 @@ type ISuperGlobalEnv interface {
 }
 
 type SuperGlobalEnv struct {
+	SessionId  string
 	EtcdClient *clientv3.Client
 }
 
@@ -54,9 +55,9 @@ func (env *SuperGlobalEnv) GetAll() ([]struct {
 	Key   string
 	Value string
 }, error) {
-	r, err := env.EtcdClient.Get(context.TODO(), "/chapter3/option/",
+	r, err := env.EtcdClient.Get(context.TODO(), fmt.Sprintf("/env/%s", env.SessionId),
 		clientv3.WithPrefix(),
-		clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend),
+		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend),
 	)
 	if err != nil {
 		return []struct {
@@ -83,7 +84,7 @@ func (env *SuperGlobalEnv) Put(key string, value string, option clientv3.OpOptio
 }
 
 //setup etcd
-func SetupEtcd() (*SuperGlobalEnv, error) {
+func SetupEtcd(sessionId string) (*SuperGlobalEnv, error) {
 	//setup etcd
 	etcdClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{"http://localhost:2379"},
@@ -93,5 +94,5 @@ func SetupEtcd() (*SuperGlobalEnv, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	return &SuperGlobalEnv{EtcdClient: etcdClient}, nil
+	return &SuperGlobalEnv{EtcdClient: etcdClient, SessionId: sessionId}, nil
 }

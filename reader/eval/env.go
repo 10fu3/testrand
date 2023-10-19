@@ -82,8 +82,8 @@ func NewEnvironment(parent Environment) (Environment, error) {
 
 func NewGlobalEnvironment() (Environment, error) {
 
-	superGlobalEnv, err := infra.SetupEtcd()
 	id := uuid.NewString()
+	superGlobalEnv, err := infra.SetupEtcd(id)
 	env := &environment{
 		id:       id,
 		parentId: id,
@@ -121,7 +121,7 @@ func NewGlobalEnvironment() (Environment, error) {
 
 func NewGlobalEnvironmentById(id string) (Environment, error) {
 
-	superGlobalEnv, err := infra.SetupEtcd()
+	superGlobalEnv, err := infra.SetupEtcd(id)
 
 	env := &environment{
 		id: id,

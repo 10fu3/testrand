@@ -45,7 +45,7 @@ func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args SExpr
 	}
 
 	var list = &_cons_cell{Car: NewNil(), Cdr: NewNil()}
-
+	var parent = list
 	for _, kv := range res {
 		input := strings.NewReader(fmt.Sprintf("%s\n", kv.Value))
 		reader := New(bufio.NewReader(input))
@@ -53,12 +53,16 @@ func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args SExpr
 		if err != nil {
 			continue
 		}
-		keyValue := NewConsCell(NewSymbol(kv.Key), result)
+		_, keyName, foundName := strings.Cut(kv.Key, fmt.Sprintf("/env/%s/", env.GetParentId()))
+		if !foundName {
+			continue
+		}
+		keyValue := NewConsCell(NewSymbol(keyName), result)
 		list.Car = keyValue
 		list.Cdr = NewConsCell(NewNil(), NewNil())
 		list = list.Cdr.(*_cons_cell)
 	}
-	return list, nil
+	return parent, nil
 }
 
 func NewGlobalGetAll() SExpression {

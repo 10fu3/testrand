@@ -51,7 +51,7 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 		return nil, err
 	}
 
-	resp, err := env.GetSuperGlobalEnv().GetClient().Grant(context.TODO(), 10)
+	resp, err := env.GetSuperGlobalEnv().GetClient().Grant(context.TODO(), 60)
 	if err != nil {
 		return nil, err
 	}
