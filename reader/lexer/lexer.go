@@ -157,6 +157,24 @@ func (l *lexer) GetNextToken() (token.Token, error) {
 		}
 		return token.NewTokenBySymbol(symbolSequence), nil
 	}
+	if r == '"' {
+		if err := l.updateNextChar(); err != nil {
+			return nil, err
+		}
+		r = l.nextRune
+		var temp []rune
+		for r != '"' {
+			temp = append(temp, r)
+			if err := l.updateNextChar(); err != nil {
+				return nil, err
+			}
+			r = l.nextRune
+		}
+		if err := l.updateNextChar(); err != nil {
+			return nil, err
+		}
+		return token.NewTokenByString(string(temp)), nil
+	}
 	if err := l.updateNextChar(); err != nil {
 		return nil, err
 	}

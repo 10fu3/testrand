@@ -54,6 +54,19 @@ func (r *reader) sExpression() (SExpression, error) {
 		}
 		return NewInt(value), nil
 	}
+
+	if r.Token.GetKind() == token.TokenKindString {
+		value := r.GetString()
+		if r.nestingLevel != 0 {
+			nextToken, err := r.GetNextToken()
+			if err != nil {
+				return nil, err
+			}
+			r.Token = nextToken
+		}
+		return NewString(value), nil
+	}
+
 	if r.Token.GetKind() == token.TokenKindSymbol {
 		value := r.GetSymbol()
 		if r.nestingLevel != 0 {

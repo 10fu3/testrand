@@ -10,6 +10,8 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 	switch sexp.Type() {
 	case "number":
 		return sexp, nil
+	case "string":
+		return sexp, nil
 	case "bool":
 		return sexp, nil
 	case "nil":

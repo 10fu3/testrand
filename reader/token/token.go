@@ -17,6 +17,7 @@ const (
 	TokenKindQuote
 	TokenKindQuasiquote
 	TokenKindNil
+	TokenKindString
 )
 
 type token struct {
@@ -25,6 +26,7 @@ type token struct {
 	_float  float64
 	_bool   bool
 	_symbol string
+	_string string
 }
 
 func (t *token) GetKind() TokenKind {
@@ -41,6 +43,10 @@ func (t *token) GetFloat() float64 {
 
 func (t *token) GetBool() bool {
 	return t._bool
+}
+
+func (t *token) GetString() string {
+	return t._string
 }
 
 func (t *token) String() string {
@@ -120,4 +126,11 @@ func NewTokenByKind(kind TokenKind) Token {
 
 func NewTokenByNil() Token {
 	return &token{_kind: TokenKindNil}
+}
+
+func NewTokenByString(value string) Token {
+	return &token{
+		_kind:   TokenKindString,
+		_string: value,
+	}
 }

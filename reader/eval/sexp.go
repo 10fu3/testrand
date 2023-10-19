@@ -141,6 +141,43 @@ func NewBool(b bool) Bool {
 	return falseSexp
 }
 
+type Str interface {
+	GetValue() string
+	String() string
+	SExpression
+}
+
+type _string struct {
+	Value string
+}
+
+func NewString(s string) Str {
+	return &_string{Value: s}
+}
+
+func (s *_string) Equals(sexp SExpression) bool {
+	if "string" != sexp.Type() {
+		return false
+	}
+	return s.Value == sexp.(Str).GetValue()
+}
+
+func (s *_string) GetValue() string {
+	return s.Value
+}
+
+func (s *_string) String() string {
+	return fmt.Sprintf("\"%s\"", s.Value)
+}
+
+func (s *_string) Type() string {
+	return "string"
+}
+
+func (s *_string) IsList() bool {
+	return false
+}
+
 type Nil interface {
 	SExpression
 }

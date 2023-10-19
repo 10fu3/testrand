@@ -6,5 +6,6 @@ type Token interface {
 	GetFloat() float64
 	GetBool() bool
 	GetSymbol() string
+	GetString() string
 	String() string
 }
