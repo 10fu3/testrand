@@ -13,11 +13,11 @@ type _global_get struct {
 }
 
 func (_ *_global_get) Type() string {
-	return "special_form.global_set"
+	return "special_form.global_get"
 }
 
 func (_ *_global_get) String() string {
-	return "#<syntax global_set>"
+	return "#<syntax global_get>"
 }
 
 func (_ *_global_get) IsList() bool {

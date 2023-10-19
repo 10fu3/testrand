@@ -14,6 +14,10 @@ type ISuperGlobalEnv interface {
 	Transaction(func(stm concurrency.STM) error) (bool, error)
 	Put(key string, value string, option clientv3.OpOption) error
 	Get(key string) (string, error)
+	GetAll() ([]struct {
+		Key   string
+		Value string
+	}, error)
 	GetClient() *clientv3.Client
 }
 
@@ -44,6 +48,33 @@ func (env *SuperGlobalEnv) Get(key string) (string, error) {
 		return "", errors.New(fmt.Sprintf("not found key: %d", len(r.Kvs)))
 	}
 	return string(r.Kvs[0].Value), nil
+}
+
+func (env *SuperGlobalEnv) GetAll() ([]struct {
+	Key   string
+	Value string
+}, error) {
+	r, err := env.EtcdClient.Get(context.TODO(), "/chapter3/option/",
+		clientv3.WithPrefix(),
+		clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend),
+	)
+	if err != nil {
+		return []struct {
+			Key   string
+			Value string
+		}{}, err
+	}
+	var result []struct {
+		Key   string
+		Value string
+	}
+	for _, kv := range r.Kvs {
+		result = append(result, struct {
+			Key   string
+			Value string
+		}{Key: string(kv.Key), Value: string(kv.Value)})
+	}
+	return result, nil
 }
 
 func (env *SuperGlobalEnv) Put(key string, value string, option clientv3.OpOption) error {
