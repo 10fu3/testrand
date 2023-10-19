@@ -3,8 +3,10 @@ module testrand
 go 1.18
 
 require (
+	github.com/caarlos0/env/v6 v6.10.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.3.1
+	github.com/joho/godotenv v1.5.1
 	go.etcd.io/etcd/client/v3 v3.5.9
 )
 
