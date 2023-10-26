@@ -21,7 +21,8 @@ func main() {
 	env, err := eval.NewGlobalEnvironment()
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
+		fmt.Println("cant use etcd and super global environment")
 	}
 
 	stdin := bufio.NewReader(os.Stdin)
