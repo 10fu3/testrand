@@ -29,10 +29,18 @@ func (_ *_println) Apply(ctx context.Context, env Environment, args SExpression)
 	if err != nil {
 		return nil, err
 	}
-	if len(arr) != 1 {
+	if len(arr) < 1 {
 		return nil, errors.New("need args size is 1")
 	}
-	fmt.Println(arr[0])
+
+	for i := 0; i < len(arr); i++ {
+		fmt.Print(arr[i])
+		if i+1 == len(arr) {
+			fmt.Println()
+			break
+		}
+		fmt.Print(" ")
+	}
 	return NewNil(), nil
 }
 
