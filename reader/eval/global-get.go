@@ -13,11 +13,11 @@ type _global_get struct {
 }
 
 func (_ *_global_get) Type() string {
-	return "special_form.global_get"
+	return "subroutine.global_get"
 }
 
 func (_ *_global_get) String() string {
-	return "#<syntax global_get>"
+	return "#<subr global_get>"
 }
 
 func (_ *_global_get) IsList() bool {
@@ -35,7 +35,14 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 
 	cell := args.(ConsCell)
 
-	name := cell.GetCar().(Symbol)
+	name := cell.GetCar().(Str)
+
+	defaultArg := (func() SExpression {
+		if IsEmptyList(cell.GetCdr()) {
+			return NewNil()
+		}
+		return cell.GetCdr().(ConsCell).GetCar()
+	})()
 
 	var err error
 
@@ -48,6 +55,12 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 		var result SExpression
 		if ctx.Value("transaction") != nil {
 			transaction := ctx.Value("transaction").(concurrency.STM)
+			existKey := transaction.Rev(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
+
+			if defaultArg.Type() != "nil" && existKey == 0 {
+				return defaultArg, nil
+			}
+
 			var r = transaction.Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
 			input := strings.NewReader(fmt.Sprintf("%s\n", r))
 			reader := New(bufio.NewReader(input))

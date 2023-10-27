@@ -48,7 +48,8 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 	}{}
 	sendTargetResultByte, err := ioutil.ReadAll(send.Body)
 	if err := json.Unmarshal(sendTargetResultByte, &sendTargetResult); err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	res, err := client.Post(fmt.Sprintf("%s/add-task/%s", sendTargetResult.Addr, reqId), "application/json", bytes.NewBuffer(values))

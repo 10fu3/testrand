@@ -12,11 +12,11 @@ type _global_set struct {
 }
 
 func (_ *_global_set) Type() string {
-	return "special_form.global_set"
+	return "subroutine.global_set"
 }
 
 func (_ *_global_set) String() string {
-	return "#<syntax global_set>"
+	return "#<subr global_set>"
 }
 
 func (_ *_global_set) IsList() bool {
@@ -51,7 +51,7 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 		return nil, err
 	}
 
-	resp, err := env.GetSuperGlobalEnv().GetClient().Grant(context.TODO(), 60)
+	resp, err := env.GetSuperGlobalEnv().GetClient().Grant(context.TODO(), 90)
 	if err != nil {
 		return nil, err
 	}
