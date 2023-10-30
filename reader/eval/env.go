@@ -115,6 +115,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"string-append":      NewStringAppend(),
 		"string-split":       NewStringSplit(),
 		"string-len":         NewStringLen(),
+		"foreach":            NewForeach(),
 	}
 }
 
