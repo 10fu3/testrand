@@ -16,6 +16,8 @@ const (
 	TokenKindDot
 	TokenKindQuote
 	TokenKindQuasiquote
+	TokenKindUnquote
+	TokenKindUnquoteSplicing
 	TokenKindNil
 	TokenKindString
 )
@@ -81,6 +83,12 @@ func (t *token) String() string {
 	// クォート
 	if t._kind == TokenKindQuote {
 		return "Token (Quote)"
+	}
+	if t._kind == TokenKindUnquote {
+		return "Token (Unquote)"
+	}
+	if t._kind == TokenKindUnquoteSplicing {
+		return "Token (UnquoteSplicing)"
 	}
 
 	return "Token (Unknown)"

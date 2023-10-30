@@ -133,6 +133,19 @@ func (l *lexer) GetNextToken() (token.Token, error) {
 		}
 		return token.NewTokenByKind(token.TokenKindQuasiquote), nil
 	}
+	if r == ',' {
+		if err := l.updateNextChar(); err != nil {
+			return nil, err
+		}
+		r = l.nextRune
+		if r == '@' {
+			if err := l.updateNextChar(); err != nil {
+				return nil, err
+			}
+			return token.NewTokenByKind(token.TokenKindUnquoteSplicing), nil
+		}
+		return token.NewTokenByKind(token.TokenKindUnquote), nil
+	}
 	if isSymbolChar(r) {
 		isBeginWithDigit := isDigit(r)
 		var temp []rune
