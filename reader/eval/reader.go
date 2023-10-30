@@ -3,7 +3,6 @@ package eval
 import (
 	"bufio"
 	"errors"
-	"strconv"
 	"testrand/reader/lexer"
 	"testrand/reader/token"
 )
@@ -111,6 +110,34 @@ func (r *reader) sExpression() (SExpression, error) {
 		}
 		return NewConsCell(NewSymbol("quote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
 	}
+
+	if r.Token.GetKind() == token.TokenKindUnquote {
+		nextToken, err := r.GetNextToken()
+		if err != nil {
+			return nil, err
+		}
+
+		r.Token = nextToken
+		sexp, err := r.sExpression()
+		if err != nil {
+			return nil, err
+		}
+		return NewConsCell(NewSymbol("unquote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+	}
+
+	if r.Token.GetKind() == token.TokenKindUnquoteSplicing {
+		nextToken, err := r.GetNextToken()
+		if err != nil {
+			return nil, err
+		}
+		r.Token = nextToken
+		sexp, err := r.sExpression()
+		if err != nil {
+			return nil, err
+		}
+		return NewConsCell(NewSymbol("unquote-splicing"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+	}
+
 	if r.Token.GetKind() == token.TokenKindQuasiquote {
 		nextToken, err := r.GetNextToken()
 		if err != nil {
@@ -159,7 +186,7 @@ func (r *reader) sExpression() (SExpression, error) {
 		}
 		return NewConsCell(car, cdr), nil
 	}
-	return nil, errors.New("Invalid expression: " + strconv.Itoa(int(r.GetKind())))
+	return nil, errors.New("Invalid expression: " + r.Token.String())
 }
 
 func (r *reader) Read() (SExpression, error) {
