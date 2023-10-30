@@ -59,17 +59,13 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 		return nil, errors.New("foreach: second argument must be a lambda with a list of arguments")
 	}
 
-	bodyArg, err := ToArray(body.(ConsCell).GetCdr().(ConsCell).GetCar())
+	bodyArg := body.(ConsCell).GetCdr().(ConsCell).GetCar()
 
-	if err != nil {
-		return nil, err
+	if bodyArg.Type() != "cons_cell" {
+		return nil, errors.New("foreach: second argument must be a lambda with a list of arguments")
 	}
 
-	bodyArgSize := len(bodyArg)
-
-	if bodyArgSize != 1 && bodyArgSize != 2 {
-		return nil, errors.New("foreach: second argument must be a lambda with one or two arguments")
-	}
+	hasParamsForIndex := !bodyArg.IsList()
 
 	//check if list is a list
 	if !list.IsList() {
@@ -81,12 +77,12 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 
 	for i := 0; i < len(listArr); i++ {
 		var run SExpression
-		if bodyArgSize == 1 {
+		if hasParamsForIndex {
+			run = NewConsCell(body,
+				NewConsCell(listArr[i], NewInt(int64(i))))
+		} else {
 			run = NewConsCell(body,
 				NewConsCell(listArr[i], NewConsCell(NewNil(), NewNil())))
-		} else if bodyArgSize == 2 {
-			run = NewConsCell(body,
-				NewConsCell(listArr[i], NewConsCell(NewInt(int64(i)), NewConsCell(NewNil(), NewNil()))))
 		}
 		Eval(ctx, run, env)
 	}
