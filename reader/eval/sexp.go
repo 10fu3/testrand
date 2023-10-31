@@ -234,6 +234,39 @@ func NewConsCell(car SExpression, cdr SExpression) ConsCell {
 	}
 }
 
+func JoinList(left, right SExpression) (ConsCell, error) {
+
+	if !left.IsList() {
+		return nil, errors.New("left is not a list")
+	}
+
+	if !right.IsList() {
+		return nil, errors.New("right is not a list")
+	}
+
+	baseRoot := left.(*_cons_cell)
+	baseLook := baseRoot
+
+	copyRoot := &_cons_cell{
+		Car: NewNil(),
+		Cdr: NewNil(),
+	}
+	copyLook := copyRoot
+
+	for {
+		if IsEmptyList(baseLook.GetCdr()) {
+			copyLook.Car = baseLook.GetCar()
+			copyLook.Cdr = right
+			return copyRoot, nil
+		} else {
+			copyLook.Car = baseLook.GetCar()
+			copyLook.Cdr = NewConsCell(NewNil(), NewNil())
+			copyLook = copyLook.Cdr.(*_cons_cell)
+			baseLook = baseLook.GetCdr().(*_cons_cell)
+		}
+	}
+}
+
 func (cell *_cons_cell) Type() string {
 	return "cons_cell"
 }
