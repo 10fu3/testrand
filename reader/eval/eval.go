@@ -14,6 +14,8 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 		return sexp, nil
 	case "bool":
 		return sexp, nil
+	case "environment":
+		return sexp, nil
 	case "nil":
 		return sexp, nil
 	case "symbol":
@@ -66,4 +68,46 @@ func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpr
 	}
 
 	return NewConsCell(carEvaluated, cdrEvaluated), nil
+}
+
+type _eval struct{}
+
+func (_ *_eval) Type() string {
+	return "subroutine.eval"
+}
+
+func (_ *_eval) String() string {
+	return "#<subr eval>"
+}
+
+func (_ *_eval) IsList() bool {
+	return false
+}
+
+func (e *_eval) Equals(sexp SExpression) bool {
+	return e.Type() == sexp.Type()
+}
+
+func (_ *_eval) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+	argsArr, err := ToArray(args)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(argsArr) != 2 {
+		return nil, errors.New("malformed eval")
+	}
+
+	targetEnv, err := Eval(ctx, argsArr[1].(Environment), env)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return Eval(ctx, argsArr[0], targetEnv.(Environment))
+}
+
+func NewEval() SExpression {
+	return &_eval{}
 }
