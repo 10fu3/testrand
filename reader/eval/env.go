@@ -2,6 +2,7 @@ package eval
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"testrand/reader/globalEnv"
 	"testrand/reader/infra"
@@ -15,6 +16,7 @@ type Environment interface {
 	GetParentId() string
 	Define(symbol Symbol, sexp SExpression)
 	Set(symbol Symbol, sexp SExpression) error
+	SExpression
 }
 
 type environment struct {
@@ -67,6 +69,25 @@ func (e *environment) GetParentId() string {
 	return e.parentId
 }
 
+func (e *environment) Type() string {
+	return "environment"
+}
+
+func (e *environment) String() string {
+	return fmt.Sprintf("#<environment %s>", e.id)
+}
+
+func (e *environment) IsList() bool {
+	return false
+}
+
+func (e *environment) Equals(args SExpression) bool {
+	if "environment" != args.Type() {
+		return false
+	}
+	return e.id == args.(*environment).id
+}
+
 func NewEnvironment(parent Environment) (Environment, error) {
 	env := &environment{
 		id:             uuid.NewString(),
@@ -82,40 +103,44 @@ func NewEnvironment(parent Environment) (Environment, error) {
 
 func GetDefaultFunction() map[string]SExpression {
 	return map[string]SExpression{
-		"car":                NewCar(),
-		"cdr":                NewCdr(),
-		"and":                NewAnd(),
-		"or":                 NewOr(),
-		"if":                 NewIf(),
-		"eq?":                NewIsEq(),
-		"not":                NewIsNot(),
-		"define":             NewDefine(),
-		"set":                NewSet(),
-		"loop":               NewLoop(),
-		"wait":               NewWait(),
-		"+":                  NewAdd(),
-		"begin":              NewBegin(),
-		"lambda":             NewLambda(),
-		"quote":              NewQuote(),
-		"quasiquote":         NewQuasiquote(),
-		"heavy":              NewHeavy(),
-		"print":              NewPrint(),
-		"println":            NewPrintln(),
-		"transaction":        NewTransaction(),
-		"global-set":         NewGlobalSet(),
-		"global-get":         NewGlobalGet(),
-		"global-get-all":     NewGlobalGetAll(),
-		"cd":                 NewCurrentDirectory(),
-		"read-file-line":     NewFileReadLine(),
-		"new-hashmap":        NewNativeHashmap(),
-		"put-hashmap":        NewPutNativeHashmap(),
-		"get-hashmap":        NewGetNativeHashmap(),
-		"pair-loop-hashmap":  NewKeyValuePairNativeHashmap(),
-		"get-now-time-micro": NewGetNowTimeMicro(),
-		"string-append":      NewStringAppend(),
-		"string-split":       NewStringSplit(),
-		"string-len":         NewStringLen(),
-		"foreach":            NewForeach(),
+		"car":                     NewCar(),
+		"cdr":                     NewCdr(),
+		"and":                     NewAnd(),
+		"or":                      NewOr(),
+		"if":                      NewIf(),
+		"eq?":                     NewIsEq(),
+		"not":                     NewIsNot(),
+		"define":                  NewDefine(),
+		"set":                     NewSet(),
+		"loop":                    NewLoop(),
+		"wait":                    NewWait(),
+		"+":                       NewAdd(),
+		"begin":                   NewBegin(),
+		"lambda":                  NewLambda(),
+		"quote":                   NewQuote(),
+		"quasiquote":              NewQuasiquote(),
+		"heavy":                   NewHeavy(),
+		"print":                   NewPrint(),
+		"println":                 NewPrintln(),
+		"transaction":             NewTransaction(),
+		"global-set":              NewGlobalSet(),
+		"global-get":              NewGlobalGet(),
+		"global-get-all":          NewGlobalGetAll(),
+		"cd":                      NewCurrentDirectory(),
+		"read-file-line":          NewFileReadLine(),
+		"new-hashmap":             NewNativeHashmap(),
+		"put-hashmap":             NewPutNativeHashmap(),
+		"get-hashmap":             NewGetNativeHashmap(),
+		"pair-loop-hashmap":       NewKeyValuePairNativeHashmap(),
+		"get-now-time-micro":      NewGetNowTimeMicro(),
+		"string-append":           NewStringAppend(),
+		"string-split":            NewStringSplit(),
+		"string-len":              NewStringLen(),
+		"foreach":                 NewForeach(),
+		"apply":                   NewApply(),
+		"eval":                    NewEval(),
+		"interaction-environment": NewInteractionEnvironment(),
+		"this-environment":        NewThisEnvironment(),
 	}
 }
 
