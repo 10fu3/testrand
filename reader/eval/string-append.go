@@ -34,7 +34,10 @@ func (_ *_string_append) Apply(ctx context.Context, env Environment, args SExpre
 
 	var str string
 	for i := 0; i < len(arr); i++ {
-		str += arr[i].String()
+		if "string" != arr[i].Type() {
+			return nil, errors.New("need args type is string, but got " + arr[i].Type())
+		}
+		str += arr[i].(Str).GetValue()
 	}
 	return NewString(str), nil
 }
