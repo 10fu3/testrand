@@ -142,6 +142,10 @@ func GetDefaultFunction() map[string]SExpression {
 		"interaction-environment": NewInteractionEnvironment(),
 		"this-environment":        NewThisEnvironment(),
 		"let":                     NewLet(),
+		"string->symbol":          NewStringToSymbol(),
+		"symbol->string":          NewSymbolName(),
+		"symbol-name":             NewSymbolName(),
+		"to-string":               NewToString(),
 	}
 }
 
