@@ -349,7 +349,7 @@ func ToConsCell(list []SExpression) ConsCell {
 		look = (look.Cdr).(*_cons_cell)
 	}
 	if beforeLook != nil {
-		beforeLook.Cdr = NewNil()
+		beforeLook.Cdr = NewConsCell(NewNil(), NewNil())
 	}
 	return head
 }
