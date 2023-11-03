@@ -94,5 +94,6 @@ func SetupEtcd(sessionId string) (*SuperGlobalEnv, error) {
 		log.Fatal(err)
 		return nil, err
 	}
+	fmt.Println("etcd setup success")
 	return &SuperGlobalEnv{EtcdClient: etcdClient, SessionId: sessionId}, nil
 }
