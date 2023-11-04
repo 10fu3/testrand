@@ -21,7 +21,7 @@ func (s *_string_to_symbol) Apply(ctx context.Context, env Environment, args SEx
 		return nil, errors.New("need arguments type is string, but got " + arr[0].Type())
 	}
 
-	return NewSymbol(arr[0].(Str).String()), nil
+	return NewSymbol(arr[0].(Str).GetValue()), nil
 }
 
 func (s *_string_to_symbol) Type() string {
