@@ -12,11 +12,11 @@ type _global_set struct {
 }
 
 func (_ *_global_set) Type() string {
-	return "subroutine.global_set"
+	return "special_form.global_set"
 }
 
 func (_ *_global_set) String() string {
-	return "#<subr global_set>"
+	return "#<syntax global_set>"
 }
 
 func (_ *_global_set) IsList() bool {
