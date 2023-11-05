@@ -19,7 +19,7 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
 	fromAddr := fmt.Sprintf("localhost:%d", port)
 	sexpBody := sendSexp.String()
-	id := env.GetId()
+	id := env.GetParentId()
 	values, err := json.Marshal(TaskAddRequest{
 		Body:      &sexpBody,
 		From:      &fromAddr,
