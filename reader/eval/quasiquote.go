@@ -31,13 +31,18 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 	pair := x.(ConsCell)
 	car := pair.GetCar()
 	cdr := pair.GetCdr()
-	if car.Equals(NewSymbol("unquote")) || car.Equals(NewSymbol("unquote-splicing")) {
+	if car.Equals(NewSymbol("unquote")) {
 		if cdr.Type() != "cons_cell" {
 			return nil, errors.New("unquote must be followed by a list")
 		}
 		unquoted, err := Eval(ctx, cdr.(ConsCell).GetCar(), env)
 		return unquoted, err
 	}
+
+	if car.Equals(NewSymbol("quasiquote")) {
+		return x, nil
+	}
+
 	if car.Type() == "cons_cell" && (car.(ConsCell).GetCar()).Equals(NewSymbol("unquote-splicing")) {
 		innerPair := car.(ConsCell).GetCdr().(ConsCell)
 		innerPairCarQuoteEvaluated, err := _innerEvalQuasiquote(ctx, env, innerPair.GetCar())
@@ -86,7 +91,7 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 	return NewConsCell(carEvaluated, cdrEvaluated), nil
 }
 
-//this function is lisp interpter function for quasiquote
+// this function is lisp interpter function for quasiquote
 func (_ *_quasiquote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	arr, err := ToArray(args)
 
