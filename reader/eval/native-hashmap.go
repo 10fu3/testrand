@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"sync"
 )
 
 //implement golang native hashmap on lisp
@@ -11,6 +12,7 @@ import (
 type _native_hashmap struct {
 	id string
 	M  map[string]SExpression
+	sync.Mutex
 }
 
 func (_ *_native_hashmap) Type() string {
@@ -98,7 +100,9 @@ func (_ *_put_native_hashmap) Apply(ctx context.Context, env Environment, argume
 		return nil, errors.New("need arguments type is string")
 	}
 
+	args[0].(*_native_hashmap).Lock()
 	args[0].(*_native_hashmap).M[args[1].(Str).GetValue()] = args[2]
+	args[0].(*_native_hashmap).Unlock()
 
 	return args[2], nil
 }
@@ -143,7 +147,9 @@ func (_ *_get_native_hashmap) Apply(ctx context.Context, env Environment, argume
 		return nil, errors.New("need arguments type is string")
 	}
 
+	args[0].(*_native_hashmap).Lock()
 	v, ok := args[0].(*_native_hashmap).M[args[1].(Str).GetValue()]
+	args[0].(*_native_hashmap).Unlock()
 
 	if !ok {
 		if 3 == len(args) {
@@ -199,6 +205,7 @@ func (_ *_key_value_pair_native_hashmap) Apply(ctx context.Context, env Environm
 		return nil, err
 	}
 
+	nativeHashMap.(*_native_hashmap).Lock()
 	//for loop key value
 	for key, value := range nativeHashMap.(*_native_hashmap).M {
 		evalTarget := NewConsCell(keyValueLambda,
@@ -206,6 +213,7 @@ func (_ *_key_value_pair_native_hashmap) Apply(ctx context.Context, env Environm
 
 		Eval(ctx, evalTarget, env)
 	}
+	nativeHashMap.(*_native_hashmap).Unlock()
 
 	return NewNil(), nil
 }
