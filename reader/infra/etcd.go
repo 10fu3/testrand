@@ -18,6 +18,7 @@ type ISuperGlobalEnv interface {
 		Key   string
 		Value string
 	}, error)
+	ClearAll() error
 	GetClient() *clientv3.Client
 }
 
@@ -83,7 +84,12 @@ func (env *SuperGlobalEnv) Put(key string, value string, option clientv3.OpOptio
 	return err
 }
 
-//setup etcd
+func (env *SuperGlobalEnv) ClearAll() error {
+	_, err := env.EtcdClient.Delete(context.Background(), fmt.Sprintf("/env/%s", env.SessionId), clientv3.WithPrefix())
+	return err
+}
+
+// setup etcd
 func SetupEtcd(sessionId string) (*SuperGlobalEnv, error) {
 	//setup etcd
 	etcdClient, err := clientv3.New(clientv3.Config{

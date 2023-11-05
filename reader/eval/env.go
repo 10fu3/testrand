@@ -126,6 +126,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"global-set":              NewGlobalSet(),
 		"global-get":              NewGlobalGet(),
 		"global-get-all":          NewGlobalGetAll(),
+		"global-clear-all":        NewGlobalClearAll(),
 		"cd":                      NewCurrentDirectory(),
 		"read-file-line":          NewFileReadLine(),
 		"new-hashmap":             NewNativeHashmap(),
