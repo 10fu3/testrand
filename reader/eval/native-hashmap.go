@@ -162,11 +162,11 @@ func NewGetNativeHashmap() SExpression {
 type _key_value_pair_native_hashmap struct{}
 
 func (_ *_key_value_pair_native_hashmap) Type() string {
-	return "subroutine.kv-set-native-hashmap"
+	return "special_form.kv-set-native-hashmap"
 }
 
 func (_ *_key_value_pair_native_hashmap) String() string {
-	return "#<subr kv-set-native-hashmap>"
+	return "#<syntax kv-set-native-hashmap>"
 }
 
 func (_ *_key_value_pair_native_hashmap) IsList() bool {
@@ -187,14 +187,20 @@ func (_ *_key_value_pair_native_hashmap) Apply(ctx context.Context, env Environm
 		return nil, errors.New("need arguments size is 2")
 	}
 
-	if args[0].Type() != "native.hashmap" {
+	nativeHashMap, err := Eval(ctx, args[0], env)
+
+	if err != nil || nativeHashMap.Type() != "native.hashmap" {
 		return nil, errors.New("need arguments type is native.hashmap")
 	}
 
-	keyValueLambda := args[1]
+	keyValueLambda, err := Eval(ctx, args[1], env)
+
+	if err != nil {
+		return nil, err
+	}
 
 	//for loop key value
-	for key, value := range args[0].(*_native_hashmap).M {
+	for key, value := range nativeHashMap.(*_native_hashmap).M {
 		evalTarget := NewConsCell(keyValueLambda,
 			NewConsCell(NewString(key), value))
 
