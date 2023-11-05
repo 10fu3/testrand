@@ -35,7 +35,7 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 
 	cell := args.(ConsCell)
 
-	name := cell.GetCar().(Str)
+	name := cell.GetCar().(Symbol)
 
 	defaultArg := (func() SExpression {
 		if IsEmptyList(cell.GetCdr()) {

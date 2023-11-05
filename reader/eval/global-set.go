@@ -34,6 +34,10 @@ func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpressi
 
 	cell := args.(ConsCell)
 
+	if cell.GetCar().Type() != "symbol" {
+		return nil, errors.New("need 1st arguments type is symbol")
+	}
+
 	name := cell.GetCar().(Symbol)
 
 	if IsEmptyList(cell.GetCdr()) {
