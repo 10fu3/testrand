@@ -24,7 +24,12 @@ func (l *_let) Equals(sexp SExpression) bool {
 }
 
 func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+
+	if args.Type() != "cons_cell" {
+		return nil, errors.New("malformed let")
+	}
+
+	arr, err := ToArray(args.(ConsCell))
 
 	if err != nil {
 		return nil, err
@@ -36,21 +41,26 @@ func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SE
 	bindings := arr[0]
 	body := arr[1]
 
-	bindingsArr, err := ToArray(bindings.(ConsCell).GetCar())
+	bindingsArr, err := ToArray(bindings)
 	if err != nil {
 		return nil, err
-	}
-
-	if len(bindingsArr)%2 != 0 {
-		return nil, errors.New("malformed let")
 	}
 
 	temporaryParams := make([]SExpression, 0)
 	params := make([]SExpression, 0)
 
-	for i := 0; i < len(bindingsArr); i += 2 {
-		temporaryParams = append(temporaryParams, bindingsArr[i])
-		evaluatedParams, err := Eval(ctx, bindingsArr[i+1], env)
+	for i := 0; i < len(bindingsArr); i++ {
+		varnameValuePair, err := ToArray(bindingsArr[i])
+		if err != nil {
+			return nil, err
+		}
+
+		if len(varnameValuePair) != 2 || varnameValuePair[0].Type() != "symbol" {
+			return nil, errors.New("malformed let")
+		}
+
+		temporaryParams = append(temporaryParams, varnameValuePair[0])
+		evaluatedParams, err := Eval(ctx, varnameValuePair[1], env)
 		if err != nil {
 			return nil, err
 		}
