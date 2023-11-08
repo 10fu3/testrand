@@ -15,9 +15,9 @@ import (
 )
 
 type TaskAddRequest struct {
-	Body      *string `json:"body"`
-	From      *string `json:"from"`
-	SessionId *string `json:"session_id"`
+	Body              *string `json:"body"`
+	From              *string `json:"from"`
+	GlobalNamespaceId *string `json:"global_namespace_id"`
 }
 
 func createListener() (l net.Listener, close func()) {
@@ -81,7 +81,7 @@ func StartMockServer(ctx context.Context) {
 			})
 			return
 		}
-		if req.SessionId == nil {
+		if req.GlobalNamespaceId == nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "ng",
 				"message": "not allowed empty session_id",
@@ -93,7 +93,7 @@ func StartMockServer(ctx context.Context) {
 				fmt.Println("req err: " + err.Error())
 				return
 			}
-			env, err := NewGlobalEnvironmentById(*req.SessionId)
+			env, err := NewGlobalEnvironmentById(*req.GlobalNamespaceId)
 
 			if err != nil {
 				panic(err)

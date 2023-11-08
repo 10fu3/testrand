@@ -21,9 +21,9 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 	sexpBody := sendSexp.String()
 	id := env.GetParentId()
 	values, err := json.Marshal(TaskAddRequest{
-		Body:      &sexpBody,
-		From:      &fromAddr,
-		SessionId: &id,
+		Body:              &sexpBody,
+		From:              &fromAddr,
+		GlobalNamespaceId: &id,
 	})
 
 	transport := http.Transport{
