@@ -21,7 +21,7 @@ func LoadBalancingRegister(self struct {
 
 	jsonContent := map[string]string{
 		"machine_type": "reader",
-		"from":         fmt.Sprintf("http://%s:%d", self.host, self.port),
+		"from":         fmt.Sprintf("http://%s:%s", self.host, self.port),
 	}
 	jsonByte, err := json.Marshal(jsonContent)
 	if err != nil {
