@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"os"
 	"testrand/reader/eval"
 )
@@ -12,6 +13,7 @@ import (
 func main() {
 	fmt.Println("light client")
 	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = io.Discard
 	ctx := context.Background()
 	completed, addMethod := eval.StartReceiveServer(ctx)
 	eval.PutReceiveQueueMethod = addMethod
