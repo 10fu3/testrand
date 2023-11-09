@@ -52,7 +52,7 @@ func StartMockServer(ctx context.Context) {
 	}{host: localIp, port: randomPort}, struct {
 		host string
 		port string
-	}{host: conf.ProxyHost, port: randomPort})
+	}{host: conf.ProxyHost, port: conf.ProxyPort})
 
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
