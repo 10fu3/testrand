@@ -12,9 +12,13 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"testrand/config"
 )
 
 func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environment, port int) {
+
+	conf := config.Get()
+
 	reqId := uuid.NewString()
 	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
 	fromAddr := fmt.Sprintf("localhost:%d", port)
@@ -42,7 +46,7 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 		"from": fromAddr,
 	}
 	sendReqBodyByte, err := json.Marshal(sendReqBody)
-	send, err := http.Post("http://localhost/send-request", "application/json", bytes.NewBuffer(sendReqBodyByte))
+	send, err := http.Post(fmt.Sprintf("http://%s:%s/send-request", conf.ProxyHost, conf.ProxyPort), "application/json", bytes.NewBuffer(sendReqBodyByte))
 	sendTargetResult := struct {
 		Addr string `json:"addr"`
 	}{}
