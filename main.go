@@ -11,21 +11,20 @@ import (
 func main() {
 	alreadyFlagChan := make(chan struct{})
 	ctx := context.Background()
+	env, err := eval.NewGlobalEnvironment()
+	if err != nil {
+		panic(err)
+	}
 	go func() {
 		go func() {
 			eval.StartMockServer(ctx)
 		}()
-		completed, addMethod := eval.StartReceiveServer(ctx)
+		completed, addMethod := eval.StartReceiveServer(env.GetParentId(), ctx)
 		eval.PutReceiveQueueMethod = addMethod
 		alreadyFlagChan <- struct{}{}
 		completed()
 	}()
 	<-alreadyFlagChan
-	env, err := eval.NewGlobalEnvironment()
-
-	if err != nil {
-		panic(err)
-	}
 
 	stdin := bufio.NewReader(os.Stdin)
 	read := eval.New(stdin)
