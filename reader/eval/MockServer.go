@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"testrand/config"
+	"testrand/util"
 	"time"
 )
 
@@ -32,11 +34,25 @@ func createListener() (l net.Listener, close func()) {
 
 func StartMockServer(ctx context.Context) {
 
+	conf := config.Get()
+
 	ramdomListener, _close := createListener()
-	randomPort := ramdomListener.Addr().(*net.TCPAddr).Port
+	randomPort := fmt.Sprintf("%d", ramdomListener.Addr().(*net.TCPAddr).Port)
 	_close()
 
-	LoadBalancingRegister("localhost", randomPort)
+	localIp, err := util.GetLocalIP()
+
+	if err != nil {
+		panic(err)
+	}
+
+	LoadBalancingRegister(struct {
+		host string
+		port string
+	}{host: localIp, port: randomPort}, struct {
+		host string
+		port string
+	}{host: conf.ProxyHost, port: randomPort})
 
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
@@ -137,5 +153,5 @@ func StartMockServer(ctx context.Context) {
 			"id":     requestId,
 		})
 	})
-	engine.Run(fmt.Sprintf(":%d", randomPort))
+	engine.Run(fmt.Sprintf(":%s", randomPort))
 }

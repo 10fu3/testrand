@@ -7,17 +7,28 @@ import (
 	"net/http"
 )
 
-func LoadBalancingRegister(host string, port int) {
+func LoadBalancingRegister(self struct {
+	host string
+	port string
+}, loadBalancer struct {
+	host string
+	port string
+}) {
+
+	if self.host == loadBalancer.host {
+		loadBalancer.host = "localhost"
+	}
+
 	jsonContent := map[string]string{
 		"machine_type": "reader",
-		"from":         fmt.Sprintf("http://%s:%d", host, port),
+		"from":         fmt.Sprintf("http://%s:%d", self.host, self.port),
 	}
 	jsonByte, err := json.Marshal(jsonContent)
 	if err != nil {
 		panic(err)
 	}
 	sendBodyBuff := bytes.NewBuffer(jsonByte)
-	post, err := http.Post("http://localhost/register", "application/json", sendBodyBuff)
+	post, err := http.Post(fmt.Sprintf("http://%s:%d", loadBalancer.host, loadBalancer.port), "application/json", sendBodyBuff)
 	if err != nil {
 		panic(err)
 	}
