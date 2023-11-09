@@ -135,7 +135,11 @@ func StartMockServer(ctx context.Context) {
 			sendBodyBytes, err := json.Marshal(&sendBody)
 			sendBodyBuff := bytes.NewBuffer(sendBodyBytes)
 
-			_, err = http.Post(fmt.Sprintf("http://%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
+			sendAddr := fmt.Sprintf("http://%s/receive/%s", *req.From, requestId)
+
+			fmt.Println("sendAddr:", sendAddr)
+
+			_, err = http.Post(sendAddr, "application/json", sendBodyBuff)
 
 			if err != nil {
 				fmt.Println(err)
@@ -145,7 +149,7 @@ func StartMockServer(ctx context.Context) {
 					break
 				}
 				time.Sleep(time.Second * 3)
-				_, err = http.Post(fmt.Sprintf("http://%s/receive/%s", *req.From, requestId), "application/json", sendBodyBuff)
+				_, err = http.Post(sendAddr, "application/json", sendBodyBuff)
 			}
 		}()
 		c.JSON(http.StatusOK, gin.H{
