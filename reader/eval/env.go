@@ -164,6 +164,7 @@ func NewGlobalEnvironment() (Environment, error) {
 	}
 	env.globalEnv = env
 	globalEnv.Put(env.id, env)
+
 	return env, err
 }
 

@@ -46,7 +46,7 @@ func StartMockServer(ctx context.Context) {
 		panic(err)
 	}
 
-	LoadBalancingRegister(struct {
+	LoadBalancingRegisterForHeavy(struct {
 		host string
 		port string
 	}{host: localIp, port: randomPort}, struct {

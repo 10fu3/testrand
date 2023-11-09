@@ -7,14 +7,46 @@ import (
 	"github.com/gin-gonic/gin"
 	"strings"
 	"sync"
+	"testrand/config"
 	"testrand/reader/globalEnv"
+	"testrand/util"
 )
 
 var PutReceiveQueueMethod func(evnId string, reqId string, onReceive SExpression)
 
-func StartReceiveServer(ctx context.Context) (func(), func(evnId string, reqId string, onReceive SExpression)) {
+func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(evnId string, reqId string, onReceive SExpression)) {
 	m := sync.Map{}
 	router := gin.Default()
+
+	localIp, err := util.GetLocalIP()
+
+	if err != nil {
+		panic(err)
+	}
+
+	conf := config.Get()
+
+	LoadBalancingRegisterForClient(struct {
+		host  string
+		port  string
+		envId string
+	}{
+		host:  localIp,
+		port:  "4040",
+		envId: globalNamespaceId,
+	}, struct {
+		host string
+		port string
+	}{
+		host: conf.ProxyHost,
+		port: conf.ProxyPort,
+	})
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
 	router.POST("/receive/:id", func(c *gin.Context) {
 		var req struct {
 			Result string `json:"result"`
