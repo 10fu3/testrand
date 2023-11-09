@@ -13,15 +13,16 @@ import (
 	"net"
 	"net/http"
 	"testrand/config"
+	"testrand/util"
 )
 
-func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environment, port int) {
+func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environment, fromHost string, fromPort string) {
 
 	conf := config.Get()
 
 	reqId := uuid.NewString()
 	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
-	fromAddr := fmt.Sprintf("localhost:%d", port)
+	fromAddr := fmt.Sprintf("%s:%s", fromHost, fromPort)
 	sexpBody := sendSexp.String()
 	id := env.GetParentId()
 	values, err := json.Marshal(TaskAddRequest{
@@ -101,11 +102,18 @@ func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpressi
 		return nil, errors.New("transaction can not use in heavy")
 	}
 
+	conf := config.Get()
+	ip, err := util.GetLocalIP()
+
+	if err != nil {
+		return nil, err
+	}
+
 	if 1 == len(args) {
-		SendSExpression(args[0], nil, env, 4040)
+		SendSExpression(args[0], nil, env, ip, conf.SelfOnCompletePort)
 	}
 	if 2 == len(args) {
-		SendSExpression(args[0], args[1], env, 4040)
+		SendSExpression(args[0], args[1], env, ip, conf.SelfOnCompletePort)
 	}
 	return nil, err
 }

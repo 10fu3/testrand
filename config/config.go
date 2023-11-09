@@ -8,10 +8,11 @@ import (
 import _ "github.com/joho/godotenv"
 
 type Value struct {
-	EtcdHost  string `env:"ETCD_HOST" envDefault:"localhost"`
-	EtcdPort  string `env:"ETCD_PORT" envDefault:"2379"`
-	ProxyHost string `env:"PROXY_HOST" envDefault:"localhost"`
-	ProxyPort string `env:"PROXY_PORT" envDefault:"8080"`
+	EtcdHost           string `env:"ETCD_HOST" envDefault:"localhost"`
+	EtcdPort           string `env:"ETCD_PORT" envDefault:"2379"`
+	ProxyHost          string `env:"PROXY_HOST" envDefault:"localhost"`
+	ProxyPort          string `env:"PROXY_PORT" envDefault:"8080"`
+	SelfOnCompletePort string `env:"SELF_ON_COMPLETE_PORT" envDefault:"4040"`
 }
 
 func Get() *Value {
