@@ -55,13 +55,10 @@ func (_ *_loop) Apply(ctx context.Context, env Environment, args SExpression) (S
 			return nil, nil
 		}
 
-		result, err := Eval(ctx, rawForms.GetCar(), env)
+		_, err := Eval(ctx, rawForms.GetCar(), env)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
-		}
-		if result != nil {
-			fmt.Println(result)
 		}
 	}
 }
