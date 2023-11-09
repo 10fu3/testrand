@@ -7,6 +7,7 @@ import (
 	"go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
 	"log"
+	"testrand/config"
 	"time"
 )
 
@@ -91,9 +92,10 @@ func (env *SuperGlobalEnv) ClearAll() error {
 
 // setup etcd
 func SetupEtcd(sessionId string) (*SuperGlobalEnv, error) {
+	conf := config.Get()
 	//setup etcd
 	etcdClient, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"http://localhost:2379"},
+		Endpoints:   []string{fmt.Sprintf("http://%s:%s", conf.EtcdHost, conf.EtcdPort)},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
