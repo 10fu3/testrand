@@ -28,7 +28,7 @@ func LoadBalancingRegister(self struct {
 		panic(err)
 	}
 	sendBodyBuff := bytes.NewBuffer(jsonByte)
-	post, err := http.Post(fmt.Sprintf("http://%s:%s", loadBalancer.host, loadBalancer.port), "application/json", sendBodyBuff)
+	post, err := http.Post(fmt.Sprintf("http://%s:%s/register", loadBalancer.host, loadBalancer.port), "application/json", sendBodyBuff)
 	if err != nil {
 		panic(err)
 	}
