@@ -81,6 +81,10 @@ func (env *SuperGlobalEnv) GetAll() ([]struct {
 }
 
 func (env *SuperGlobalEnv) Put(key string, value string, option clientv3.OpOption) error {
+	if option == nil {
+		_, err := env.EtcdClient.Put(context.Background(), key, value, option)
+		return err
+	}
 	_, err := env.EtcdClient.Put(context.Background(), key, value, option)
 	return err
 }
