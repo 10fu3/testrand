@@ -26,7 +26,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 
 	conf := config.Get()
 
-	LoadBalancingRegisterForClient(struct {
+	err = LoadBalancingRegisterForClient(struct {
 		host  string
 		port  string
 		envId string
@@ -42,47 +42,53 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 		port: conf.ProxyPort,
 	})
 
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "ok",
+	if err == nil {
+
+		router.GET("/health", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"status": "ok",
+			})
 		})
-	})
-	router.POST("/receive/:id", func(c *gin.Context) {
-		var req struct {
-			Result string `json:"result"`
-		}
-		reqId := c.Param("id")
-		err := c.BindJSON(&req)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		sample := strings.NewReader(fmt.Sprintf("%s\n", req.Result))
-		read := New(bufio.NewReader(sample))
-		result, err := read.Read()
-		storedSExpressionEnv, ok := m.Load(reqId)
+		router.POST("/receive/:id", func(c *gin.Context) {
+			var req struct {
+				Result string `json:"result"`
+			}
+			reqId := c.Param("id")
+			err := c.BindJSON(&req)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			sample := strings.NewReader(fmt.Sprintf("%s\n", req.Result))
+			read := New(bufio.NewReader(sample))
+			result, err := read.Read()
+			storedSExpressionEnv, ok := m.Load(reqId)
 
-		if !ok {
-			return
-		}
-		sExpressionEnv := storedSExpressionEnv.(*struct {
-			onReceive SExpression
-			envId     string
+			if !ok {
+				return
+			}
+			sExpressionEnv := storedSExpressionEnv.(*struct {
+				onReceive SExpression
+				envId     string
+			})
+			if sExpressionEnv.onReceive == nil {
+				return
+			}
+			createSExpressionOnReceive :=
+				NewConsCell(sExpressionEnv.onReceive,
+					NewConsCell(result,
+						NewConsCell(NewNil(), NewNil())))
+
+			result, err = Eval(ctx, createSExpressionOnReceive, globalEnv.Get(sExpressionEnv.envId).(Environment))
+
+			if err != nil {
+				fmt.Println(err)
+			}
 		})
-		if sExpressionEnv.onReceive == nil {
-			return
-		}
-		createSExpressionOnReceive :=
-			NewConsCell(sExpressionEnv.onReceive,
-				NewConsCell(result,
-					NewConsCell(NewNil(), NewNil())))
-
-		result, err = Eval(ctx, createSExpressionOnReceive, globalEnv.Get(sExpressionEnv.envId).(Environment))
-
-		if err != nil {
-			fmt.Println(err)
-		}
-	})
+	} else {
+		fmt.Println("load balancing system is occurred error")
+		fmt.Println(err)
+	}
 
 	return func() {
 			router.Run(":4040")

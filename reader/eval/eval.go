@@ -47,7 +47,7 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 		}
 
 	}
-	return nil, errors.New("unknown eval")
+	return nil, errors.New("unknown eval: " + sexp.String())
 }
 
 func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {

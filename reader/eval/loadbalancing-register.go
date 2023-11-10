@@ -42,7 +42,7 @@ func LoadBalancingRegisterForClient(self struct {
 }, loadBalancer struct {
 	host string
 	port string
-}) {
+}) error {
 
 	if self.host == loadBalancer.host {
 		loadBalancer.host = "localhost"
@@ -60,7 +60,8 @@ func LoadBalancingRegisterForClient(self struct {
 	sendBodyBuff := bytes.NewBuffer(jsonByte)
 	post, err := http.Post(fmt.Sprintf("http://%s:%s/register-client", loadBalancer.host, loadBalancer.port), "application/json", sendBodyBuff)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Printf("regist result: %d\n", post.StatusCode)
+	return nil
 }
