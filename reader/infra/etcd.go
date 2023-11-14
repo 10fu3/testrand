@@ -7,6 +7,7 @@ import (
 	"go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
 	"log"
+	"sync"
 	"testrand/config"
 	"time"
 )
@@ -94,14 +95,26 @@ func (env *SuperGlobalEnv) ClearAll() error {
 	return err
 }
 
+var etcdClient *clientv3.Client
+var etcdMutex sync.Mutex
+
 // setup etcd
 func SetupEtcd(sessionId string) (*SuperGlobalEnv, error) {
 	conf := config.Get()
+
+	var err error
+
+	if etcdClient != nil {
+		return &SuperGlobalEnv{EtcdClient: etcdClient, SessionId: sessionId}, nil
+	}
+
+	etcdMutex.Lock()
 	//setup etcd
-	etcdClient, err := clientv3.New(clientv3.Config{
+	etcdClient, err = clientv3.New(clientv3.Config{
 		Endpoints:   []string{fmt.Sprintf("http://%s:%s", conf.EtcdHost, conf.EtcdPort)},
 		DialTimeout: 5 * time.Second,
 	})
+	etcdMutex.Unlock()
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
