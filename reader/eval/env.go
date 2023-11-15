@@ -132,6 +132,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"new-hashmap":             NewNativeHashmap(),
 		"put-hashmap":             NewPutNativeHashmap(),
 		"get-hashmap":             NewGetNativeHashmap(),
+		"hashmap->list":           NewKeyValuePairNativeHashmapToConsCell(),
 		"pair-loop-hashmap":       NewKeyValuePairNativeHashmap(),
 		"get-now-time-micro":      NewGetNowTimeMicro(),
 		"string-append":           NewStringAppend(),
@@ -147,7 +148,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"symbol->string":          NewSymbolName(),
 		"symbol-name":             NewSymbolName(),
 		"to-string":               NewToString(),
-		"hashmap->list":           NewKeyValuePairNativeHashmapToConsCell(),
+		"gc":                      NewForceGC(),
 	}
 }
 

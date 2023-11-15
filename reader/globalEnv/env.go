@@ -20,3 +20,9 @@ func Put(id string, env interface{}) {
 	defer envs.Unlock()
 	envs.m[id] = env
 }
+
+func Delete(id string) {
+	envs.Lock()
+	defer envs.Unlock()
+	delete(envs.m, id)
+}

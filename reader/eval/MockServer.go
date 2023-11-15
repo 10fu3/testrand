@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"testrand/config"
+	"testrand/reader/globalEnv"
 	"testrand/util"
 	"time"
 )
@@ -110,6 +111,7 @@ func StartMockServer(ctx context.Context) {
 				return
 			}
 			env, err := NewGlobalEnvironmentById(*req.GlobalNamespaceId)
+			defer globalEnv.Delete(env.GetId())
 
 			if err != nil {
 				panic(err)
