@@ -165,25 +165,25 @@ func NewGetNativeHashmap() SExpression {
 	return &_get_native_hashmap{}
 }
 
-type _key_value_pair_native_hashmap struct{}
+type _key_value_pair_foreach_native_hashmap struct{}
 
-func (_ *_key_value_pair_native_hashmap) Type() string {
+func (_ *_key_value_pair_foreach_native_hashmap) Type() string {
 	return "special_form.kv-set-native-hashmap"
 }
 
-func (_ *_key_value_pair_native_hashmap) String() string {
+func (_ *_key_value_pair_foreach_native_hashmap) String() string {
 	return "#<syntax kv-set-native-hashmap>"
 }
 
-func (_ *_key_value_pair_native_hashmap) IsList() bool {
+func (_ *_key_value_pair_foreach_native_hashmap) IsList() bool {
 	return false
 }
 
-func (l *_key_value_pair_native_hashmap) Equals(sexp SExpression) bool {
+func (l *_key_value_pair_foreach_native_hashmap) Equals(sexp SExpression) bool {
 	return l.Type() == sexp.Type()
 }
 
-func (_ *_key_value_pair_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_key_value_pair_foreach_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
 	args, err := ToArray(arguments)
 	if err != nil {
 		return nil, err
@@ -219,5 +219,54 @@ func (_ *_key_value_pair_native_hashmap) Apply(ctx context.Context, env Environm
 }
 
 func NewKeyValuePairNativeHashmap() SExpression {
-	return &_key_value_pair_native_hashmap{}
+	return &_key_value_pair_foreach_native_hashmap{}
+}
+
+type _key_value_pair_native_hashmap_to_cons_cell struct{}
+
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) Type() string {
+	return "subroutine.kv-native-hashmap"
+}
+
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) String() string {
+	return "#<subr kv-native-hashmap>"
+}
+
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) IsList() bool {
+	return false
+}
+
+func (l *_key_value_pair_native_hashmap_to_cons_cell) Equals(sexp SExpression) bool {
+	return l.Type() == sexp.Type()
+}
+
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+	args, err := ToArray(arguments)
+	if err != nil {
+		return nil, err
+	}
+
+	if 1 > len(args) {
+		return nil, errors.New("need arguments size is 1")
+	}
+
+	if args[0].Type() != "native.hashmap" {
+		return nil, errors.New("need arguments type is native.hashmap")
+	}
+
+	args[0].(*_native_hashmap).Lock()
+	var top = NewConsCell(NewNil(), NewNil()).(*_cons_cell)
+	var consCell SExpression = top
+	for key, value := range args[0].(*_native_hashmap).M {
+		consCell.(*_cons_cell).Car = (NewConsCell(NewString(key), value))
+		consCell.(*_cons_cell).Cdr = (NewConsCell(NewNil(), NewNil()))
+		consCell = consCell.(*_cons_cell).GetCdr()
+	}
+	args[0].(*_native_hashmap).Unlock()
+
+	return top, nil
+}
+
+func NewKeyValuePairNativeHashmapToConsCell() SExpression {
+	return &_key_value_pair_native_hashmap_to_cons_cell{}
 }
