@@ -75,19 +75,33 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 	//get the list as an array
 	listArr, err := ToArray(list)
 
-	for i := 0; i < len(listArr); i++ {
-		var run SExpression
-		if hasParamsForIndex {
-			run = NewConsCell(body,
-				NewConsCell(listArr[i], NewInt(int64(i))))
-		} else {
-			run = NewConsCell(body,
-				NewConsCell(listArr[i], NewConsCell(NewNil(), NewNil())))
-		}
-		Eval(ctx, run, env)
+	rawClosure, err := Eval(ctx, body, env)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	if rawClosure.Type() != "closure" {
+		return nil, errors.New("foreach: second argument must be a lambda")
+	}
+
+	closure := rawClosure.(*_closure)
+
+	for i := 0; i < len(listArr); i++ {
+		if hasParamsForIndex {
+			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewInt(int64(i)), NewConsCell(NewNil(), NewNil()))))
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewNil(), NewNil())))
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return NewNil(), nil
 }
 
 func NewForeach() SExpression {
