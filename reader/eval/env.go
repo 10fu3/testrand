@@ -147,6 +147,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"symbol->string":          NewSymbolName(),
 		"symbol-name":             NewSymbolName(),
 		"to-string":               NewToString(),
+		"hashmap->list":           NewKeyValuePairNativeHashmapToConsCell(),
 	}
 }
 
