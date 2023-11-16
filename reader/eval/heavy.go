@@ -22,7 +22,7 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 
 	reqId := uuid.NewString()
 	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
-	Put(env.GetId(), env)
+	TopLevelEnvPut(env.GetId(), env)
 	fromAddr := fmt.Sprintf("%s:%s", fromHost, fromPort)
 	sexpBody := sendSexp.String()
 	id := env.GetParentId()

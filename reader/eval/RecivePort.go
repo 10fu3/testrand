@@ -87,7 +87,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 					NewConsCell(result,
 						NewConsCell(NewNil(), NewNil())))
 
-			targetEnv := Get(sExpressionEnv.envId)
+			targetEnv := TopLevelEnvGet(sExpressionEnv.envId)
 
 			result, err = Eval(ctx, createSExpressionOnReceive, targetEnv.(Environment))
 
@@ -96,7 +96,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 				fmt.Println(err)
 			}
 			m.Delete(reqId)
-			Delete(sExpressionEnv.envId)
+			TopLevelEnvDelete(sExpressionEnv.envId)
 			c.Status(http.StatusOK)
 			return nil
 		})

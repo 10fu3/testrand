@@ -196,6 +196,6 @@ func NewGlobalEnvironmentById(id string) (Environment, error) {
 		superGlobalEnv: superGlobalEnv,
 	}
 	env.globalEnv = env
-	Put(env.id, env)
+	TopLevelEnvPut(env.id, env)
 	return env, err
 }
