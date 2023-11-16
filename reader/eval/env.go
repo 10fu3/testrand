@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"sync"
 	"testrand/reader/globalEnv"
 	"testrand/reader/infra"
 )
@@ -26,12 +27,16 @@ type environment struct {
 	globalEnv      Environment
 	superGlobalEnv infra.ISuperGlobalEnv
 	parentId       string
+	mutex          sync.RWMutex
 }
 
 func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
+	e.mutex.RLock()
 	if value, ok := e.frame[symbol.GetValue()]; ok {
+		e.mutex.RUnlock()
 		return value, nil
 	}
+	e.mutex.RUnlock()
 	if e.parent == nil {
 		return nil, errors.New("UndefinedEvaluate")
 	}
@@ -43,14 +48,21 @@ func (e *environment) GetGlobalEnv() Environment {
 }
 
 func (e *environment) Define(symbol Symbol, sexp SExpression) {
+	e.mutex.Lock()
 	e.frame[symbol.GetValue()] = sexp
+	e.mutex.Unlock()
 }
 
 func (e *environment) Set(symbol Symbol, sexp SExpression) error {
+	e.mutex.RLock()
 	if _, ok := e.frame[symbol.GetValue()]; ok {
+		e.mutex.RUnlock()
+		e.mutex.Lock()
 		e.frame[symbol.GetValue()] = sexp
+		e.mutex.Unlock()
 		return nil
 	}
+	e.mutex.RUnlock()
 	if e.parent == nil {
 		return errors.New("UndefinedEvaluate")
 	}
@@ -101,7 +113,6 @@ func NewEnvironment(parent Environment) (Environment, error) {
 		superGlobalEnv: parent.GetSuperGlobalEnv(),
 		parentId:       parent.GetParentId(),
 	}
-	globalEnv.Put(env.id, env)
 	return env, nil
 }
 
@@ -169,7 +180,6 @@ func NewGlobalEnvironment() (Environment, error) {
 		superGlobalEnv: superGlobalEnv,
 	}
 	env.globalEnv = env
-	globalEnv.Put(env.id, env)
 
 	return env, err
 }
