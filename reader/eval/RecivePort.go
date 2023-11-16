@@ -88,7 +88,9 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 					NewConsCell(result,
 						NewConsCell(NewNil(), NewNil())))
 
-			result, err = Eval(ctx, createSExpressionOnReceive, globalEnv.Get(sExpressionEnv.envId).(Environment))
+			targetEnv := globalEnv.Get(sExpressionEnv.envId)
+
+			result, err = Eval(ctx, createSExpressionOnReceive, targetEnv.(Environment))
 
 			if err != nil {
 				m.Delete(reqId)

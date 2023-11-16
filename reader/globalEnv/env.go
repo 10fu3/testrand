@@ -4,14 +4,14 @@ import "sync"
 
 var envs = struct {
 	m map[string]interface{}
-	sync.Mutex
+	sync.RWMutex
 }{
 	m: make(map[string]interface{}),
 }
 
 func Get(id string) interface{} {
-	envs.Lock()
-	defer envs.Unlock()
+	envs.RLock()
+	defer envs.RUnlock()
 	return envs.m[id]
 }
 
