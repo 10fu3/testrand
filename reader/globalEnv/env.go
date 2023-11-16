@@ -23,6 +23,6 @@ func Put(id string, env interface{}) {
 
 func Delete(id string) {
 	envs.Lock()
-	defer envs.Unlock()
 	delete(envs.m, id)
+	envs.Unlock()
 }
