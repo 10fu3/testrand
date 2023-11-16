@@ -54,33 +54,30 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 		return nil, err
 	}
 
-	result, err := func() (SExpression, error) {
-		var err error
-		var result SExpression
-		if ctx.Value("transaction") != nil {
-			transaction := ctx.Value("transaction").(concurrency.STM)
-			existKey := transaction.Rev(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
+	var result SExpression
+	if ctx.Value("transaction") != nil {
+		transaction := ctx.Value("transaction").(concurrency.STM)
+		existKey := transaction.Rev(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
 
-			if defaultArg.TypeId() != "nil" && existKey == 0 {
-				return defaultArg, nil
-			}
-
-			var r = transaction.Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
-			input := strings.NewReader(fmt.Sprintf("%s\n", r))
-			reader := New(bufio.NewReader(input))
-			result, err = reader.Read()
-		} else {
-			r, err := env.GetSuperGlobalEnv().Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
-			if err != nil {
-				return nil, err
-			}
-			input := strings.NewReader(fmt.Sprintf("%s\n", r))
-			reader := New(bufio.NewReader(input))
-			result, err = reader.Read()
+		if defaultArg.TypeId() != "nil" && existKey == 0 {
+			return defaultArg, nil
 		}
-		return result, err
-	}()
 
+		var r = transaction.Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
+		input := strings.NewReader(fmt.Sprintf("%s\n", r))
+		reader := New(bufio.NewReader(input))
+		result, err = reader.Read()
+		reader = nil
+	} else {
+		r, err := env.GetSuperGlobalEnv().Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
+		if err != nil {
+			return nil, err
+		}
+		input := strings.NewReader(fmt.Sprintf("%s\n", r))
+		reader := New(bufio.NewReader(input))
+		result, err = reader.Read()
+		reader = nil
+	}
 	return result, err
 }
 

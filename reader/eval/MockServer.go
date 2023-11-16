@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"net"
 	"net/http"
 	"runtime"
@@ -45,7 +46,12 @@ func StartMockServer(ctx context.Context) {
 		port string
 	}{host: conf.ProxyHost, port: conf.ProxyPort})
 
-	engine := fiber.New()
+	engine := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
+
+	engine.Use(pprof.New())
 
 	engine.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(struct {
@@ -112,6 +118,7 @@ func StartMockServer(ctx context.Context) {
 			}
 			result, err := Eval(ctx, readSexp, env)
 			globalEnv.Delete(env.GetId())
+			env = nil
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -140,7 +147,6 @@ func StartMockServer(ctx context.Context) {
 				time.Sleep(time.Second * 3)
 				_, err = http.Post(sendAddr, "application/json", sendBodyBuff)
 			}
-
 		}()
 		return c.JSON(fiber.Map{
 			"status": "ok",

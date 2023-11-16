@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strings"
@@ -18,7 +19,10 @@ var PutReceiveQueueMethod func(evnId string, reqId string, onReceive SExpression
 
 func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(evnId string, reqId string, onReceive SExpression)) {
 	m := sync.Map{}
-	router := fiber.New()
+	router := fiber.New(fiber.Config{
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+	})
 
 	localIp, err := util.GetLocalIP()
 
