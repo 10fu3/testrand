@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"net"
 	"net/http"
 	"runtime"
@@ -55,55 +55,52 @@ func StartMockServer(ctx context.Context) {
 		port string
 	}{host: conf.ProxyHost, port: conf.ProxyPort})
 
-	engine := gin.Default()
-	engine.GET("/", func(c *gin.Context) {
-		c.JSON(200, struct {
+	engine := fiber.New()
+
+	engine.Get("/", func(c *fiber.Ctx) error {
+		return c.JSON(struct {
 			Message string `json:"message"`
 		}{Message: "OK"})
 	})
-	engine.GET("/routine-count", func(c *gin.Context) {
+	engine.Get("/routine-count", func(c *fiber.Ctx) error {
 		fmt.Printf("health check: %d\n", runtime.NumGoroutine())
-		c.JSON(200, struct {
+		return c.JSON(struct {
 			Count int `json:"count"`
 		}{Count: runtime.NumGoroutine()})
 	})
-	engine.GET("/health", func(c *gin.Context) {
+	engine.Get("/health", func(c *fiber.Ctx) error {
 		fmt.Println("health check")
-		c.JSON(200, struct {
+		return c.JSON(struct {
 			Status string `json:"status"`
 		}{Status: "OK"})
 	})
-	engine.POST("/add-task/:id", func(c *gin.Context) {
-		requestId := c.Param("id")
+	engine.Post("/add-task/:id", func(c *fiber.Ctx) error {
+		requestId := c.Params("id")
 		var req TaskAddRequest
-		err := c.ShouldBind(&req)
+		err := c.BodyParser(&req)
 		if requestId == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
+			return c.JSON(fiber.Map{
 				"status":  "ng",
 				"message": "not allowed empty id",
 			})
-			return
 		}
 		if req.From == nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			return c.JSON(fiber.Map{
 				"status":  "ng",
 				"message": "not allowed empty port",
 			})
-			return
 		}
 		if req.Body == nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			return c.JSON(fiber.Map{
 				"status":  "ng",
 				"message": "not allowed empty body",
 			})
-			return
 		}
 		if req.GlobalNamespaceId == nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			return c.JSON(fiber.Map{
 				"status":  "ng",
 				"message": "not allowed empty session_id",
 			})
-			return
 		}
 		go func() {
 			if err != nil {
@@ -111,7 +108,6 @@ func StartMockServer(ctx context.Context) {
 				return
 			}
 			env, err := NewGlobalEnvironmentById(*req.GlobalNamespaceId)
-			defer globalEnv.Delete(env.GetId())
 
 			if err != nil {
 				panic(err)
@@ -125,6 +121,7 @@ func StartMockServer(ctx context.Context) {
 				return
 			}
 			result, err := Eval(ctx, readSexp, env)
+			globalEnv.Delete(env.GetId())
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -153,11 +150,14 @@ func StartMockServer(ctx context.Context) {
 				time.Sleep(time.Second * 3)
 				_, err = http.Post(sendAddr, "application/json", sendBodyBuff)
 			}
+
 		}()
-		c.JSON(http.StatusOK, gin.H{
+		return c.JSON(fiber.Map{
 			"status": "ok",
 			"id":     requestId,
 		})
 	})
-	engine.Run(fmt.Sprintf(":%s", randomPort))
+	if err := engine.Listen(fmt.Sprintf(":%s", randomPort)); err != nil {
+		panic(err)
+	}
 }
