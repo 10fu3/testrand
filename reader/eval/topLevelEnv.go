@@ -1,21 +1,23 @@
-package globalEnv
+package eval
 
-import "sync"
+import (
+	"sync"
+)
 
 var envs = struct {
-	m map[string]interface{}
+	m map[string]Environment
 	sync.RWMutex
 }{
-	m: make(map[string]interface{}),
+	m: make(map[string]Environment),
 }
 
-func Get(id string) interface{} {
+func Get(id string) Environment {
 	envs.RLock()
 	defer envs.RUnlock()
 	return envs.m[id]
 }
 
-func Put(id string, env interface{}) {
+func Put(id string, env Environment) {
 	envs.Lock()
 	defer envs.Unlock()
 	envs.m[id] = env

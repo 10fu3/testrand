@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"sync"
-	"testrand/reader/globalEnv"
 	"testrand/reader/infra"
 )
 
@@ -197,6 +196,6 @@ func NewGlobalEnvironmentById(id string) (Environment, error) {
 		superGlobalEnv: superGlobalEnv,
 	}
 	env.globalEnv = env
-	globalEnv.Put(env.id, env)
+	Put(env.id, env)
 	return env, err
 }

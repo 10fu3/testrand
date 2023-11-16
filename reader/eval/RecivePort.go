@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 	"testrand/config"
-	"testrand/reader/globalEnv"
 	"testrand/util"
 )
 
@@ -88,7 +87,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 					NewConsCell(result,
 						NewConsCell(NewNil(), NewNil())))
 
-			targetEnv := globalEnv.Get(sExpressionEnv.envId)
+			targetEnv := Get(sExpressionEnv.envId)
 
 			result, err = Eval(ctx, createSExpressionOnReceive, targetEnv.(Environment))
 
@@ -97,7 +96,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 				fmt.Println(err)
 			}
 			m.Delete(reqId)
-			globalEnv.Delete(sExpressionEnv.envId)
+			Delete(sExpressionEnv.envId)
 			c.Status(http.StatusOK)
 			return nil
 		})

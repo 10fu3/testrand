@@ -13,7 +13,6 @@ import (
 	"runtime"
 	"strings"
 	"testrand/config"
-	"testrand/reader/globalEnv"
 	"testrand/util"
 	"time"
 )
@@ -117,7 +116,7 @@ func StartMockServer(ctx context.Context) {
 				return
 			}
 			result, err := Eval(ctx, readSexp, env)
-			globalEnv.Delete(env.GetId())
+			Delete(env.GetId())
 			env = nil
 			if err != nil {
 				fmt.Println(err)
