@@ -143,6 +143,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"global-clear-all":        NewGlobalClearAll(),
 		"cd":                      NewCurrentDirectory(),
 		"read-file-line":          NewFileReadLine(),
+		"read-file":               NewFileRead(),
 		"new-hashmap":             NewNativeHashmap(),
 		"put-hashmap":             NewPutNativeHashmap(),
 		"get-hashmap":             NewGetNativeHashmap(),
@@ -171,6 +172,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"array->list":             NewNativeArrayToList(),
 		"list->array":             NewListToNativeArray(),
 		"foreach-array":           NewForeachNativeArray(),
+		"void":                    NewVoid(),
 	}
 }
 
