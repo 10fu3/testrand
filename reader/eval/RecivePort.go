@@ -89,7 +89,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 
 			targetEnv := TopLevelEnvGet(sExpressionEnv.envId)
 
-			result, err = Eval(ctx, createSExpressionOnReceive, targetEnv.(Environment))
+			result, err = Eval(ctx, createSExpressionOnReceive, targetEnv)
 
 			if err != nil {
 				m.Delete(reqId)
