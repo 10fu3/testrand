@@ -16,7 +16,7 @@ import (
 
 var PutReceiveQueueMethod func(evnId string, reqId string, onReceive SExpression)
 
-func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(evnId string, reqId string, onReceive SExpression)) {
+func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(envId, reqId string, onReceive SExpression)) {
 	m := sync.Map{}
 	router := fiber.New(fiber.Config{
 		JSONEncoder: json.Marshal,
@@ -87,7 +87,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 					NewConsCell(result,
 						NewConsCell(NewNil(), NewNil())))
 
-			targetEnv := TopLevelEnvGet(sExpressionEnv.envId)
+			targetEnv := TopLevelEnvGet(reqId)
 
 			result, err = Eval(ctx, createSExpressionOnReceive, targetEnv)
 
@@ -96,7 +96,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 				fmt.Println(err)
 			}
 			m.Delete(reqId)
-			TopLevelEnvDelete(sExpressionEnv.envId)
+			TopLevelEnvDelete(reqId)
 			c.Status(http.StatusOK)
 			return nil
 		})
@@ -107,13 +107,13 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 
 	return func() {
 			router.Listen(fmt.Sprintf(":%s", conf.SelfOnCompletePort))
-		}, func(evnId string, reqId string, onReceive SExpression) {
+		}, func(envId string, reqId string, onReceive SExpression) {
 			stored := struct {
 				onReceive SExpression
 				envId     string
 			}{
 				onReceive: onReceive,
-				envId:     evnId,
+				envId:     envId,
 			}
 
 			m.Store(reqId, &stored)
