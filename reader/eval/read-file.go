@@ -72,5 +72,5 @@ func (_ *_file_read) Apply(ctx context.Context, env Environment, arguments SExpr
 }
 
 func NewFileRead() SExpression {
-	return &_file_read_line{}
+	return &_file_read{}
 }

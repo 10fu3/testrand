@@ -395,7 +395,11 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, argu
 
 	lambda := rawLambda.(Closure)
 
-	if lambda.GetFormalsCount() == 1 {
+	if lambda.GetFormalsCount() != 1 && lambda.GetFormalsCount() != 2 {
+		return nil, errors.New("need arguments size is 1 or 2")
+	}
+
+	if lambda.GetFormalsCount() == 2 {
 		for i, v := range nativeArray.(*_native_array).Arr {
 			_, err := lambda.Apply(ctx, env, NewConsCell(NewInt(int64(i)), v))
 
@@ -406,7 +410,7 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, argu
 		return NewNil(), nil
 	} else {
 		for _, v := range nativeArray.(*_native_array).Arr {
-			_, err := lambda.Apply(ctx, env, v)
+			_, err := lambda.Apply(ctx, env, NewConsCell(v, NewConsCell(NewNil(), NewNil())))
 
 			if err != nil {
 				return nil, err
