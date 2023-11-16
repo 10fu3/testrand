@@ -4,16 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"io"
 	"os"
 	"testrand/reader/eval"
 )
 
 func main() {
 	fmt.Println("light client")
-	gin.SetMode(gin.ReleaseMode)
-	gin.DefaultWriter = io.Discard
 	ctx := context.Background()
 
 	env, err := eval.NewGlobalEnvironment()

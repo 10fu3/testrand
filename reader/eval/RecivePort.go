@@ -3,8 +3,10 @@ package eval
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"net/http"
 	"strings"
 	"sync"
 	"testrand/config"
@@ -16,7 +18,7 @@ var PutReceiveQueueMethod func(evnId string, reqId string, onReceive SExpression
 
 func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(evnId string, reqId string, onReceive SExpression)) {
 	m := sync.Map{}
-	router := gin.Default()
+	router := fiber.New()
 
 	localIp, err := util.GetLocalIP()
 
@@ -44,20 +46,21 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 
 	if err == nil {
 
-		router.GET("/health", func(c *gin.Context) {
-			c.JSON(200, gin.H{
+		router.Get("/health", func(c *fiber.Ctx) error {
+			return c.JSON(fiber.Map{
 				"status": "ok",
 			})
 		})
-		router.POST("/receive/:id", func(c *gin.Context) {
+		router.Post("/receive/:id", func(c *fiber.Ctx) error {
 			var req struct {
 				Result string `json:"result"`
 			}
-			reqId := c.Param("id")
-			err := c.BindJSON(&req)
+			reqId := c.Params("id")
+			err := c.BodyParser(&req)
 			if err != nil {
 				fmt.Println(err.Error())
-				return
+				m.Delete(reqId)
+				return err
 			}
 			sample := strings.NewReader(fmt.Sprintf("%s\n", req.Result))
 			read := New(bufio.NewReader(sample))
@@ -65,14 +68,16 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 			storedSExpressionEnv, ok := m.Load(reqId)
 
 			if !ok {
-				return
+				return errors.New("not found request id in callback store")
 			}
 			sExpressionEnv := storedSExpressionEnv.(*struct {
 				onReceive SExpression
 				envId     string
 			})
 			if sExpressionEnv.onReceive == nil {
-				return
+				c.Status(http.StatusOK)
+				m.Delete(reqId)
+				return nil
 			}
 			createSExpressionOnReceive :=
 				NewConsCell(sExpressionEnv.onReceive,
@@ -82,8 +87,12 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 			result, err = Eval(ctx, createSExpressionOnReceive, globalEnv.Get(sExpressionEnv.envId).(Environment))
 
 			if err != nil {
+				m.Delete(reqId)
 				fmt.Println(err)
 			}
+			m.Delete(reqId)
+			c.Status(http.StatusOK)
+			return nil
 		})
 	} else {
 		fmt.Println("load balancing system is occurred error")
@@ -91,7 +100,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 	}
 
 	return func() {
-			router.Run(":4040")
+			router.Listen(fmt.Sprintf(":%s", conf.SelfOnCompletePort))
 		}, func(evnId string, reqId string, onReceive SExpression) {
 			stored := struct {
 				onReceive SExpression

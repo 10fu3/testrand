@@ -23,21 +23,11 @@ type TaskAddRequest struct {
 	GlobalNamespaceId *string `json:"global_namespace_id"`
 }
 
-func createListener() (l net.Listener, close func()) {
-	l, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
-	}
-	return l, func() {
-		_ = l.Close()
-	}
-}
-
 func StartMockServer(ctx context.Context) {
 
 	conf := config.Get()
 
-	ramdomListener, _close := createListener()
+	ramdomListener, _close := util.CreateListener()
 	randomPort := fmt.Sprintf("%d", ramdomListener.Addr().(*net.TCPAddr).Port)
 	_close()
 

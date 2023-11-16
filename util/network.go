@@ -23,3 +23,13 @@ func GetLocalIP() (string, error) {
 
 	return localAddr, nil
 }
+
+func CreateListener() (l net.Listener, close func()) {
+	l, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+	return l, func() {
+		_ = l.Close()
+	}
+}
