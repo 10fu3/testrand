@@ -28,7 +28,7 @@ func (l *_native_array) String() string {
 			str += ","
 		}
 	}
-	return fmt.Sprint("[%s]", str)
+	return fmt.Sprintf("[%s]", str)
 }
 
 func (_ *_native_array) IsList() bool {
@@ -63,7 +63,7 @@ func (_ *_new_native_array) Equals(sexp SExpression) bool {
 
 func (_ *_new_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 	return &_native_array{
-		Arr: make([]SExpression, 10),
+		Arr: make([]SExpression, 0),
 	}, nil
 }
 
