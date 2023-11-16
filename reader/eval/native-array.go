@@ -3,6 +3,7 @@ package eval
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 type _native_array struct {
@@ -17,8 +18,17 @@ func (_ *_native_array) SExpressionTypeId() SExpressionType {
 	return SExpressionTypeNativeArray
 }
 
-func (_ *_native_array) String() string {
-	return "#<native_array>"
+func (l *_native_array) String() string {
+	//printout element
+	var str string
+	var arrayLength = len(l.Arr)
+	for i, v := range l.Arr {
+		str += v.String()
+		if i != arrayLength-1 {
+			str += ","
+		}
+	}
+	return fmt.Sprint("[%s]", str)
 }
 
 func (_ *_native_array) IsList() bool {
