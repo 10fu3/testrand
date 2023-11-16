@@ -25,6 +25,9 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 	case SExpressionTypeConsCell:
 		cell := sexp.(ConsCell)
 		applied, err := Eval(ctx, cell.GetCar(), env)
+		if err != nil {
+			return nil, err
+		}
 		appliedType := applied.SExpressionTypeId()
 		if err != nil {
 			return nil, err
