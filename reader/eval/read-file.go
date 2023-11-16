@@ -1,10 +1,8 @@
 package eval
 
 import (
-	"bufio"
 	"context"
 	"errors"
-	"io"
 	"os"
 )
 
@@ -48,27 +46,13 @@ func (_ *_file_read) Apply(ctx context.Context, env Environment, arguments SExpr
 
 	path := rawPath.(Str).GetValue()
 
-	fp, err := os.Open(path)
+	fileReader, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err
 	}
 
-	fileReader := bufio.NewReaderSize(fp, 64*1024)
-	allReadStr := ""
-	/*          第2引数はバッファサイズ。大きくするとある程度高速化する*/
-	for {
-		line_byte, _, err := fileReader.ReadLine()
-		allReadStr += string(line_byte)
-
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			panic(err)
-		}
-	}
-
-	return NewString(allReadStr), nil
+	return NewString(string(fileReader)), nil
 }
 
 func NewFileRead() SExpression {
