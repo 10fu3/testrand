@@ -8,8 +8,12 @@ import (
 
 type _loop struct{}
 
-func (_ *_loop) Type() string {
+func (_ *_loop) TypeId() string {
 	return "special_form.loop"
+}
+
+func (_ *_loop) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_loop) String() string {
@@ -21,15 +25,15 @@ func (_ *_loop) IsList() bool {
 }
 
 func (l *_loop) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_loop) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.Type() {
+	if "cons_cell" != args.TypeId() {
 		return nil, errors.New("need arguments")
 	}
 	arguments := args.(ConsCell)
-	if !("cons_cell" == arguments.GetCdr().Type()) {
+	if !("cons_cell" == arguments.GetCdr().TypeId()) {
 		return nil, errors.New("need arguments")
 	}
 	rawForms := arguments.GetCdr().(ConsCell)
@@ -47,8 +51,8 @@ func (_ *_loop) Apply(ctx context.Context, env Environment, args SExpression) (S
 			return nil, err
 		}
 
-		if evaluatedCond.Type() != "bool" {
-			return nil, errors.New("need 1st argument must be bool but got " + evaluatedCond.Type())
+		if evaluatedCond.TypeId() != "bool" {
+			return nil, errors.New("need 1st argument must be bool but got " + evaluatedCond.TypeId())
 		}
 
 		if !evaluatedCond.(Bool).GetValue() {

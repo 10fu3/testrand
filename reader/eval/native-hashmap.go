@@ -15,8 +15,12 @@ type _native_hashmap struct {
 	sync.Mutex
 }
 
-func (_ *_native_hashmap) Type() string {
+func (_ *_native_hashmap) TypeId() string {
 	return "native.hashmap"
+}
+
+func (_ *_native_hashmap) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeNativeHashmap
 }
 
 func (_ *_native_hashmap) String() string {
@@ -28,7 +32,7 @@ func (_ *_native_hashmap) IsList() bool {
 }
 
 func (l *_native_hashmap) Equals(sexp SExpression) bool {
-	if sexp.Type() != "native.hashmap" {
+	if sexp.TypeId() != "native.hashmap" {
 		return false
 	}
 
@@ -37,8 +41,12 @@ func (l *_native_hashmap) Equals(sexp SExpression) bool {
 
 type _new_native_hashmap struct{}
 
-func (_ *_new_native_hashmap) Type() string {
+func (_ *_new_native_hashmap) TypeId() string {
 	return "subroutine.new-native-hashmap"
+}
+
+func (_ *_new_native_hashmap) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_new_native_hashmap) String() string {
@@ -50,7 +58,7 @@ func (_ *_new_native_hashmap) IsList() bool {
 }
 
 func (l *_new_native_hashmap) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_new_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -66,8 +74,12 @@ func NewNativeHashmap() SExpression {
 
 type _put_native_hashmap struct{}
 
-func (_ *_put_native_hashmap) Type() string {
+func (_ *_put_native_hashmap) TypeId() string {
 	return "subroutine.put-native-hashmap"
+}
+
+func (_ *_put_native_hashmap) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_put_native_hashmap) String() string {
@@ -79,7 +91,7 @@ func (_ *_put_native_hashmap) IsList() bool {
 }
 
 func (l *_put_native_hashmap) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_put_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -92,11 +104,11 @@ func (_ *_put_native_hashmap) Apply(ctx context.Context, env Environment, argume
 		return nil, errors.New("need arguments size is 3")
 	}
 
-	if args[0].Type() != "native.hashmap" {
+	if args[0].TypeId() != "native.hashmap" {
 		return nil, errors.New("need arguments type is native.hashmap")
 	}
 
-	if args[1].Type() != "string" {
+	if args[1].TypeId() != "string" {
 		return nil, errors.New("need arguments type is string")
 	}
 
@@ -113,8 +125,12 @@ func NewPutNativeHashmap() SExpression {
 
 type _get_native_hashmap struct{}
 
-func (_ *_get_native_hashmap) Type() string {
+func (_ *_get_native_hashmap) TypeId() string {
 	return "subroutine.get-native-hashmap"
+}
+
+func (_ *_get_native_hashmap) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_get_native_hashmap) String() string {
@@ -126,7 +142,7 @@ func (_ *_get_native_hashmap) IsList() bool {
 }
 
 func (l *_get_native_hashmap) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_get_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -139,11 +155,11 @@ func (_ *_get_native_hashmap) Apply(ctx context.Context, env Environment, argume
 		return nil, errors.New("need arguments size is 2")
 	}
 
-	if args[0].Type() != "native.hashmap" {
+	if args[0].TypeId() != "native.hashmap" {
 		return nil, errors.New("need arguments type is native.hashmap")
 	}
 
-	if args[1].Type() != "string" {
+	if args[1].TypeId() != "string" {
 		return nil, errors.New("need arguments type is string")
 	}
 
@@ -167,8 +183,12 @@ func NewGetNativeHashmap() SExpression {
 
 type _key_value_pair_foreach_native_hashmap struct{}
 
-func (_ *_key_value_pair_foreach_native_hashmap) Type() string {
+func (_ *_key_value_pair_foreach_native_hashmap) TypeId() string {
 	return "special_form.kv-set-native-hashmap"
+}
+
+func (_ *_key_value_pair_foreach_native_hashmap) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_key_value_pair_foreach_native_hashmap) String() string {
@@ -180,7 +200,7 @@ func (_ *_key_value_pair_foreach_native_hashmap) IsList() bool {
 }
 
 func (l *_key_value_pair_foreach_native_hashmap) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_key_value_pair_foreach_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -195,7 +215,7 @@ func (_ *_key_value_pair_foreach_native_hashmap) Apply(ctx context.Context, env 
 
 	nativeHashMap, err := Eval(ctx, args[0], env)
 
-	if err != nil || nativeHashMap.Type() != "native.hashmap" {
+	if err != nil || nativeHashMap.TypeId() != "native.hashmap" {
 		return nil, errors.New("need arguments type is native.hashmap")
 	}
 
@@ -224,8 +244,12 @@ func NewKeyValuePairNativeHashmap() SExpression {
 
 type _key_value_pair_native_hashmap_to_cons_cell struct{}
 
-func (_ *_key_value_pair_native_hashmap_to_cons_cell) Type() string {
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) TypeId() string {
 	return "subroutine.kv-native-hashmap"
+}
+
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_key_value_pair_native_hashmap_to_cons_cell) String() string {
@@ -237,7 +261,7 @@ func (_ *_key_value_pair_native_hashmap_to_cons_cell) IsList() bool {
 }
 
 func (l *_key_value_pair_native_hashmap_to_cons_cell) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_key_value_pair_native_hashmap_to_cons_cell) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -250,7 +274,7 @@ func (_ *_key_value_pair_native_hashmap_to_cons_cell) Apply(ctx context.Context,
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	if args[0].Type() != "native.hashmap" {
+	if args[0].TypeId() != "native.hashmap" {
 		return nil, errors.New("need arguments type is native.hashmap")
 	}
 

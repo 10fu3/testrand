@@ -7,8 +7,12 @@ import (
 
 type _string_append struct{}
 
-func (_ *_string_append) Type() string {
+func (_ *_string_append) TypeId() string {
 	return "subroutine.string-append"
+}
+
+func (_ *_string_append) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_string_append) String() string {
@@ -20,7 +24,7 @@ func (_ *_string_append) IsList() bool {
 }
 
 func (s *_string_append) Equals(sexp SExpression) bool {
-	return s.Type() == sexp.Type()
+	return s.TypeId() == sexp.TypeId()
 }
 
 func (_ *_string_append) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
@@ -34,8 +38,8 @@ func (_ *_string_append) Apply(ctx context.Context, env Environment, args SExpre
 
 	var str string
 	for i := 0; i < len(arr); i++ {
-		if "string" != arr[i].Type() {
-			return nil, errors.New("need args type is string, but got " + arr[i].Type())
+		if "string" != arr[i].TypeId() {
+			return nil, errors.New("need args type is string, but got " + arr[i].TypeId())
 		}
 		str += arr[i].(Str).GetValue()
 	}

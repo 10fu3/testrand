@@ -7,8 +7,12 @@ import (
 
 type _quote struct{}
 
-func (_ *_quote) Type() string {
+func (_ *_quote) TypeId() string {
 	return "special_form.quote"
+}
+
+func (_ *_quote) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_quote) String() string {
@@ -20,7 +24,7 @@ func (_ *_quote) IsList() bool {
 }
 
 func (q *_quote) Equals(sexp SExpression) bool {
-	return q.Type() == sexp.Type()
+	return q.TypeId() == sexp.TypeId()
 }
 
 func (_ *_quote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

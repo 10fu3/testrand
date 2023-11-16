@@ -7,8 +7,12 @@ import (
 
 type _define struct{}
 
-func (_ *_define) Type() string {
+func (_ *_define) TypeId() string {
 	return "special_form.define"
+}
+
+func (_ *_define) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_define) String() string {
@@ -20,12 +24,12 @@ func (_ *_define) IsList() bool {
 }
 
 func (d *_define) Equals(sexp SExpression) bool {
-	return d.Type() == sexp.Type()
+	return d.TypeId() == sexp.TypeId()
 }
 
 func onSymbolCall(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
 
-	if "cons_cell" != arguments.Type() {
+	if "cons_cell" != arguments.TypeId() {
 		return nil, errors.New("type error")
 	}
 

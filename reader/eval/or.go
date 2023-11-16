@@ -5,8 +5,12 @@ import "context"
 type _or struct {
 }
 
-func (_ _or) Type() string {
-	return "special_form.and"
+func (_ _or) TypeId() string {
+	return "special_form.or"
+}
+
+func (_ _or) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ _or) String() string {
@@ -18,7 +22,7 @@ func (_ _or) IsList() bool {
 }
 
 func (a _or) Equals(sexp SExpression) bool {
-	return a.Type() == sexp.Type()
+	return a.TypeId() == sexp.TypeId()
 }
 
 func (_ _or) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

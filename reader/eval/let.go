@@ -7,8 +7,12 @@ import (
 
 type _let struct{}
 
-func (_ *_let) Type() string {
+func (_ *_let) TypeId() string {
 	return "special_form.let"
+}
+
+func (_ *_let) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_let) String() string {
@@ -20,12 +24,12 @@ func (_ *_let) IsList() bool {
 }
 
 func (l *_let) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 
-	if args.Type() != "cons_cell" {
+	if args.TypeId() != "cons_cell" {
 		return nil, errors.New("malformed let")
 	}
 
@@ -55,7 +59,7 @@ func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SE
 			return nil, err
 		}
 
-		if len(varnameValuePair) != 2 || varnameValuePair[0].Type() != "symbol" {
+		if len(varnameValuePair) != 2 || varnameValuePair[0].TypeId() != "symbol" {
 			return nil, errors.New("malformed let")
 		}
 

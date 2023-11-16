@@ -8,8 +8,12 @@ import (
 type _is_equals struct {
 }
 
-func (_ *_is_equals) Type() string {
+func (_ *_is_equals) TypeId() string {
 	return "subroutine.is_equals"
+}
+
+func (_ *_is_equals) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_is_equals) String() string {
@@ -21,18 +25,18 @@ func (_ *_is_equals) IsList() bool {
 }
 
 func (i *_is_equals) Equals(sexp SExpression) bool {
-	return i.Type() == sexp.Type()
+	return i.TypeId() == sexp.TypeId()
 }
 
 func (_ *_is_equals) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.Type() {
+	if "cons_cell" != arguments.TypeId() {
 		return nil, errors.New("type error")
 	}
 	argCell := arguments.(ConsCell)
 
 	first := argCell.GetCar()
 
-	if "cons_cell" != argCell.GetCdr().Type() {
+	if "cons_cell" != argCell.GetCdr().TypeId() {
 		return nil, errors.New("type error")
 	}
 

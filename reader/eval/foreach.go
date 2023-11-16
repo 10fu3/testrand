@@ -7,8 +7,12 @@ import (
 
 type _foreach struct{}
 
-func (_ *_foreach) Type() string {
+func (_ *_foreach) TypeId() string {
 	return "special_form.foreach"
+}
+
+func (_ *_foreach) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_foreach) String() string {
@@ -20,7 +24,7 @@ func (_ *_foreach) IsList() bool {
 }
 
 func (q *_foreach) Equals(sexp SExpression) bool {
-	return q.Type() == sexp.Type()
+	return q.TypeId() == sexp.TypeId()
 }
 
 func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
@@ -61,7 +65,7 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 
 	bodyArg := body.(ConsCell).GetCdr().(ConsCell).GetCar()
 
-	if bodyArg.Type() != "cons_cell" {
+	if bodyArg.TypeId() != "cons_cell" {
 		return nil, errors.New("foreach: second argument must be a lambda with a list of arguments")
 	}
 
@@ -81,7 +85,7 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 		return nil, err
 	}
 
-	if rawClosure.Type() != "closure" {
+	if rawClosure.TypeId() != "closure" {
 		return nil, errors.New("foreach: second argument must be a lambda")
 	}
 

@@ -3,22 +3,18 @@ package eval
 import (
 	"context"
 	"errors"
-	"strings"
 )
 
 func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
-	switch sexp.Type() {
-	case "number":
+	sexpType := sexp.SExpressionTypeId()
+	switch sexpType {
+	case SExpressionTypeNumber,
+		SExpressionTypeString,
+		SExpressionTypeBool,
+		SExpressionTypeEnvironment,
+		SExpressionTypeNil:
 		return sexp, nil
-	case "string":
-		return sexp, nil
-	case "bool":
-		return sexp, nil
-	case "environment":
-		return sexp, nil
-	case "nil":
-		return sexp, nil
-	case "symbol":
+	case SExpressionTypeSymbol:
 		if v, _ := env.GetValue(sexp.(Symbol)); v == nil {
 			if ctx.Value("transaction") == nil {
 				return nil, errors.New("unknown symbol")
@@ -26,20 +22,21 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 
 		}
 		return env.GetValue(sexp.(Symbol))
-	case "cons_cell":
+	case SExpressionTypeConsCell:
 		cell := sexp.(ConsCell)
 		applied, err := Eval(ctx, cell.GetCar(), env)
+		appliedType := applied.SExpressionTypeId()
 		if err != nil {
 			return nil, err
 		}
-		if strings.HasPrefix(applied.Type(), "closure") || strings.HasPrefix(applied.Type(), "subroutine.") {
+		if SExpressionTypeClosure == appliedType || SExpressionTypeSubroutine == appliedType {
 			appliedArgs, err := evalArgument(ctx, cell.GetCdr(), env)
 			if err != nil {
 				return nil, err
 			}
 			return applied.(Callable).Apply(ctx, env, appliedArgs)
 		}
-		if strings.HasPrefix(applied.Type(), "special_form.") {
+		if SExpressionTypeSpecialForm == appliedType {
 			if err != nil {
 				return nil, err
 			}
@@ -51,7 +48,7 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 }
 
 func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
-	if "cons_cell" != sexp.Type() {
+	if "cons_cell" != sexp.TypeId() {
 		return Eval(ctx, sexp, env)
 	}
 
@@ -72,8 +69,12 @@ func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpr
 
 type _eval struct{}
 
-func (_ *_eval) Type() string {
+func (_ *_eval) TypeId() string {
 	return "subroutine.eval"
+}
+
+func (_ *_eval) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_eval) String() string {
@@ -85,7 +86,7 @@ func (_ *_eval) IsList() bool {
 }
 
 func (e *_eval) Equals(sexp SExpression) bool {
-	return e.Type() == sexp.Type()
+	return e.TypeId() == sexp.TypeId()
 }
 
 func (_ *_eval) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

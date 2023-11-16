@@ -22,8 +22,12 @@ func (s *_to_string) Apply(ctx context.Context, env Environment, args SExpressio
 	return NewString(arr[0].String()), nil
 }
 
-func (s *_to_string) Type() string {
+func (s *_to_string) TypeId() string {
 	return "subroutine.to_string"
+}
+
+func (s *_to_string) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (s *_to_string) String() string {
@@ -35,7 +39,7 @@ func (s *_to_string) IsList() bool {
 }
 
 func (s *_to_string) Equals(sexp SExpression) bool {
-	return s.Type() == sexp.Type()
+	return s.TypeId() == sexp.TypeId()
 }
 
 func NewToString() SExpression {

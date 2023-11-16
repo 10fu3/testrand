@@ -13,8 +13,12 @@ func NewIf() SExpression {
 	return &_if{}
 }
 
-func (_ *_if) Type() string {
+func (_ *_if) TypeId() string {
 	return "special_form.if"
+}
+
+func (_ *_if) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_if) String() string {
@@ -26,7 +30,7 @@ func (_ *_if) IsList() bool {
 }
 
 func (i *_if) Equals(sexp SExpression) bool {
-	return i.Type() == sexp.Type()
+	return i.TypeId() == sexp.TypeId()
 }
 
 func (_ *_if) Apply(ctx context.Context, env Environment, argument SExpression) (SExpression, error) {

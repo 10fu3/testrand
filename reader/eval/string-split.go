@@ -8,8 +8,12 @@ import (
 
 type _string_split struct{}
 
-func (_ *_string_split) Type() string {
+func (_ *_string_split) TypeId() string {
 	return "subroutine.string-split"
+}
+
+func (_ *_string_split) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_string_split) String() string {
@@ -21,7 +25,7 @@ func (_ *_string_split) IsList() bool {
 }
 
 func (s *_string_split) Equals(sexp SExpression) bool {
-	return s.Type() == sexp.Type()
+	return s.TypeId() == sexp.TypeId()
 }
 
 func (_ *_string_split) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
@@ -33,7 +37,7 @@ func (_ *_string_split) Apply(ctx context.Context, env Environment, args SExpres
 		return nil, errors.New("need args size is 1")
 	}
 
-	if arr[0].Type() != "string" {
+	if arr[0].TypeId() != "string" {
 		return nil, errors.New("need args type is string")
 	}
 
@@ -41,7 +45,7 @@ func (_ *_string_split) Apply(ctx context.Context, env Environment, args SExpres
 
 	var sep string
 	if len(arr) == 2 {
-		if arr[1].Type() != "string" {
+		if arr[1].TypeId() != "string" {
 			return nil, errors.New("need args type is string")
 		}
 		sep = arr[1].(Str).GetValue()

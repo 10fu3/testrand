@@ -8,8 +8,12 @@ import (
 
 type _string_len struct{}
 
-func (_ *_string_len) Type() string {
+func (_ *_string_len) TypeId() string {
 	return "subroutine.string-len"
+}
+
+func (_ *_string_len) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_string_len) String() string {
@@ -21,7 +25,7 @@ func (_ *_string_len) IsList() bool {
 }
 
 func (s *_string_len) Equals(sexp SExpression) bool {
-	return s.Type() == sexp.Type()
+	return s.TypeId() == sexp.TypeId()
 }
 
 func (_ *_string_len) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

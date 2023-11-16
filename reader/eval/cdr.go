@@ -9,8 +9,12 @@ import (
 
 type _cdr struct{}
 
-func (_ *_cdr) Type() string {
+func (_ *_cdr) TypeId() string {
 	return "subroutine.cdr"
+}
+
+func (_ *_cdr) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_cdr) String() string {
@@ -22,7 +26,7 @@ func (_ *_cdr) IsList() bool {
 }
 
 func (l *_cdr) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_cdr) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -35,7 +39,7 @@ func (_ *_cdr) Apply(ctx context.Context, env Environment, arguments SExpression
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	if args[0].Type() != "cons_cell" {
+	if args[0].TypeId() != "cons_cell" {
 		return nil, errors.New("need arguments type is list")
 	}
 

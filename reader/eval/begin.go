@@ -4,8 +4,12 @@ import "context"
 
 type _begin struct{}
 
-func (_ *_begin) Type() string {
+func (_ *_begin) TypeId() string {
 	return "special_form.begin"
+}
+
+func (_ *_begin) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_begin) String() string {
@@ -17,7 +21,7 @@ func (_ *_begin) IsList() bool {
 }
 
 func (b *_begin) Equals(sexp SExpression) bool {
-	return b.Type() == sexp.Type()
+	return b.TypeId() == sexp.TypeId()
 }
 
 func (_ *_begin) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

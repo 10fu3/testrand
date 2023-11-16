@@ -8,8 +8,12 @@ import (
 
 type _transaction struct{}
 
-func (_ *_transaction) Type() string {
+func (_ *_transaction) TypeId() string {
 	return "special_form.transaction"
+}
+
+func (_ *_transaction) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_transaction) String() string {
@@ -21,12 +25,12 @@ func (_ *_transaction) IsList() bool {
 }
 
 func (t *_transaction) Equals(sexp SExpression) bool {
-	return t.Type() == sexp.Type()
+	return t.TypeId() == sexp.TypeId()
 }
 
 func (_ *_transaction) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
 
-	if "cons_cell" != args.Type() {
+	if "cons_cell" != args.TypeId() {
 		return nil, errors.New("type error")
 	}
 

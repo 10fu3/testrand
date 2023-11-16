@@ -8,7 +8,8 @@ import (
 )
 
 type SExpression interface {
-	Type() string
+	TypeId() string
+	SExpressionTypeId() SExpressionType
 	String() string
 	IsList() bool
 	Equals(sexp SExpression) bool
@@ -28,7 +29,11 @@ type symbol struct {
 	name string
 }
 
-func (s *symbol) Type() string {
+func (s *symbol) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSymbol
+}
+
+func (s *symbol) TypeId() string {
 	return "symbol"
 }
 
@@ -41,7 +46,7 @@ func (s *symbol) String() string {
 }
 
 func (s *symbol) Equals(sexp SExpression) bool {
-	if sexp.Type() != "symbol" {
+	if sexp.TypeId() != "symbol" {
 		return false
 	}
 	return s.name == (sexp).(Symbol).GetValue()
@@ -67,7 +72,11 @@ func (i *_int) String() string {
 	return strconv.FormatInt(i.Value, 10)
 }
 
-func (i *_int) Type() string {
+func (i *_int) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeNumber
+}
+
+func (i *_int) TypeId() string {
 	return "number"
 }
 
@@ -76,7 +85,7 @@ func (i *_int) IsList() bool {
 }
 
 func (i *_int) Equals(sexp SExpression) bool {
-	if "number" != sexp.Type() {
+	if "number" != sexp.TypeId() {
 		return false
 	}
 	return i.GetValue() == sexp.(Number).GetValue()
@@ -105,7 +114,7 @@ type _bool struct {
 }
 
 func (b *_bool) Equals(sexp SExpression) bool {
-	if "bool" != sexp.Type() {
+	if "bool" != sexp.TypeId() {
 		return false
 	}
 
@@ -123,8 +132,12 @@ func (b *_bool) String() string {
 	return "#f"
 }
 
-func (b *_bool) Type() string {
+func (b *_bool) TypeId() string {
 	return "bool"
+}
+
+func (b *_bool) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeBool
 }
 
 func (b *_bool) IsList() bool {
@@ -156,7 +169,7 @@ func NewString(s string) Str {
 }
 
 func (s *_string) Equals(sexp SExpression) bool {
-	if "string" != sexp.Type() {
+	if "string" != sexp.TypeId() {
 		return false
 	}
 	return s.Value == sexp.(Str).GetValue()
@@ -170,8 +183,12 @@ func (s *_string) String() string {
 	return fmt.Sprintf("\"%s\"", s.Value)
 }
 
-func (s *_string) Type() string {
+func (s *_string) TypeId() string {
 	return "string"
+}
+
+func (s *_string) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeString
 }
 
 func (s *_string) IsList() bool {
@@ -186,11 +203,15 @@ type _nil struct {
 }
 
 func (n *_nil) Equals(sexp SExpression) bool {
-	return "nil" == sexp.Type()
+	return "nil" == sexp.TypeId()
 }
 
-func (n *_nil) Type() string {
+func (n *_nil) TypeId() string {
 	return "nil"
+}
+
+func (n *_nil) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeNil
 }
 
 func (n *_nil) String() string {
@@ -217,7 +238,7 @@ type _cons_cell struct {
 }
 
 func (cell *_cons_cell) Equals(sexp SExpression) bool {
-	if "cons_cell" != sexp.Type() {
+	if "cons_cell" != sexp.TypeId() {
 		return false
 	}
 	c := sexp.(ConsCell)
@@ -267,12 +288,16 @@ func JoinList(left, right SExpression) (ConsCell, error) {
 	}
 }
 
-func (cell *_cons_cell) Type() string {
+func (cell *_cons_cell) TypeId() string {
 	return "cons_cell"
 }
 
+func (cell *_cons_cell) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeConsCell
+}
+
 func (cell *_cons_cell) String() string {
-	if "symbol" == cell.Car.Type() && "quote" == ((cell.Car).(Symbol)).GetValue() && cell.Cdr.Type() == "cons_cell" && "nil" == ((cell.Cdr).(ConsCell)).GetCdr().Type() {
+	if "symbol" == cell.Car.TypeId() && "quote" == ((cell.Car).(Symbol)).GetValue() && cell.Cdr.TypeId() == "cons_cell" && "nil" == ((cell.Cdr).(ConsCell)).GetCdr().TypeId() {
 		return fmt.Sprintf("'%s", ((cell.Cdr).(ConsCell)).GetCar().String())
 	}
 	var joinedString strings.Builder
@@ -280,17 +305,17 @@ func (cell *_cons_cell) String() string {
 	var lookCell ConsCell = cell
 
 	for {
-		if lookCell.GetCar().Type() != "nil" {
+		if lookCell.GetCar().TypeId() != "nil" {
 			joinedString.WriteString(lookCell.GetCar().String())
-			if lookCell.GetCdr().Type() == "cons_cell" {
-				if lookCell.GetCdr().(ConsCell).GetCar().Type() != "nil" && lookCell.GetCdr().(ConsCell).GetCdr().Type() != "nil" {
+			if lookCell.GetCdr().TypeId() == "cons_cell" {
+				if lookCell.GetCdr().(ConsCell).GetCar().TypeId() != "nil" && lookCell.GetCdr().(ConsCell).GetCdr().TypeId() != "nil" {
 					joinedString.WriteString(" ")
 				}
 			}
 		}
 
-		if lookCell.GetCdr().Type() != "cons_cell" {
-			if lookCell.GetCdr().Type() != "nil" {
+		if lookCell.GetCdr().TypeId() != "cons_cell" {
+			if lookCell.GetCdr().TypeId() != "nil" {
 				joinedString.WriteString(" . " + lookCell.GetCdr().String())
 			}
 			joinedString.WriteString(")")
@@ -306,10 +331,10 @@ func ToArray(sexp SExpression) ([]SExpression, error) {
 	look := sexp
 
 	for !IsEmptyList(look) {
-		if "cons_cell" != look.Type() {
+		if "cons_cell" != look.TypeId() {
 			return nil, errors.New("need list")
 		}
-		if look.(ConsCell).GetCdr().Type() != "cons_cell" {
+		if look.(ConsCell).GetCdr().TypeId() != "cons_cell" {
 			list = append(list, NewConsCell(look.(ConsCell).GetCar(), look.(ConsCell).GetCdr()))
 			return list, nil
 		}
@@ -320,7 +345,7 @@ func ToArray(sexp SExpression) ([]SExpression, error) {
 }
 
 func (cell *_cons_cell) IsList() bool {
-	if "cons_cell" == cell.Cdr.Type() {
+	if "cons_cell" == cell.Cdr.TypeId() {
 		if IsEmptyList(cell.Cdr) {
 			return true
 		}
@@ -355,10 +380,26 @@ func ToConsCell(list []SExpression) ConsCell {
 }
 
 func IsEmptyList(list SExpression) bool {
-	if "cons_cell" != list.Type() {
+	if "cons_cell" != list.TypeId() {
 		return false
 	}
 	tmp := (list).(ConsCell)
 
-	return "nil" == tmp.GetCar().Type() && "nil" == tmp.GetCdr().Type()
+	return "nil" == tmp.GetCar().TypeId() && "nil" == tmp.GetCdr().TypeId()
 }
+
+type SExpressionType int
+
+const (
+	SExpressionTypeSymbol SExpressionType = iota
+	SExpressionTypeNumber
+	SExpressionTypeBool
+	SExpressionTypeString
+	SExpressionTypeNil
+	SExpressionTypeConsCell
+	SExpressionTypeSubroutine
+	SExpressionTypeSpecialForm
+	SExpressionTypeClosure
+	SExpressionTypeNativeHashmap
+	SExpressionTypeEnvironment
+)

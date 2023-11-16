@@ -4,8 +4,12 @@ import "context"
 
 type _this_environment struct{}
 
-func (_ *_this_environment) Type() string {
+func (_ *_this_environment) TypeId() string {
 	return "subroutine.this_environment"
+}
+
+func (_ *_this_environment) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_this_environment) String() string {
@@ -17,7 +21,7 @@ func (_ *_this_environment) IsList() bool {
 }
 
 func (i *_this_environment) Equals(sexp SExpression) bool {
-	return i.Type() == sexp.Type()
+	return i.TypeId() == sexp.TypeId()
 }
 
 func (_ *_this_environment) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

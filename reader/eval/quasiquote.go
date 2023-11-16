@@ -8,8 +8,12 @@ import (
 type _quasiquote struct {
 }
 
-func (_ *_quasiquote) Type() string {
+func (_ *_quasiquote) TypeId() string {
 	return "special_form.quasiquote"
+}
+
+func (_ *_quasiquote) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_quasiquote) String() string {
@@ -21,18 +25,18 @@ func (_ *_quasiquote) IsList() bool {
 }
 
 func (q *_quasiquote) Equals(sexp SExpression) bool {
-	return q.Type() == sexp.Type()
+	return q.TypeId() == sexp.TypeId()
 }
 
 func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (SExpression, error) {
-	if x.Type() != "cons_cell" {
+	if x.TypeId() != "cons_cell" {
 		return x, nil
 	}
 	pair := x.(ConsCell)
 	car := pair.GetCar()
 	cdr := pair.GetCdr()
 	if car.Equals(NewSymbol("unquote")) {
-		if cdr.Type() != "cons_cell" {
+		if cdr.TypeId() != "cons_cell" {
 			return nil, errors.New("unquote must be followed by a list")
 		}
 		unquoted, err := Eval(ctx, cdr.(ConsCell).GetCar(), env)
@@ -43,7 +47,7 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 		return x, nil
 	}
 
-	if car.Type() == "cons_cell" && (car.(ConsCell).GetCar()).Equals(NewSymbol("unquote-splicing")) {
+	if car.TypeId() == "cons_cell" && (car.(ConsCell).GetCar()).Equals(NewSymbol("unquote-splicing")) {
 		innerPair := car.(ConsCell).GetCdr().(ConsCell)
 		innerPairCarQuoteEvaluated, err := _innerEvalQuasiquote(ctx, env, innerPair.GetCar())
 		if err != nil {

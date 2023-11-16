@@ -8,8 +8,12 @@ import (
 
 type _wait struct{}
 
-func (_ *_wait) Type() string {
+func (_ *_wait) TypeId() string {
 	return "special_form.wait"
+}
+
+func (_ *_wait) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_wait) String() string {
@@ -21,11 +25,11 @@ func (_ *_wait) IsList() bool {
 }
 
 func (l *_wait) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_wait) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.Type() {
+	if "cons_cell" != args.TypeId() {
 		return nil, errors.New("need arguments")
 	}
 	arguments := args.(ConsCell)
@@ -39,8 +43,8 @@ func (_ *_wait) Apply(ctx context.Context, env Environment, args SExpression) (S
 		return nil, err
 	}
 
-	if waitTime.Type() != "number" {
-		return nil, errors.New("need 1st argument must be number but got " + waitTime.Type())
+	if waitTime.TypeId() != "number" {
+		return nil, errors.New("need 1st argument must be number but got " + waitTime.TypeId())
 	}
 	durationTime := time.Millisecond * time.Duration(int(waitTime.(Number).GetValue()))
 	time.Sleep(durationTime)

@@ -12,8 +12,12 @@ import (
 type _global_get struct {
 }
 
-func (_ *_global_get) Type() string {
+func (_ *_global_get) TypeId() string {
 	return "special_form.global_get"
+}
+
+func (_ *_global_get) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_global_get) String() string {
@@ -25,11 +29,11 @@ func (_ *_global_get) IsList() bool {
 }
 
 func (l *_global_get) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.Type() {
+	if "cons_cell" != args.TypeId() {
 		return nil, errors.New("type error")
 	}
 
@@ -57,7 +61,7 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 			transaction := ctx.Value("transaction").(concurrency.STM)
 			existKey := transaction.Rev(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
 
-			if defaultArg.Type() != "nil" && existKey == 0 {
+			if defaultArg.TypeId() != "nil" && existKey == 0 {
 				return defaultArg, nil
 			}
 

@@ -7,8 +7,12 @@ import (
 
 type _lambda struct{}
 
-func (_ *_lambda) Type() string {
+func (_ *_lambda) TypeId() string {
 	return "special_form.lambda"
+}
+
+func (_ *_lambda) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_lambda) String() string {
@@ -20,7 +24,7 @@ func (_ *_lambda) IsList() bool {
 }
 
 func (l *_lambda) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_lambda) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {

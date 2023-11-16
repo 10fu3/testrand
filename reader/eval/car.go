@@ -9,8 +9,12 @@ import (
 
 type _car struct{}
 
-func (_ *_car) Type() string {
+func (_ *_car) TypeId() string {
 	return "subroutine.car"
+}
+
+func (_ *_car) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_car) String() string {
@@ -22,7 +26,7 @@ func (_ *_car) IsList() bool {
 }
 
 func (l *_car) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_car) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -35,7 +39,7 @@ func (_ *_car) Apply(ctx context.Context, env Environment, arguments SExpression
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	if args[0].Type() != "cons_cell" {
+	if args[0].TypeId() != "cons_cell" {
 		return nil, errors.New("need arguments type is list")
 	}
 

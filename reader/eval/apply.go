@@ -7,8 +7,12 @@ import (
 
 type _apply struct{}
 
-func (_ *_apply) Type() string {
+func (_ *_apply) TypeId() string {
 	return "subroutine.apply"
+}
+
+func (_ *_apply) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_apply) String() string {
@@ -20,7 +24,7 @@ func (_ *_apply) IsList() bool {
 }
 
 func (a *_apply) Equals(sexp SExpression) bool {
-	return a.Type() == sexp.Type()
+	return a.TypeId() == sexp.TypeId()
 }
 
 func (_ *_apply) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {

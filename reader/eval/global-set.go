@@ -10,8 +10,12 @@ import (
 type _global_set struct {
 }
 
-func (_ *_global_set) Type() string {
+func (_ *_global_set) TypeId() string {
 	return "special_form.global_set"
+}
+
+func (_ *_global_set) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_global_set) String() string {
@@ -23,17 +27,17 @@ func (_ *_global_set) IsList() bool {
 }
 
 func (l *_global_set) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.Type() {
+	if "cons_cell" != args.TypeId() {
 		return nil, errors.New("type error")
 	}
 
 	cell := args.(ConsCell)
 
-	if cell.GetCar().Type() != "symbol" {
+	if cell.GetCar().TypeId() != "symbol" {
 		return nil, errors.New("need 1st arguments type is symbol")
 	}
 

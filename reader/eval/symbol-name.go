@@ -17,15 +17,19 @@ func (s *_symbol_name) Apply(ctx context.Context, env Environment, args SExpress
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	if "symbol" != arr[0].Type() {
-		return nil, errors.New("need arguments type is symbol, but got " + arr[0].Type())
+	if "symbol" != arr[0].TypeId() {
+		return nil, errors.New("need arguments type is symbol, but got " + arr[0].TypeId())
 	}
 
 	return NewString(arr[0].(Symbol).GetValue()), nil
 }
 
-func (s *_symbol_name) Type() string {
+func (s *_symbol_name) TypeId() string {
 	return "subroutine.symbol_name"
+}
+
+func (s *_symbol_name) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (s *_symbol_name) String() string {
@@ -37,7 +41,7 @@ func (s *_symbol_name) IsList() bool {
 }
 
 func (s *_symbol_name) Equals(sexp SExpression) bool {
-	return s.Type() == sexp.Type()
+	return s.TypeId() == sexp.TypeId()
 }
 
 func NewSymbolName() SExpression {

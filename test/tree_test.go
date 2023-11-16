@@ -15,7 +15,7 @@ func TestFailedTree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Type() == "cons_cell" {
+	if result.TypeId() == "cons_cell" {
 		t.Fatal("type error")
 	}
 }
@@ -27,12 +27,12 @@ func TestSimpleTree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Type() != "cons_cell" {
+	if result.TypeId() != "cons_cell" {
 		t.Fatal("type error")
 	}
 	consCell := (result).(eval.ConsCell)
 	for _, i := range []string{"1", "2", "34", "55", "666"} {
-		if consCell.Type() != "cons_cell" {
+		if consCell.TypeId() != "cons_cell" {
 			t.Fatal("type error")
 		}
 		if consCell.GetCar().String() != i {
@@ -50,7 +50,7 @@ func TestDotTree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Type() != "cons_cell" {
+	if result.TypeId() != "cons_cell" {
 		t.Fatal("type error")
 	}
 	if result.String() != "(a b . c)" {

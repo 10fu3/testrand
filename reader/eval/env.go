@@ -69,8 +69,12 @@ func (e *environment) GetParentId() string {
 	return e.parentId
 }
 
-func (e *environment) Type() string {
+func (e *environment) TypeId() string {
 	return "environment"
+}
+
+func (e *environment) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeEnvironment
 }
 
 func (e *environment) String() string {
@@ -82,7 +86,7 @@ func (e *environment) IsList() bool {
 }
 
 func (e *environment) Equals(args SExpression) bool {
-	if "environment" != args.Type() {
+	if "environment" != args.TypeId() {
 		return false
 	}
 	return e.id == args.(*environment).id
@@ -134,7 +138,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"get-hashmap":             NewGetNativeHashmap(),
 		"hashmap->list":           NewKeyValuePairNativeHashmapToConsCell(),
 		"pair-loop-hashmap":       NewKeyValuePairNativeHashmap(),
-		"get-now-time-micro":      NewGetNowTimeMicro(),
+		"get-now-time-micro":      NewGetNowTimeNano(),
 		"string-append":           NewStringAppend(),
 		"string-split":            NewStringSplit(),
 		"string-len":              NewStringLen(),

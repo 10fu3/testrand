@@ -9,8 +9,12 @@ import (
 
 type _file_read_line struct{}
 
-func (_ *_file_read_line) Type() string {
+func (_ *_file_read_line) TypeId() string {
 	return "subroutine.read-line-file"
+}
+
+func (_ *_file_read_line) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_file_read_line) String() string {
@@ -22,7 +26,7 @@ func (_ *_file_read_line) IsList() bool {
 }
 
 func (l *_file_read_line) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
@@ -39,7 +43,7 @@ func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments 
 	}
 
 	rawPath := args[0]
-	if rawPath.Type() != "string" {
+	if rawPath.TypeId() != "string" {
 		return nil, errors.New("need arguments type is string")
 	}
 

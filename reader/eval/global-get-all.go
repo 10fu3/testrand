@@ -11,8 +11,12 @@ import (
 type _global_get_all struct {
 }
 
-func (_ *_global_get_all) Type() string {
+func (_ *_global_get_all) TypeId() string {
 	return "special_form.global_get_all"
+}
+
+func (_ *_global_get_all) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_global_get_all) String() string {
@@ -24,11 +28,11 @@ func (_ *_global_get_all) IsList() bool {
 }
 
 func (l *_global_get_all) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.Type() {
+	if "cons_cell" != args.TypeId() {
 		return nil, errors.New("type error")
 	}
 

@@ -8,8 +8,12 @@ import (
 
 type _print struct{}
 
-func (_ *_print) Type() string {
+func (_ *_print) TypeId() string {
 	return "subroutine.print"
+}
+
+func (_ *_print) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_print) String() string {
@@ -21,7 +25,7 @@ func (_ *_print) IsList() bool {
 }
 
 func (p *_print) Equals(sexp SExpression) bool {
-	return p.Type() == sexp.Type()
+	return p.TypeId() == sexp.TypeId()
 }
 
 func (_ *_print) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
@@ -37,5 +41,5 @@ func (_ *_print) Apply(ctx context.Context, env Environment, args SExpression) (
 }
 
 func NewPrint() SExpression {
-	return &_println{}
+	return &_print{}
 }

@@ -7,8 +7,12 @@ import (
 
 type _current_directory struct{}
 
-func (_ *_current_directory) Type() string {
+func (_ *_current_directory) TypeId() string {
 	return "subroutine.current-directory"
+}
+
+func (_ *_current_directory) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSubroutine
 }
 
 func (_ *_current_directory) String() string {
@@ -20,7 +24,7 @@ func (_ *_current_directory) IsList() bool {
 }
 
 func (l *_current_directory) Equals(sexp SExpression) bool {
-	return l.Type() == sexp.Type()
+	return l.TypeId() == sexp.TypeId()
 }
 
 func (_ *_current_directory) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {

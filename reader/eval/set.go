@@ -7,8 +7,12 @@ import (
 
 type _set struct{}
 
-func (_ *_set) Type() string {
+func (_ *_set) TypeId() string {
 	return "special_form.set"
+}
+
+func (_ *_set) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_set) String() string {
@@ -20,11 +24,11 @@ func (_ *_set) IsList() bool {
 }
 
 func (s *_set) Equals(sexp SExpression) bool {
-	return s.Type() == sexp.Type()
+	return s.TypeId() == sexp.TypeId()
 }
 
 func (_ *_set) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.Type() {
+	if "cons_cell" != arguments.TypeId() {
 		return nil, errors.New("type error")
 	}
 

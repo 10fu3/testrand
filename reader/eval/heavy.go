@@ -75,8 +75,12 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 
 type _heavy struct{}
 
-func (_ *_heavy) Type() string {
+func (_ *_heavy) TypeId() string {
 	return "special_form.heavy"
+}
+
+func (_ *_heavy) SExpressionTypeId() SExpressionType {
+	return SExpressionTypeSpecialForm
 }
 
 func (_ *_heavy) String() string {
@@ -88,7 +92,7 @@ func (_ *_heavy) IsList() bool {
 }
 
 func (h *_heavy) Equals(sexp SExpression) bool {
-	return h.Type() == sexp.Type()
+	return h.TypeId() == sexp.TypeId()
 }
 
 func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
