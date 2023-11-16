@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"testrand/config"
+	"testrand/reader/globalEnv"
 	"testrand/util"
 )
 
@@ -22,6 +23,7 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 
 	reqId := uuid.NewString()
 	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
+	globalEnv.Put(env.GetId(), env)
 	fromAddr := fmt.Sprintf("%s:%s", fromHost, fromPort)
 	sexpBody := sendSexp.String()
 	id := env.GetParentId()

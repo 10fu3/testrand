@@ -95,6 +95,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 				fmt.Println(err)
 			}
 			m.Delete(reqId)
+			globalEnv.Delete(sExpressionEnv.envId)
 			c.Status(http.StatusOK)
 			return nil
 		})

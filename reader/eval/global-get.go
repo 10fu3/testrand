@@ -68,6 +68,7 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpressi
 		reader := New(bufio.NewReader(input))
 		result, err = reader.Read()
 		reader = nil
+
 	} else {
 		r, err := env.GetSuperGlobalEnv().Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
 		if err != nil {
