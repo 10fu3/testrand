@@ -401,5 +401,6 @@ const (
 	SExpressionTypeSpecialForm
 	SExpressionTypeClosure
 	SExpressionTypeNativeHashmap
+	SExpressionTypeNativeArray
 	SExpressionTypeEnvironment
 )

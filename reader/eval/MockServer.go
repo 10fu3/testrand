@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"net"
 	"net/http"
 	"runtime"
@@ -49,8 +48,6 @@ func StartMockServer(ctx context.Context) {
 		JSONEncoder: json.Marshal,
 		JSONDecoder: json.Unmarshal,
 	})
-
-	engine.Use(pprof.New())
 
 	engine.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(struct {

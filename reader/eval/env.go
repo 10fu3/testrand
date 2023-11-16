@@ -163,6 +163,14 @@ func GetDefaultFunction() map[string]SExpression {
 		"symbol-name":             NewSymbolName(),
 		"to-string":               NewToString(),
 		"gc":                      NewForceGC(),
+		"new-array":               NewNativeArray(),
+		"get-array":               NewGetNativeArray(),
+		"set-array":               NewSetNativeArray(),
+		"array-len":               NewLengthNativeArray(),
+		"array-append":            NewAppendNativeArray(),
+		"array->list":             NewNativeArrayToList(),
+		"list->array":             NewListToNativeArray(),
+		"foreach-array":           NewForeachNativeArray(),
 	}
 }
 

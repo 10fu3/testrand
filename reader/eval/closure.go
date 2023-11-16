@@ -18,6 +18,7 @@ type _closure struct {
 type Closure interface {
 	SExpression
 	GetFormalsCount() int
+	Callable
 }
 
 func NewClosure(body SExpression, formals SExpression, env Environment, formalsCount int) Callable {
