@@ -54,24 +54,12 @@ func (_ *_string_split) Apply(ctx context.Context, env Environment, args SExpres
 	}
 
 	split := strings.Split(str, sep)
-
-	rootList := &_cons_cell{}
-	look := rootList
-
-	if len(split) == 0 {
-		return rootList, nil
-	}
-
+	converted := make([]SExpression, len(split))
 	for i := 0; i < len(split); i++ {
-		look.Car = NewString(split[i])
-		look.Cdr = NewConsCell(NewNil(), NewNil())
-		if i+1 == len(split) {
-			break
-		}
-		look = look.Cdr.(*_cons_cell)
+		converted[i] = NewString(split[i])
 	}
 
-	return rootList, nil
+	return &_native_array{Arr: converted}, nil
 }
 
 func NewStringSplit() SExpression {
