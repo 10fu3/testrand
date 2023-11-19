@@ -63,7 +63,7 @@ func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args SExpr
 		}
 		keyValue := NewConsCell(NewSymbol(keyName), result)
 		list.Car = keyValue
-		list.Cdr = NewConsCell(NewNil(), NewNil())
+		list.Cdr = NewEmptyList()
 		list = list.Cdr.(*_cons_cell)
 	}
 	return parent, nil

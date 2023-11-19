@@ -52,7 +52,7 @@ func (_ *_transaction) Apply(ctx context.Context, env Environment, args SExpress
 		return nil, err
 	}
 
-	return NewConsCell(NewNil(), NewNil()), nil
+	return NewNil(), nil
 }
 
 func NewTransaction() SExpression {

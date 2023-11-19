@@ -63,7 +63,7 @@ func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments 
 	for scanner.Scan() {
 		evalTarget := NewConsCell(onLoadLine,
 			NewConsCell(NewString(scanner.Text()),
-				NewConsCell(NewNil(), NewNil())))
+				NewEmptyList()))
 
 		Eval(ctx, evalTarget, env)
 	}
@@ -71,7 +71,7 @@ func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments 
 	if 3 == len(args) {
 		onLoadEnd := args[2]
 		evalTarget := NewConsCell(onLoadEnd,
-			NewConsCell(NewNil(), NewNil()))
+			NewEmptyList())
 
 		return Eval(ctx, evalTarget, env)
 	}
