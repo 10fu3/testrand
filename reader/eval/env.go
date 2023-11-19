@@ -108,6 +108,17 @@ func NewEnvironment(parent Environment) (Environment, error) {
 	return env, nil
 }
 
+func NewEnvironmentForClosure(parent Environment, frame map[string]SExpression) (Environment, error) {
+	env := &environment{
+		frame:          frame,
+		parent:         parent,
+		globalEnv:      parent.GetGlobalEnv(),
+		superGlobalEnv: parent.GetSuperGlobalEnv(),
+		parentId:       parent.GetParentId(),
+	}
+	return env, nil
+}
+
 func GetDefaultFunction() map[string]SExpression {
 	return map[string]SExpression{
 		"car":                     NewCar(),

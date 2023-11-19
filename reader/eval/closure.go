@@ -53,7 +53,8 @@ func (c *_closure) GetFormalsCount() int {
 func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
 	loopFormals := c.formals
 	loopArgs := args
-	env, _ := NewEnvironment(c.env)
+
+	frame := map[string]SExpression{}
 
 	for {
 		if IsEmptyList(loopFormals) {
@@ -63,7 +64,7 @@ func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (
 			return nil, errors.New("argument size more than formals")
 		}
 		if "symbol" == loopFormals.TypeId() {
-			env.Define(loopFormals.(Symbol), loopArgs)
+			frame[loopFormals.(Symbol).GetValue()] = loopArgs
 			break
 		}
 		if "cons_cell" == loopFormals.TypeId() {
@@ -75,10 +76,15 @@ func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (
 				return nil, errors.New("argument size less than formals")
 			}
 			cellArgs := loopArgs.(ConsCell)
-			env.Define(cellFormals.GetCar().(Symbol), cellArgs.GetCar())
+			frame[cellFormals.GetCar().(Symbol).GetValue()] = cellArgs.GetCar()
 			loopFormals = cellFormals.GetCdr()
 			loopArgs = cellArgs.GetCdr()
 		}
+	}
+	env, err := NewEnvironmentForClosure(c.env, frame)
+
+	if err != nil {
+		return nil, err
 	}
 	return Eval(ctx, c.body, env)
 }
