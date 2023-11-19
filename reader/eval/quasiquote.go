@@ -84,7 +84,7 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 		return nil, err
 	}
 	if IsEmptyList(cdr) {
-		return NewConsCell(carEvaluated, NewEmptyList()), nil
+		return NewConsCell(carEvaluated, NewConsCell(NewNil(), NewNil())), nil
 	}
 
 	cdrEvaluated, err := _innerEvalQuasiquote(ctx, env, cdr)

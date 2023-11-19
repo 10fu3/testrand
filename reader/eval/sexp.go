@@ -222,18 +222,14 @@ func (n *_nil) IsList() bool {
 	return false
 }
 
-var nilSexp = _nil{}
-
 func NewNil() Nil {
-	return &nilSexp
+	return &_nil{}
 }
 
 type ConsCell interface {
 	SExpression
 	GetCar() SExpression
 	GetCdr() SExpression
-	SetCar(v SExpression) ConsCell
-	SetCdr(v SExpression) ConsCell
 }
 
 type _cons_cell struct {
@@ -285,7 +281,7 @@ func JoinList(left, right SExpression) (ConsCell, error) {
 			return copyRoot, nil
 		} else {
 			copyLook.Car = baseLook.GetCar()
-			copyLook.Cdr = NewEmptyList()
+			copyLook.Cdr = NewConsCell(NewNil(), NewNil())
 			copyLook = copyLook.Cdr.(*_cons_cell)
 			baseLook = baseLook.GetCdr().(*_cons_cell)
 		}
@@ -358,16 +354,6 @@ func (cell *_cons_cell) IsList() bool {
 	return false
 }
 
-func (cell *_cons_cell) SetCar(v SExpression) ConsCell {
-	cell.Car = v
-	return cell
-}
-
-func (cell *_cons_cell) SetCdr(v SExpression) ConsCell {
-	cell.Cdr = v
-	return cell
-}
-
 func (cell *_cons_cell) GetCar() SExpression {
 	return cell.Car
 }
@@ -377,79 +363,29 @@ func (cell *_cons_cell) GetCdr() SExpression {
 }
 
 func ToConsCell(list []SExpression) ConsCell {
-
-	var head = &_cons_cell{
-		Car: NewNil(),
-		Cdr: NewNil(),
-	}
+	var head = (NewConsCell(NewNil(), NewNil())).(*_cons_cell)
 	var look = head
-	var beforeLook ConsCell = nil
+	var beforeLook *_cons_cell = nil
 
 	for _, sexp := range list {
-		look.SetCar(sexp)
-		look.SetCdr(GetEmptyList())
+		look.Car = sexp
+		look.Cdr = NewConsCell(NewNil(), NewNil())
 		beforeLook = look
 		look = (look.Cdr).(*_cons_cell)
 	}
 	if beforeLook != nil {
-		beforeLook.SetCdr(GetEmptyList())
+		beforeLook.Cdr = NewConsCell(NewNil(), NewNil())
 	}
 	return head
 }
 
 func IsEmptyList(list SExpression) bool {
-	return list == &emptyList
-}
+	if "cons_cell" != list.TypeId() {
+		return false
+	}
+	tmp := (list).(ConsCell)
 
-type emptyListType struct {
-	Car SExpression
-	Cdr SExpression
-}
-
-var emptyList = emptyListType{}
-
-func (cell *emptyListType) TypeId() string {
-	return "empty_list"
-}
-
-func (cell *emptyListType) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeConsCell
-}
-
-func (cell *emptyListType) String() string {
-	return "()"
-}
-
-func (cell *emptyListType) IsList() bool {
-	return true
-}
-
-func (cell *emptyListType) GetCar() SExpression {
-	return NewNil()
-}
-
-func (cell *emptyListType) GetCdr() SExpression {
-	return NewNil()
-}
-
-func (cell *emptyListType) SetCar(v SExpression) ConsCell {
-	return cell
-}
-
-func (cell *emptyListType) SetCdr(v SExpression) ConsCell {
-	return cell
-}
-
-func (cell *emptyListType) Equals(sexp SExpression) bool {
-	return "empty_list" == sexp.TypeId()
-}
-
-func GetEmptyList() ConsCell {
-	return &emptyList
-}
-
-func NewEmptyList() ConsCell {
-	return &emptyList
+	return "nil" == tmp.GetCar().TypeId() && "nil" == tmp.GetCdr().TypeId()
 }
 
 type SExpressionType int

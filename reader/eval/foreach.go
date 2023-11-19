@@ -93,12 +93,12 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 
 	for i := 0; i < len(listArr); i++ {
 		if hasParamsForIndex {
-			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewInt(int64(i)), NewEmptyList())))
+			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewInt(int64(i)), NewConsCell(NewNil(), NewNil()))))
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewEmptyList()))
+			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewNil(), NewNil())))
 			if err != nil {
 				return nil, err
 			}

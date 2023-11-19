@@ -37,7 +37,7 @@ func (_ _and) Apply(ctx context.Context, env Environment, args SExpression) (SEx
 		return nil, err
 	}
 
-	evaluatedElm := NewNil()
+	evaluatedElm := NewConsCell(NewNil(), NewNil()).(SExpression)
 
 	for i := 0; i < len(arr); i++ {
 		evaluatedElm, err = Eval(ctx, arr[i], env)

@@ -84,7 +84,7 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 			createSExpressionOnReceive :=
 				NewConsCell(sExpressionEnv.onReceive,
 					NewConsCell(result,
-						NewEmptyList()))
+						NewConsCell(NewNil(), NewNil())))
 
 			targetEnv := TopLevelEnvGet(reqId)
 

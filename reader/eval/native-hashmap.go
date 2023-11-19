@@ -283,7 +283,7 @@ func (_ *_key_value_pair_native_hashmap_to_cons_cell) Apply(ctx context.Context,
 	var consCell SExpression = top
 	for key, value := range args[0].(*_native_hashmap).M {
 		consCell.(*_cons_cell).Car = (NewConsCell(NewString(key), value))
-		consCell.(*_cons_cell).Cdr = NewEmptyList()
+		consCell.(*_cons_cell).Cdr = (NewConsCell(NewNil(), NewNil()))
 		consCell = consCell.(*_cons_cell).GetCdr()
 	}
 	args[0].(*_native_hashmap).Unlock()
