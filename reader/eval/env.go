@@ -9,7 +9,6 @@ import (
 )
 
 type Environment interface {
-	GetId() string
 	GetValue(symbol Symbol) (SExpression, error)
 	GetGlobalEnv() Environment
 	GetSuperGlobalEnv() infra.ISuperGlobalEnv
@@ -20,7 +19,6 @@ type Environment interface {
 }
 
 type environment struct {
-	id             string
 	frame          map[string]SExpression
 	parent         Environment
 	globalEnv      Environment
@@ -68,10 +66,6 @@ func (e *environment) Set(symbol Symbol, sexp SExpression) error {
 	return e.parent.Set(symbol, sexp)
 }
 
-func (e *environment) GetId() string {
-	return e.id
-}
-
 func (e *environment) GetSuperGlobalEnv() infra.ISuperGlobalEnv {
 	return e.superGlobalEnv
 }
@@ -89,7 +83,7 @@ func (e *environment) SExpressionTypeId() SExpressionType {
 }
 
 func (e *environment) String() string {
-	return fmt.Sprintf("#<environment %s>", e.id)
+	return fmt.Sprintf("#<environment>")
 }
 
 func (e *environment) IsList() bool {
@@ -97,15 +91,11 @@ func (e *environment) IsList() bool {
 }
 
 func (e *environment) Equals(args SExpression) bool {
-	if "environment" != args.TypeId() {
-		return false
-	}
-	return e.id == args.(*environment).id
+	return false
 }
 
 func NewEnvironment(parent Environment) (Environment, error) {
 	env := &environment{
-		id:             uuid.NewString(),
 		frame:          map[string]SExpression{},
 		parent:         parent,
 		globalEnv:      parent.GetGlobalEnv(),
@@ -185,7 +175,6 @@ func NewGlobalEnvironment() (Environment, error) {
 	id := uuid.NewString()
 	superGlobalEnv, err := infra.SetupEtcd(id)
 	env := &environment{
-		id:             id,
 		parentId:       id,
 		frame:          GetDefaultFunction(),
 		parent:         nil,
@@ -202,7 +191,6 @@ func NewGlobalEnvironmentById(id string) (Environment, error) {
 	superGlobalEnv, err := infra.SetupEtcd(id)
 
 	env := &environment{
-		id:             id,
 		frame:          GetDefaultFunction(),
 		parentId:       id,
 		parent:         nil,
@@ -210,6 +198,5 @@ func NewGlobalEnvironmentById(id string) (Environment, error) {
 		superGlobalEnv: superGlobalEnv,
 	}
 	env.globalEnv = env
-	TopLevelEnvPut(env.id, env)
 	return env, err
 }

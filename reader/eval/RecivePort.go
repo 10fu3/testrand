@@ -14,9 +14,9 @@ import (
 	"testrand/util"
 )
 
-var PutReceiveQueueMethod func(evnId string, reqId string, onReceive SExpression)
+var PutReceiveQueueMethod func(reqId string, onReceive SExpression)
 
-func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(envId, reqId string, onReceive SExpression)) {
+func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(reqId string, onReceive SExpression)) {
 	m := sync.Map{}
 	router := fiber.New(fiber.Config{
 		JSONEncoder: json.Marshal,
@@ -107,13 +107,11 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 
 	return func() {
 			router.Listen(fmt.Sprintf(":%s", conf.SelfOnCompletePort))
-		}, func(envId string, reqId string, onReceive SExpression) {
+		}, func(reqId string, onReceive SExpression) {
 			stored := struct {
 				onReceive SExpression
-				envId     string
 			}{
 				onReceive: onReceive,
-				envId:     envId,
 			}
 
 			m.Store(reqId, &stored)

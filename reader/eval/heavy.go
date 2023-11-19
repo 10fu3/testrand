@@ -21,7 +21,7 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 	conf := config.Get()
 
 	reqId := uuid.NewString()
-	PutReceiveQueueMethod(env.GetId(), reqId, onComplete)
+	PutReceiveQueueMethod(reqId, onComplete)
 	TopLevelEnvPut(reqId, env)
 	fromAddr := fmt.Sprintf("%s:%s", fromHost, fromPort)
 	sexpBody := sendSexp.String()

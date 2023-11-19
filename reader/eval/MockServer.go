@@ -113,7 +113,7 @@ func StartMockServer(ctx context.Context) {
 				return
 			}
 			result, err := Eval(ctx, readSexp, env)
-			TopLevelEnvDelete(env.GetId())
+			TopLevelEnvDelete(*req.GlobalNamespaceId)
 			env = nil
 			if err != nil {
 				fmt.Println(err)
