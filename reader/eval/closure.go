@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 )
 
 type _closure struct {
-	id           string
 	body         SExpression
 	formals      SExpression
 	env          Environment
@@ -22,7 +20,7 @@ type Closure interface {
 }
 
 func NewClosure(body SExpression, formals SExpression, env Environment, formalsCount int) Callable {
-	return &_closure{body: body, formals: formals, env: env, id: uuid.NewString(), formalsCount: formalsCount}
+	return &_closure{body: body, formals: formals, env: env, formalsCount: formalsCount}
 }
 
 func (c *_closure) TypeId() string {
@@ -34,7 +32,7 @@ func (c *_closure) SExpressionTypeId() SExpressionType {
 }
 
 func (c *_closure) String() string {
-	return fmt.Sprintf("#<closure %s>", c.id)
+	return fmt.Sprintf("#<closure>")
 }
 
 func (c *_closure) IsList() bool {
@@ -45,7 +43,7 @@ func (c *_closure) Equals(args SExpression) bool {
 	if "closure" != args.TypeId() {
 		return false
 	}
-	return c.id == args.(*_closure).id
+	return args.(*_closure) == c
 }
 
 func (c *_closure) GetFormalsCount() int {

@@ -91,7 +91,10 @@ func (e *environment) IsList() bool {
 }
 
 func (e *environment) Equals(args SExpression) bool {
-	return false
+	if "environment" != args.TypeId() {
+		return false
+	}
+	return args.(*environment) == e
 }
 
 func NewEnvironment(parent Environment) (Environment, error) {
