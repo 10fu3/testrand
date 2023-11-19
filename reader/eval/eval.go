@@ -12,16 +12,18 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 		SExpressionTypeString,
 		SExpressionTypeBool,
 		SExpressionTypeEnvironment,
-		SExpressionTypeNil:
+		SExpressionTypeNil,
+		SExpressionTypeNativeArray,
+		SExpressionTypeNativeHashmap:
 		return sexp, nil
 	case SExpressionTypeSymbol:
-		if v, _ := env.GetValue(sexp.(Symbol)); v == nil {
-			if ctx.Value("transaction") == nil {
-				return nil, errors.New("unknown symbol")
-			}
 
+		v, err := env.GetValue(sexp.(Symbol))
+
+		if err != nil {
+			return nil, err
 		}
-		return env.GetValue(sexp.(Symbol))
+		return v, nil
 	case SExpressionTypeConsCell:
 		cell := sexp.(ConsCell)
 		applied, err := Eval(ctx, cell.GetCar(), env)
