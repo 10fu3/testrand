@@ -75,7 +75,6 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 			}
 			sExpressionEnv := storedSExpressionEnv.(*struct {
 				onReceive SExpression
-				envId     string
 			})
 			if sExpressionEnv.onReceive == nil {
 				c.Status(http.StatusOK)
