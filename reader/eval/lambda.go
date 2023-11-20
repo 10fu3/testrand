@@ -46,7 +46,13 @@ func (_ *_lambda) Apply(ctx context.Context, env Environment, arguments SExpress
 		return nil, err
 	}
 
-	return NewClosure(body, params, env, len(formalsArr)), nil
+	closure, err := NewClosure(body, formalsArr, env, len(formalsArr))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return closure, nil
 }
 
 func NewLambda() SExpression {

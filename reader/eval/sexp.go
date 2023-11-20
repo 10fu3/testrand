@@ -327,16 +327,21 @@ func (cell *_cons_cell) String() string {
 }
 
 func ToArray(sexp SExpression) ([]SExpression, error) {
-	list := make([]SExpression, 0)
+	list := make([]SExpression, 0, 0)
 	look := sexp
-
-	for !IsEmptyList(look) {
-		if "cons_cell" != look.TypeId() {
+	var tail SExpression
+	var tailCell ConsCell
+	for {
+		if SExpressionTypeConsCell != look.SExpressionTypeId() {
 			return nil, errors.New("need list")
 		}
-		if look.(ConsCell).GetCdr().TypeId() != "cons_cell" {
-			list = append(list, NewConsCell(look.(ConsCell).GetCar(), look.(ConsCell).GetCdr()))
-			return list, nil
+		tail = look.(ConsCell)
+		if SExpressionTypeConsCell != tail.SExpressionTypeId() {
+			return nil, errors.New("need list")
+		}
+		tailCell = tail.(ConsCell)
+		if SExpressionTypeNil == tailCell.GetCar().SExpressionTypeId() && SExpressionTypeNil == tailCell.GetCdr().SExpressionTypeId() {
+			break
 		}
 		list = append(list, look.(ConsCell).GetCar())
 		look = look.(ConsCell).GetCdr()

@@ -12,12 +12,16 @@ import (
 func BenchmarkRead(b *testing.B) {
 	sample := strings.NewReader(`
 	(begin
-	  (define local-word-count (new-hashmap))
-	  (foreach-array (string-split (read-file "sample1.txt") " ")
-	    (lambda (word)
-	      (put-hashmap local-word-count word (+ (get-hashmap local-word-count word 0) 1))
-	    )
-	  )
+		(define local-word-count (new-hashmap))
+		(define i 0)
+		(loop (not (eq? i 1000)) (begin
+		(foreach-array (string-split (read-file "sample1.txt") " ")
+			(lambda (word)
+				(put-hashmap local-word-count word (+ (get-hashmap local-word-count word 0) 1))
+			)
+		)
+		(set i (+ i 1))
+		))
 	)
 	`)
 	read := eval.New(bufio.NewReader(sample))

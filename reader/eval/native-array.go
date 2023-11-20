@@ -400,8 +400,14 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, argu
 	}
 
 	if lambda.GetFormalsCount() == 2 {
+		var argsSexp = _cons_cell{
+			Car: NewNil(),
+			Cdr: NewNil(),
+		}
 		for i, v := range nativeArray.(*_native_array).Arr {
-			_, err := lambda.Apply(ctx, env, NewConsCell(NewInt(int64(i)), v))
+			argsSexp.Car = NewInt(int64(i))
+			argsSexp.Cdr = NewConsCell(v, NewNil())
+			_, err := lambda.Apply(ctx, env, &argsSexp)
 
 			if err != nil {
 				return nil, err
@@ -409,8 +415,17 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, argu
 		}
 		return NewNil(), nil
 	} else {
+		var childArgsSexp = _cons_cell{
+			Car: NewNil(),
+			Cdr: NewNil(),
+		}
+		var argsSexp = _cons_cell{
+			Car: NewNil(),
+			Cdr: &childArgsSexp,
+		}
 		for _, v := range nativeArray.(*_native_array).Arr {
-			_, err := lambda.Apply(ctx, env, NewConsCell(v, NewConsCell(NewNil(), NewNil())))
+			argsSexp.Car = v
+			_, err := lambda.Apply(ctx, env, &argsSexp)
 
 			if err != nil {
 				return nil, err

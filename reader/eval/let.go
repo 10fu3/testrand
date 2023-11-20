@@ -71,10 +71,15 @@ func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SE
 		params = append(params, evaluatedParams)
 	}
 
-	temporaryParamsForConsCell := ToConsCell(temporaryParams)
 	paramsForConsCell := ToConsCell(params)
 
-	r, err := (NewClosure(body, temporaryParamsForConsCell, env, len(temporaryParams))).Apply(ctx, env, paramsForConsCell)
+	closure, err := NewClosure(body, temporaryParams, env, len(temporaryParams))
+
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := closure.Apply(ctx, env, paramsForConsCell)
 
 	return r, err
 }
