@@ -79,7 +79,7 @@ func evalArgument(ctx context.Context, sexp SExpression, env Environment) ([]SEx
 	}
 
 	if len(cdrEvaluated)+1 < cap(cdrEvaluated) {
-		cdrEvaluated = cdrEvaluated[:len(cdrEvaluated)+1] // slice の延長
+		cdrEvaluated = cdrEvaluated[:len(cdrEvaluated)+2] // slice の延長
 		cdrEvaluated[len(cdrEvaluated)] = carEvaluated
 	} else if cap(cdrEvaluated) < len(cdrEvaluated)+1 {
 		cdrEvaluated = append(cdrEvaluated, carEvaluated)
