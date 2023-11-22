@@ -5,85 +5,65 @@ import (
 	"errors"
 )
 
-type _let struct{}
+func _syntax_let_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
 
-func (_ *_let) TypeId() string {
-	return "special_form.let"
-}
-
-func (_ *_let) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_let) String() string {
-	return "#<syntax let>"
-}
-
-func (_ *_let) IsList() bool {
-	return false
-}
-
-func (l *_let) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-
-	if args.TypeId() != "cons_cell" {
-		return nil, errors.New("malformed let")
+	if SexpressionTypeConsCell != args.SexpressionTypeId() {
+		return CreateNil(), errors.New("malformed let")
 	}
 
-	arr, err := ToArray(args.(ConsCell))
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) < 2 {
-		return nil, errors.New("malformed let")
+	if arrSize < 2 {
+		return CreateNil(), errors.New("malformed let")
 	}
 
 	bindings := arr[0]
 	body := arr[1]
 
-	bindingsArr, err := ToArray(bindings)
+	bindingsArr, bindingsArrSize, err := ToArray(bindings)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	temporaryParams := make([]SExpression, 0)
-	params := make([]SExpression, 0)
+	temporaryParams := make([]*Sexpression, 0)
+	params := make([]*Sexpression, 0)
 
 	for i := 0; i < len(bindingsArr); i++ {
-		varnameValuePair, err := ToArray(bindingsArr[i])
-		if err != nil {
-			return nil, err
+		varnameValuePair, varnameValuePairLen, toArrayErr := ToArray(bindingsArr[i])
+		if toArrayErr != nil {
+			return CreateNil(), toArrayErr
 		}
 
-		if len(varnameValuePair) != 2 || varnameValuePair[0].TypeId() != "symbol" {
-			return nil, errors.New("malformed let")
+		if varnameValuePairLen != 2 || !varnameValuePair[0].IsSymbol() {
+			return CreateNil(), errors.New("malformed let")
 		}
 
 		temporaryParams = append(temporaryParams, varnameValuePair[0])
-		evaluatedParams, err := Eval(ctx, varnameValuePair[1], env)
-		if err != nil {
-			return nil, err
+		evaluatedParams, evaluatedErr := Eval(ctx, varnameValuePair[1], env)
+		if evaluatedErr != nil {
+			return CreateNil(), err
 		}
 		params = append(params, evaluatedParams)
 	}
 
+	temporaryParamsSize := bindingsArrSize
+
 	paramsForConsCell := ToConsCell(params)
 
-	closure, err := NewClosure(body, temporaryParams, env, len(temporaryParams))
+	closure, generateClosureErr := CreateClosure(body, temporaryParams, env, temporaryParamsSize)
 
-	if err != nil {
-		return nil, err
+	if generateClosureErr != nil {
+		return CreateNil(), generateClosureErr
 	}
 
-	r, err := closure.Apply(ctx, env, paramsForConsCell)
+	r, err := closure._applyFunc(closure, ctx, env, paramsForConsCell)
 
 	return r, err
 }
 
-func NewLet() SExpression {
-	return &_let{}
+func NewLet() *Sexpression {
+	return CreateSpecialForm("let", _syntax_let_Apply)
 }

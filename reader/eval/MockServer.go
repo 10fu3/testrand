@@ -114,7 +114,6 @@ func StartMockServer(ctx context.Context) {
 			}
 			result, err := Eval(ctx, readSexp, env)
 			TopLevelEnvDelete(*req.GlobalNamespaceId)
-			env = nil
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -126,7 +125,6 @@ func StartMockServer(ctx context.Context) {
 			}
 			sendBodyBytes, err := json.Marshal(&sendBody)
 			sendBodyBuff := bytes.NewBuffer(sendBodyBytes)
-			result = nil
 			sendAddr := fmt.Sprintf("http://%s/receive/%s", *req.From, requestId)
 
 			fmt.Println("sendAddr:", sendAddr)

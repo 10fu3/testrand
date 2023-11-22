@@ -5,50 +5,27 @@ import (
 	"errors"
 )
 
-type _is_equals struct {
-}
-
-func (_ *_is_equals) TypeId() string {
-	return "subroutine.is_equals"
-}
-
-func (_ *_is_equals) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_is_equals) String() string {
-	return "#<subr eq?>"
-}
-
-func (_ *_is_equals) IsList() bool {
-	return false
-}
-
-func (i *_is_equals) Equals(sexp SExpression) bool {
-	return i.TypeId() == sexp.TypeId()
-}
-
-func (_ *_is_equals) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
+func _subr_is_equals_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
+	if SexpressionTypeConsCell != arguments._sexp_type_id {
+		return CreateNil(), errors.New("type error")
 	}
-	argCell := arguments.(ConsCell)
+	argCell := arguments._cell
 
-	first := argCell.GetCar()
+	first := argCell._car
 
-	if "cons_cell" != argCell.GetCdr().TypeId() {
-		return nil, errors.New("type error")
+	if SexpressionTypeConsCell != argCell._cdr.SexpressionTypeId() {
+		return CreateNil(), errors.New("type error")
 	}
 
-	second := argCell.GetCdr().(ConsCell)
+	second := argCell._cdr._cell
 
-	if !IsEmptyList(second.GetCdr()) {
-		return nil, errors.New("argument size error")
+	if !IsEmptyList(second._cdr) {
+		return CreateNil(), errors.New("argument size error")
 	}
 
-	return NewBool(first.Equals(second.GetCar())), nil
+	return CreateBool(first.Equals(second._car)), nil
 }
 
-func NewIsEq() SExpression {
-	return &_is_equals{}
+func NewIsEq() *Sexpression {
+	return CreateSubroutine("eq?", _subr_is_equals_Apply)
 }

@@ -14,9 +14,9 @@ import (
 	"testrand/util"
 )
 
-var PutReceiveQueueMethod func(reqId string, onReceive SExpression)
+var PutReceiveQueueMethod func(reqId string, onReceive *Sexpression)
 
-func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(reqId string, onReceive SExpression)) {
+func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), func(reqId string, onReceive *Sexpression)) {
 	m := sync.Map{}
 	router := fiber.New(fiber.Config{
 		JSONEncoder: json.Marshal,
@@ -74,17 +74,17 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 				return errors.New("not found request id in callback store")
 			}
 			sExpressionEnv := storedSExpressionEnv.(*struct {
-				onReceive SExpression
+				onReceive *Sexpression
 			})
-			if sExpressionEnv.onReceive == nil {
+			if SexpressionTypeNil == sExpressionEnv.onReceive._sexp_type_id {
 				c.Status(http.StatusOK)
 				m.Delete(reqId)
 				return nil
 			}
 			createSExpressionOnReceive :=
-				NewConsCell(sExpressionEnv.onReceive,
-					NewConsCell(result,
-						NewConsCell(NewNil(), NewNil())))
+				CreateConsCell(sExpressionEnv.onReceive,
+					CreateConsCell(result,
+						CreateConsCell(CreateNil(), CreateNil())))
 
 			targetEnv := TopLevelEnvGet(reqId)
 
@@ -106,9 +106,9 @@ func StartReceiveServer(globalNamespaceId string, ctx context.Context) (func(), 
 
 	return func() {
 			router.Listen(fmt.Sprintf(":%s", conf.SelfOnCompletePort))
-		}, func(reqId string, onReceive SExpression) {
+		}, func(reqId string, onReceive *Sexpression) {
 			stored := struct {
-				onReceive SExpression
+				onReceive *Sexpression
 			}{
 				onReceive: onReceive,
 			}

@@ -6,52 +6,31 @@ import (
 	"time"
 )
 
-type _wait struct{}
-
-func (_ *_wait) TypeId() string {
-	return "special_form.wait"
-}
-
-func (_ *_wait) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_wait) String() string {
-	return "#<syntax wait>"
-}
-
-func (_ *_wait) IsList() bool {
-	return false
-}
-
-func (l *_wait) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_wait) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func _subr_wait_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if SexpressionTypeConsCell != args._sexp_type_id {
+		return CreateNil(), errors.New("need arguments")
 	}
-	arguments := args.(ConsCell)
+	arguments := args._cell
 
-	if !IsEmptyList(arguments.GetCdr()) {
-		return nil, errors.New("need arguments length is 1")
+	if !IsEmptyList(arguments._cdr) {
+		return CreateNil(), errors.New("need arguments length is 1")
 	}
 
-	waitTime, err := Eval(ctx, arguments.GetCar(), env)
+	waitTime, err := Eval(ctx, arguments._car, env)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if waitTime.TypeId() != "number" {
-		return nil, errors.New("need 1st argument must be number but got " + waitTime.TypeId())
+	if !waitTime.IsNumber() {
+		return CreateNil(), errors.New("need 1st argument must be number but got " + waitTime._sexp_type_id.String())
 	}
-	durationTime := time.Millisecond * time.Duration(int(waitTime.(Number).GetValue()))
+
+	durationTime := time.Millisecond * time.Duration(int(waitTime._number))
 	time.Sleep(durationTime)
 
-	return nil, nil
+	return CreateNil(), nil
 }
 
-func NewWait() SExpression {
-	return &_wait{}
+func NewWait() *Sexpression {
+	return CreateSubroutine("wait", _subr_wait_Apply)
 }

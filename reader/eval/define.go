@@ -5,61 +5,33 @@ import (
 	"errors"
 )
 
-type _define struct{}
-
-func (_ *_define) TypeId() string {
-	return "special_form.define"
-}
-
-func (_ *_define) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_define) String() string {
-	return "#<syntax #define>"
-}
-
-func (_ *_define) IsList() bool {
-	return false
-}
-
-func (d *_define) Equals(sexp SExpression) bool {
-	return d.TypeId() == sexp.TypeId()
-}
-
-func onSymbolCall(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
-	}
-
-	cell := arguments.(ConsCell)
-
-	name := cell.GetCar().(Symbol)
-
-	if IsEmptyList(cell.GetCdr()) {
-		env.Define(name, NewNil())
-		return name, nil
-	}
-
-	initValue := cell.GetCdr().(ConsCell)
-
-	if !IsEmptyList(initValue.GetCdr()) {
-		return nil, errors.New("need less than 3 params")
-	}
-	evaluatedInitValue, err := Eval(ctx, initValue.GetCar(), env)
+func _syntax_define_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(arguments)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	env.Define(name, evaluatedInitValue)
+
+	if arrSize != 2 {
+		return CreateNil(), errors.New("malformed define")
+	}
+
+	name := arr[0]
+	initValue := arr[1]
+
+	if SexpressionTypeSymbol != name.SexpressionTypeId() {
+		return CreateNil(), errors.New("malformed define")
+	}
+
+	evaluatedInitValue, err := Eval(ctx, initValue, env)
+
+	if err != nil {
+		return CreateNil(), err
+	}
+	env._env_frame.Set(name._symbol._string, evaluatedInitValue)
 	return name, nil
 }
 
-func (_ *_define) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	return onSymbolCall(ctx, env, arguments)
-}
-
-func NewDefine() SExpression {
-	return &_define{}
+func NewDefine() *Sexpression {
+	return CreateSpecialForm("define", _syntax_define_Apply)
 }

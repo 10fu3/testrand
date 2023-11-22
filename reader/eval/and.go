@@ -2,49 +2,26 @@ package eval
 
 import "context"
 
-type _and struct {
-}
-
-func (_ _and) TypeId() string {
-	return "special_form.and"
-}
-
-func (_ _and) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ _and) String() string {
-	return "#<syntax #and>"
-}
-
-func (_ _and) IsList() bool {
-	return false
-}
-
-func (a _and) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ _and) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func _sub_And(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
 
 	if IsEmptyList(args) {
-		return NewBool(true), nil
+		return CreateBool(true), nil
 	}
 
-	arr, err := ToArray(args)
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return &Sexpression{}, err
 	}
 
-	evaluatedElm := NewConsCell(NewNil(), NewNil()).(SExpression)
+	evaluatedElm := CreateEmptyList()
 
-	for i := 0; i < len(arr); i++ {
+	for i := uint64(0); i < arrSize; i++ {
 		evaluatedElm, err = Eval(ctx, arr[i], env)
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
-		if NewBool(false).Equals(evaluatedElm) {
+		if CreateBool(false).Equals(evaluatedElm) {
 			return evaluatedElm, nil
 		}
 	}
@@ -52,6 +29,6 @@ func (_ _and) Apply(ctx context.Context, env Environment, args SExpression) (SEx
 	return evaluatedElm, nil
 }
 
-func NewAnd() SExpression {
-	return &_and{}
+func NewAnd() *Sexpression {
+	return CreateSubroutine("and", _sub_And)
 }

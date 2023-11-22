@@ -5,109 +5,85 @@ import (
 	"errors"
 )
 
-type _foreach struct{}
-
-func (_ *_foreach) TypeId() string {
-	return "special_form.foreach"
-}
-
-func (_ *_foreach) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_foreach) String() string {
-	return "#<syntax foreach>"
-}
-
-func (_ *_foreach) IsList() bool {
-	return false
-}
-
-func (q *_foreach) Equals(sexp SExpression) bool {
-	return q.TypeId() == sexp.TypeId()
-}
-
-func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _syntax_foreach_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) != 2 {
-		return nil, errors.New("malformed foreach")
+	if arrSize != 2 {
+		return CreateNil(), errors.New("malformed foreach")
 	}
 
 	//this is the list of items to iterate over
 	list, err := Eval(ctx, arr[0], env)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
 	//get body
 	body := arr[1]
 
 	if !body.IsList() {
-		return nil, errors.New("foreach: second argument must be a lambda")
+		return CreateNil(), errors.New("foreach: second argument must be a lambda")
 	}
 
-	if !body.(ConsCell).GetCar().Equals(NewSymbol("lambda")) {
-		return nil, errors.New("foreach: second argument must be a lambda")
+	if !body._cell._car.Equals(CreateSymbol("lambda")) {
+		return CreateNil(), errors.New("foreach: second argument must be a lambda")
 	}
 
-	if !body.(ConsCell).GetCdr().IsList() {
-		return nil, errors.New("foreach: second argument must be a lambda with a list of arguments")
+	if !body._cell._cdr.IsList() {
+		return CreateNil(), errors.New("foreach: second argument must be a lambda with a list of arguments")
 	}
 
-	if !body.(ConsCell).GetCdr().(ConsCell).GetCdr().IsList() {
-		return nil, errors.New("foreach: second argument must be a lambda with a list of arguments")
+	if !body._cell._cdr._cell._cdr.IsList() {
+		return CreateNil(), errors.New("foreach: second argument must be a lambda with a list of arguments")
 	}
 
-	bodyArg := body.(ConsCell).GetCdr().(ConsCell).GetCar()
+	bodyArg := body._cell._cdr._cell._car
 
-	if bodyArg.TypeId() != "cons_cell" {
-		return nil, errors.New("foreach: second argument must be a lambda with a list of arguments")
+	if !bodyArg.IsConsCell() {
+		return CreateNil(), errors.New("foreach: second argument must be a lambda with a list of arguments")
 	}
 
 	hasParamsForIndex := !bodyArg.IsList()
 
 	//check if list is a list
 	if !list.IsList() {
-		return nil, errors.New("foreach: first argument must be a list")
+		return CreateNil(), errors.New("foreach: first argument must be a list")
 	}
 
 	//get the list as an array
-	listArr, err := ToArray(list)
+	listArr, listSize, err := ToArray(list)
 
-	rawClosure, err := Eval(ctx, body, env)
+	closure, err := Eval(ctx, body, env)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if rawClosure.TypeId() != "closure" {
-		return nil, errors.New("foreach: second argument must be a lambda")
+	if !closure.IsClosure() {
+		return CreateNil(), errors.New("foreach: second argument must be a lambda")
 	}
 
-	closure := rawClosure.(*_closure)
-
-	for i := 0; i < len(listArr); i++ {
+	for i := uint64(0); i < listSize; i++ {
 		if hasParamsForIndex {
-			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewInt(int64(i)), NewConsCell(NewNil(), NewNil()))))
-			if err != nil {
-				return nil, err
+			_, applyFuncErr := closure._applyFunc(closure, ctx, env, CreateConsCell(listArr[i], CreateConsCell(CreateInt(int64(i)), CreateConsCell(CreateNil(), CreateNil()))))
+			if applyFuncErr != nil {
+				return CreateNil(), applyFuncErr
 			}
 		} else {
-			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewNil(), NewNil())))
-			if err != nil {
-				return nil, err
+			_, applyFuncErr := closure._applyFunc(closure, ctx, env, CreateConsCell(listArr[i], CreateConsCell(CreateNil(), CreateNil())))
+			if applyFuncErr != nil {
+				return CreateNil(), applyFuncErr
 			}
 		}
 	}
 
-	return NewNil(), nil
+	return CreateNil(), nil
 }
 
-func NewForeach() SExpression {
-	return &_foreach{}
+func NewForeach() *Sexpression {
+	return CreateSpecialForm("foreach", _syntax_foreach_Apply)
 }

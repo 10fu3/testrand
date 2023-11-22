@@ -4,90 +4,54 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testrand/cmap"
 )
 
-type _closure struct {
-	body         SExpression
-	formals      []SExpression
-	env          Environment
-	formalsCount int
-}
-
-type Closure interface {
-	SExpression
-	GetFormalsCount() int
-	Callable
-}
-
-func NewClosure(body SExpression, formals []SExpression, env Environment, formalsCount int) (Callable, error) {
-	return &_closure{body: body, formals: formals, env: env, formalsCount: formalsCount}, nil
-}
-
-func (c *_closure) TypeId() string {
-	return "closure"
-}
-
-func (c *_closure) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeClosure
-}
-
-func (c *_closure) String() string {
-	return fmt.Sprintf("#<closure>")
-}
-
-func (c *_closure) IsList() bool {
-	return false
-}
-
-func (c *_closure) Equals(args SExpression) bool {
-	if "closure" != args.TypeId() {
-		return false
+func ____max(a, b uint64) uint64 {
+	if a > b {
+		return a
 	}
-	return args.(*_closure) == c
+	return b
 }
 
-func (c *_closure) GetFormalsCount() int {
-	return c.formalsCount
-}
+func _closure_run(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
 
-func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-
-	loopArgs, err := ToArray(args)
+	loopArgs, loopArgsSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if len(loopArgs) != len(c.formals) {
-		return nil, errors.New(fmt.Sprintf("not match argument size: %d != %d", len(loopArgs), len(c.formals)))
+	if loopArgsSize != self._apply_formalsCount {
+		return CreateNil(), errors.New(fmt.Sprintf("not match argument size: required %d but got %d", self._apply_formalsCount, loopArgsSize))
 	}
 
-	frame := map[string]SExpression{}
+	frame := cmap.New[*Sexpression]()
 
-	var argElem SExpression = NewNil()
+	var argElem *Sexpression = CreateNil()
 
-	for formalsIndex, formalElem := range c.formals {
+	for formalsIndex, formalElem := range self._apply_formals {
 		argElem = loopArgs[formalsIndex]
-		if "symbol" == formalElem.TypeId() {
-			frame[formalElem.(Symbol).GetValue()] = argElem
+		if formalElem.IsSymbol() {
+			frame.Set(formalElem._symbol._string, argElem)
 			break
 		}
-		if "cons_cell" == formalElem.TypeId() {
-			cellFormals := formalElem.(ConsCell)
-			if "symbol" != cellFormals.GetCar().TypeId() {
-				return nil, errors.New("need symbol")
+		if formalElem.IsConsCell() {
+			cellFormals := formalElem._cell
+			if SexpressionTypeSymbol != cellFormals._car._sexp_type_id {
+				return CreateNil(), errors.New("need symbol")
 			}
-			if "cons_cell" != argElem.TypeId() {
-				return nil, errors.New("argument size less than formals")
+			if SexpressionTypeSymbol != argElem._sexp_type_id {
+				return CreateNil(), errors.New("argument size less than formals")
 			}
-			cellArgs := argElem.(ConsCell)
-			frame[cellFormals.GetCar().(Symbol).GetValue()] = cellArgs.GetCar()
+			cellArgs := argElem._cell
+			frame.Set(cellFormals._car._symbol._string, cellArgs._car)
 		}
 	}
-	env, err := NewEnvironmentForClosure(c.env, frame)
+	newEnv, err := NewEnvironmentForClosure(self._apply_env, frame)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	return Eval(ctx, c.body, env)
+	return Eval(ctx, self._apply_body, newEnv)
 }

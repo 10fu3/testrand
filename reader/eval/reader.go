@@ -14,44 +14,44 @@ type reader struct {
 }
 
 type Reader interface {
-	Read() (SExpression, error)
+	Read() (*Sexpression, error)
 }
 
-func (r *reader) getCdr() (SExpression, error) {
+func (r *reader) getCdr() (*Sexpression, error) {
 	if r.Token.GetKind() == token.TokenKindRPAREN {
-		return NewConsCell(NewNil(), NewNil()), nil
+		return CreateEmptyList(), nil
 	}
 	if r.Token.GetKind() == token.TokenKindDot {
 		nextToken, err := r.Lexer.GetNextToken()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		r.Token = nextToken
 		sexp, err := r.sExpression()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		return sexp, nil
 	}
 	car, err := r.sExpression()
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	cdr, err := r.getCdr()
-	return NewConsCell(car, cdr), nil
+	return CreateConsCell(car, cdr), nil
 }
 
-func (r *reader) sExpression() (SExpression, error) {
+func (r *reader) sExpression() (*Sexpression, error) {
 	if r.Token.GetKind() == token.TokenKindNumber {
 		value := r.GetInt()
 		if r.nestingLevel != 0 {
 			nextToken, err := r.GetNextToken()
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			r.Token = nextToken
 		}
-		return NewInt(value), nil
+		return CreateInt(value), nil
 	}
 
 	if r.Token.GetKind() == token.TokenKindString {
@@ -59,11 +59,11 @@ func (r *reader) sExpression() (SExpression, error) {
 		if r.nestingLevel != 0 {
 			nextToken, err := r.GetNextToken()
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			r.Token = nextToken
 		}
-		return NewString(value), nil
+		return CreateString(value), nil
 	}
 
 	if r.Token.GetKind() == token.TokenKindSymbol {
@@ -71,90 +71,90 @@ func (r *reader) sExpression() (SExpression, error) {
 		if r.nestingLevel != 0 {
 			nextToken, err := r.GetNextToken()
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			r.Token = nextToken
 		}
-		return NewSymbol(value), nil
+		return CreateSymbol(value), nil
 	}
 	if r.Token.GetKind() == token.TokenKindBoolean {
 		value := r.GetBool()
 		if r.nestingLevel != 0 {
 			nextToken, err := r.GetNextToken()
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			r.Token = nextToken
 		}
-		return NewBool(value), nil
+		return CreateBool(value), nil
 	}
 	if r.Token.GetKind() == token.TokenKindNil {
 		if r.nestingLevel != 0 {
 			nextToken, err := r.GetNextToken()
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			r.Token = nextToken
 		}
-		return NewNil(), nil
+		return CreateNil(), nil
 	}
 	if r.Token.GetKind() == token.TokenKindQuote {
 		nextToken, err := r.GetNextToken()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		r.Token = nextToken
 		sexp, err := r.sExpression()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
-		return NewConsCell(NewSymbol("quote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+		return CreateConsCell(CreateSymbol("quote"), CreateConsCell(sexp, CreateConsCell(CreateNil(), CreateNil()))), nil
 	}
 
 	if r.Token.GetKind() == token.TokenKindUnquote {
 		nextToken, err := r.GetNextToken()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 
 		r.Token = nextToken
 		sexp, err := r.sExpression()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
-		return NewConsCell(NewSymbol("unquote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+		return CreateConsCell(CreateSymbol("unquote"), CreateConsCell(sexp, CreateConsCell(CreateNil(), CreateNil()))), nil
 	}
 
 	if r.Token.GetKind() == token.TokenKindUnquoteSplicing {
 		nextToken, err := r.GetNextToken()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		r.Token = nextToken
 		sexp, err := r.sExpression()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
-		return NewConsCell(NewSymbol("unquote-splicing"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+		return CreateConsCell(CreateSymbol("unquote-splicing"), CreateConsCell(sexp, CreateConsCell(CreateNil(), CreateNil()))), nil
 	}
 
 	if r.Token.GetKind() == token.TokenKindQuasiquote {
 		nextToken, err := r.GetNextToken()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		r.Token = nextToken
 		sexp, err := r.sExpression()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
-		return NewConsCell(NewSymbol("quasiquote"), NewConsCell(sexp, NewConsCell(NewNil(), NewNil()))), nil
+		return CreateConsCell(CreateSymbol("quasiquote"), CreateConsCell(sexp, CreateConsCell(CreateNil(), CreateNil()))), nil
 	}
 	if r.Token.GetKind() == token.TokenKindLparen {
 		r.nestingLevel += 1
 		nextToken, err := r.Lexer.GetNextToken()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		r.Token = nextToken
 		if r.Token.GetKind() == token.TokenKindRPAREN {
@@ -162,38 +162,38 @@ func (r *reader) sExpression() (SExpression, error) {
 			if r.nestingLevel != 0 {
 				nextToken, err = r.Lexer.GetNextToken()
 				if err != nil {
-					return nil, err
+					return CreateNil(), err
 				}
 				r.Token = nextToken
 			}
-			return NewConsCell(NewNil(), NewNil()), nil
+			return CreateConsCell(CreateNil(), CreateNil()), nil
 		}
 		car, err := r.sExpression()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		cdr, err := r.getCdr()
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		r.nestingLevel -= 1
 		if r.nestingLevel != 0 {
 			nextToken, err = r.GetNextToken()
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			r.Token = nextToken
 		}
-		return NewConsCell(car, cdr), nil
+		return CreateConsCell(car, cdr), nil
 	}
-	return nil, errors.New("Invalid expression: " + r.Token.String())
+	return CreateNil(), errors.New("Invalid expression: " + r.Token.String())
 }
 
-func (r *reader) Read() (SExpression, error) {
+func (r *reader) Read() (*Sexpression, error) {
 	r.nestingLevel = 0
 	t, err := r.Lexer.GetNextToken()
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	r.Token = t
 	return r.sExpression()

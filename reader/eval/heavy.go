@@ -16,16 +16,19 @@ import (
 	"testrand/util"
 )
 
-func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environment, fromHost string, fromPort string) {
+func SendSExpression(sendSexp *Sexpression, onComplete *Sexpression, env *Sexpression, fromHost string, fromPort string) {
 
 	conf := config.Get()
 
 	reqId := uuid.NewString()
-	PutReceiveQueueMethod(reqId, onComplete)
+
+	if SexpressionTypeNil != onComplete.SexpressionTypeId() {
+		PutReceiveQueueMethod(reqId, onComplete)
+	}
 	TopLevelEnvPut(reqId, env)
 	fromAddr := fmt.Sprintf("%s:%s", fromHost, fromPort)
 	sexpBody := sendSexp.String()
-	id := env.GetParentId()
+	id := env._env_parentId
 	values, err := json.Marshal(TaskAddRequest{
 		Body:              &sexpBody,
 		From:              &fromAddr,
@@ -74,55 +77,33 @@ func SendSExpression(sendSexp SExpression, onComplete SExpression, env Environme
 	}
 }
 
-type _heavy struct{}
-
-func (_ *_heavy) TypeId() string {
-	return "special_form.heavy"
-}
-
-func (_ *_heavy) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_heavy) String() string {
-	return "#<syntax heavy>"
-}
-
-func (_ *_heavy) IsList() bool {
-	return false
-}
-
-func (h *_heavy) Equals(sexp SExpression) bool {
-	return h.TypeId() == sexp.TypeId()
-}
-
-func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
+func _subr_heavy_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
+	args, _, err := ToArray(arguments)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
 	if ctx.Value("transaction") != nil {
-		return nil, errors.New("transaction can not use in heavy")
+		return CreateNil(), errors.New("transaction can not use in heavy")
 	}
 
 	conf := config.Get()
 	ip, err := util.GetLocalIP()
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
 	if 1 == len(args) {
-		SendSExpression(args[0], nil, env, ip, conf.SelfOnCompletePort)
+		SendSExpression(args[0], CreateNil(), env, ip, conf.SelfOnCompletePort)
 	}
 	if 2 == len(args) {
 		SendSExpression(args[0], args[1], env, ip, conf.SelfOnCompletePort)
 	}
-	return nil, err
+	return CreateNil(), err
 }
 
-func NewHeavy() SExpression {
-	return &_heavy{}
+func NewHeavy() *Sexpression {
+	return CreateSpecialForm("heavy", _subr_heavy_Apply)
 }

@@ -4,44 +4,24 @@ import "context"
 
 type _begin struct{}
 
-func (_ *_begin) TypeId() string {
-	return "special_form.begin"
-}
-
-func (_ *_begin) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_begin) String() string {
-	return "#<syntax #begin>"
-}
-
-func (_ *_begin) IsList() bool {
-	return false
-}
-
-func (b *_begin) Equals(sexp SExpression) bool {
-	return b.TypeId() == sexp.TypeId()
-}
-
-func (_ *_begin) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _begin_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, _, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	last := NewNil()
+	last := CreateNil()
 
 	for _, sexp := range arr {
 		last, err = Eval(ctx, sexp, env)
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 	}
 	return last, err
 }
 
-func NewBegin() SExpression {
-	return &_begin{}
+func NewBegin() *Sexpression {
+	return CreateSpecialForm("begin", _begin_Apply)
 }

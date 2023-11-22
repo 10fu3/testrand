@@ -8,67 +8,45 @@ import (
 	"strings"
 )
 
-type _global_get_all struct {
-}
-
-func (_ *_global_get_all) TypeId() string {
-	return "special_form.global_get_all"
-}
-
-func (_ *_global_get_all) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_global_get_all) String() string {
-	return "#<syntax global_get_all>"
-}
-
-func (_ *_global_get_all) IsList() bool {
-	return false
-}
-
-func (l *_global_get_all) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
+func _subr_global_get_all_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if !args.IsConsCell() {
+		return CreateNil(), errors.New("type error")
 	}
 
 	var err error
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	res, err := env.GetSuperGlobalEnv().GetAll()
+	res, err := env._env_superGlobalEnv.GetAll()
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	var list = &_cons_cell{Car: NewNil(), Cdr: NewNil()}
-	var parent = list
+	var parent = CreateEmptyList()
+	var list = parent
 	for _, kv := range res {
+		cell := list._cell
 		input := strings.NewReader(fmt.Sprintf("%s\n", kv.Value))
 		reader := New(bufio.NewReader(input))
 		result, err := reader.Read()
 		if err != nil {
 			continue
 		}
-		_, keyName, foundName := strings.Cut(kv.Key, fmt.Sprintf("/env/%s/", env.GetParentId()))
+		_, keyName, foundName := strings.Cut(kv.Key, fmt.Sprintf("/env/%s/", env._env_parentId))
 		if !foundName {
 			continue
 		}
-		keyValue := NewConsCell(NewSymbol(keyName), result)
-		list.Car = keyValue
-		list.Cdr = NewConsCell(NewNil(), NewNil())
-		list = list.Cdr.(*_cons_cell)
+		keyValue := CreateConsCell(GetSymbol(keyName), result)
+		cell._car = keyValue
+		cell._cdr = CreateConsCell(CreateNil(), CreateNil())
+		list = cell._cdr
 	}
 	return parent, nil
 }
 
-func NewGlobalGetAll() SExpression {
-	return &_global_get_all{}
+func NewGlobalGetAll() *Sexpression {
+	return CreateSubroutine("global-get-all", _subr_global_get_all_Apply)
 }

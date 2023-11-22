@@ -5,44 +5,23 @@ import (
 	"errors"
 )
 
-type _is_not struct {
-}
+func _subr_is_not_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
 
-func (_ *_is_not) TypeId() string {
-	return "subroutine.is_equals"
-}
-
-func (_ *_is_not) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_is_not) String() string {
-	return "#<subr eq?>"
-}
-
-func (_ *_is_not) IsList() bool {
-	return false
-}
-
-func (i *_is_not) Equals(sexp SExpression) bool {
-	return i.TypeId() == sexp.TypeId()
-}
-
-func (_ *_is_not) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
+	if SexpressionTypeConsCell != arguments.SexpressionTypeId() {
+		return CreateNil(), errors.New("need arguments")
 	}
-	argCell := arguments.(ConsCell)
 
-	first := argCell.GetCar()
+	argCell := arguments._cell
 
-	if "bool" != first.TypeId() {
+	first := argCell._car
+
+	if SexpressionTypeBool != first.SexpressionTypeId() {
 		return first, nil
 	}
 
-	return NewBool(!first.(Bool).GetValue()), nil
+	return CreateBool(!first._boolean), nil
 }
 
-func NewIsNot() SExpression {
-	return &_is_not{}
+func NewIsNot() *Sexpression {
+	return CreateSubroutine("not", _subr_is_not_Apply)
 }

@@ -7,47 +7,25 @@ import (
 	"os"
 )
 
-type _file_read_line struct{}
-
-func (_ *_file_read_line) TypeId() string {
-	return "subroutine.read-line-file"
-}
-
-func (_ *_file_read_line) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_file_read_line) String() string {
-	return "#<subr read-line-file>"
-}
-
-func (_ *_file_read_line) IsList() bool {
-	return false
-}
-
-func (l *_file_read_line) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+func _subr_file_read_line_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
 	// 1st filepath string
 	// 2nd on-load-line function
 	// 3rd on-load-end function
-	args, err := ToArray(arguments)
+	args, argsLen, err := ToArray(arguments)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 2 > len(args) {
-		return nil, errors.New("need arguments size is 1")
+	if 2 > argsLen {
+		return CreateNil(), errors.New("need arguments size is 1")
 	}
 
 	rawPath := args[0]
-	if rawPath.TypeId() != "string" {
-		return nil, errors.New("need arguments type is string")
+	if !rawPath.IsString() {
+		return CreateNil(), errors.New("need arguments type is string")
 	}
 
-	path := rawPath.(Str).GetValue()
+	path := rawPath._string
 
 	onLoadLine := args[1]
 
@@ -55,30 +33,30 @@ func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments 
 
 	fp, err = os.Open(path)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	defer fp.Close()
 
 	scanner := bufio.NewScanner(fp)
 	for scanner.Scan() {
-		evalTarget := NewConsCell(onLoadLine,
-			NewConsCell(NewString(scanner.Text()),
-				NewConsCell(NewNil(), NewNil())))
+		evalTarget := CreateConsCell(onLoadLine,
+			CreateConsCell(CreateString(scanner.Text()),
+				CreateConsCell(CreateNil(), CreateNil())))
 
 		Eval(ctx, evalTarget, env)
 	}
 
 	if 3 == len(args) {
 		onLoadEnd := args[2]
-		evalTarget := NewConsCell(onLoadEnd,
-			NewConsCell(NewNil(), NewNil()))
+		evalTarget := CreateConsCell(onLoadEnd,
+			CreateConsCell(CreateNil(), CreateNil()))
 
 		return Eval(ctx, evalTarget, env)
 	}
 
-	return NewNil(), nil
+	return CreateNil(), nil
 }
 
-func NewFileReadLine() SExpression {
-	return &_file_read_line{}
+func NewFileReadLine() *Sexpression {
+	return CreateSubroutine("file-read-line", _subr_file_read_line_Apply)
 }

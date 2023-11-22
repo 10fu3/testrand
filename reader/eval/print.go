@@ -6,40 +6,18 @@ import (
 	"fmt"
 )
 
-type _print struct{}
-
-func (_ *_print) TypeId() string {
-	return "subroutine.print"
-}
-
-func (_ *_print) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_print) String() string {
-	return "#<subr print>"
-}
-
-func (_ *_print) IsList() bool {
-	return false
-}
-
-func (p *_print) Equals(sexp SExpression) bool {
-	return p.TypeId() == sexp.TypeId()
-}
-
-func (_ *_print) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _subr_print_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) != 1 {
-		return nil, errors.New("need args size is 1")
+	if arrSize != 1 {
+		return CreateNil(), errors.New("need args size is 1")
 	}
 	fmt.Print(arr[0])
-	return NewNil(), nil
+	return CreateNil(), nil
 }
 
-func NewPrint() SExpression {
-	return &_print{}
+func NewPrint() *Sexpression {
+	return CreateSubroutine("print", _subr_print_Apply)
 }

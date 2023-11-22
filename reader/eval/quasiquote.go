@@ -8,106 +8,88 @@ import (
 type _quasiquote struct {
 }
 
-func (_ *_quasiquote) TypeId() string {
-	return "special_form.quasiquote"
-}
+func _innerEvalQuasiquote(self *Sexpression, ctx context.Context, env *Sexpression, x *Sexpression) (*Sexpression, error) {
 
-func (_ *_quasiquote) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_quasiquote) String() string {
-	return "#<syntax #quasiquote>"
-}
-
-func (_ *_quasiquote) IsList() bool {
-	return false
-}
-
-func (q *_quasiquote) Equals(sexp SExpression) bool {
-	return q.TypeId() == sexp.TypeId()
-}
-
-func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (SExpression, error) {
-	if x.TypeId() != "cons_cell" {
-		return x, nil
+	if SexpressionTypeConsCell != x._sexp_type_id {
+		return CreateNil(), errors.New("malformed quote")
 	}
-	pair := x.(ConsCell)
-	car := pair.GetCar()
-	cdr := pair.GetCdr()
-	if car.Equals(NewSymbol("unquote")) {
-		if cdr.TypeId() != "cons_cell" {
-			return nil, errors.New("unquote must be followed by a list")
+
+	pair := x._cell
+	car := pair._car
+	cdr := pair._cdr
+	if car.Equals(CreateSymbol("unquote")) {
+		if SexpressionTypeConsCell != cdr._sexp_type_id {
+			return CreateNil(), errors.New("unquote must be followed by a list")
 		}
-		unquoted, err := Eval(ctx, cdr.(ConsCell).GetCar(), env)
+		unquoted, err := Eval(ctx, cdr._cell._car, env)
 		return unquoted, err
 	}
 
-	if car.Equals(NewSymbol("quasiquote")) {
+	if car.Equals(CreateSymbol("quasiquote")) {
 		return x, nil
 	}
 
-	if car.TypeId() == "cons_cell" && (car.(ConsCell).GetCar()).Equals(NewSymbol("unquote-splicing")) {
-		innerPair := car.(ConsCell).GetCdr().(ConsCell)
-		innerPairCarQuoteEvaluated, err := _innerEvalQuasiquote(ctx, env, innerPair.GetCar())
+	if SexpressionTypeConsCell == car._sexp_type_id && (car._cell._car).Equals(CreateSymbol("unquote-splicing")) {
+		innerPair := car._cell._cdr._cell
+		innerPairCarQuoteEvaluated, err := _innerEvalQuasiquote(self, ctx, env, innerPair._car)
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		innerPairCarEvalueted, err := Eval(ctx, innerPairCarQuoteEvaluated, env)
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
 		if !innerPairCarEvalueted.IsList() {
-			return nil, errors.New("unquote-splicing must be followed by a list")
+			return CreateNil(), errors.New("unquote-splicing must be followed by a list")
 		}
-		if IsEmptyList(innerPair.GetCdr()) {
-			cdrEvaluated, err := _innerEvalQuasiquote(ctx, env, cdr)
+		if IsEmptyList(innerPair._cdr) {
+			cdrEvaluated, err := _innerEvalQuasiquote(self, ctx, env, cdr)
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 			joined, err := JoinList(innerPairCarEvalueted, cdrEvaluated)
 
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 
 			return joined, nil
 		}
-		innerPairCdrEvaluated, err := _innerEvalQuasiquote(ctx, env, innerPair.GetCdr())
+		innerPairCdrEvaluated, err := _innerEvalQuasiquote(self, ctx, env, innerPair._cdr)
 		if err != nil {
-			return nil, err
+			return CreateNil(), err
 		}
-		return NewConsCell(innerPairCarEvalueted, innerPairCdrEvaluated), nil
+		return CreateConsCell(innerPairCarEvalueted, innerPairCdrEvaluated), nil
 	}
-	carEvaluated, err := _innerEvalQuasiquote(ctx, env, car)
+	carEvaluated, err := _innerEvalQuasiquote(self, ctx, env, car)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	if IsEmptyList(cdr) {
-		return NewConsCell(carEvaluated, NewConsCell(NewNil(), NewNil())), nil
+		return CreateConsCell(carEvaluated, CreateConsCell(CreateNil(), CreateNil())), nil
 	}
 
-	cdrEvaluated, err := _innerEvalQuasiquote(ctx, env, cdr)
+	cdrEvaluated, err := _innerEvalQuasiquote(self, ctx, env, cdr)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	return NewConsCell(carEvaluated, cdrEvaluated), nil
+	return CreateConsCell(carEvaluated, cdrEvaluated), nil
 }
 
 // this function is lisp interpter function for quasiquote
-func (_ *_quasiquote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _syntax_quasiquote_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) != 1 {
-		return nil, errors.New("malformed quote")
+	if arrSize != 1 {
+		return CreateNil(), errors.New("malformed quote")
 	}
-	return _innerEvalQuasiquote(ctx, env, arr[0])
+	return _innerEvalQuasiquote(self, ctx, env, arr[0])
 }
 
-func NewQuasiquote() SExpression {
-	return &_quasiquote{}
+func NewQuasiquote() *Sexpression {
+	return CreateSpecialForm("quasiquote", _syntax_quasiquote_Apply)
 }

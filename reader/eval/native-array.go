@@ -3,438 +3,272 @@ package eval
 import (
 	"context"
 	"errors"
-	"fmt"
 )
 
-type _native_array struct {
-	Arr []SExpression
-}
-
-func (_ *_native_array) TypeId() string {
-	return "native_array"
-}
-
-func (_ *_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeNativeArray
-}
-
-func (l *_native_array) String() string {
-	//printout element
-	var str string
-	var arrayLength = len(l.Arr)
-	for i, v := range l.Arr {
-		str += v.String()
-		if i != arrayLength-1 {
-			str += ","
-		}
-	}
-	return fmt.Sprintf("[%s]", str)
-}
-
-func (_ *_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_native_array) Equals(sexp SExpression) bool {
-	return false
-}
-
-type _new_native_array struct{}
-
-func (_ *_new_native_array) TypeId() string {
-	return "subroutine.new-native-array"
-}
-
-func (_ *_new_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_new_native_array) String() string {
-	return "#<subr new-native-array>"
-}
-
-func (_ *_new_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_new_native_array) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.new-native-array"
-}
-
-func (_ *_new_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	return &_native_array{
-		Arr: make([]SExpression, 0),
+func _subr_new_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	return &Sexpression{
+		_sexp_type_id: SexpressionTypeNativeArray,
+		_native_arr:   make([]interface{}, 0),
 	}, nil
 }
 
-func NewNativeArray() SExpression {
-	return &_new_native_array{}
+func NewNativeArray() *Sexpression {
+	return CreateSubroutine("new-array", _subr_new_native_array_Apply)
 }
 
-type _get_native_array struct{}
-
-func (_ *_get_native_array) TypeId() string {
-	return "subroutine.get-native-array"
-}
-
-func (_ *_get_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_get_native_array) String() string {
-	return "#<subr get-native-array>"
-}
-
-func (_ *_get_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_get_native_array) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.get-native-array"
-}
-
-func (_ *_get_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func _subr_get_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	argsArr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 2 != len(argsArr) {
-		return nil, errors.New("wrong number of arguments")
+	if 2 != arrSize {
+		return CreateNil(), errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := argsArr[0]._native_arr
 
-	index := argsArr[1].(Number).GetValue()
+	index := argsArr[1]._number
 
-	if index < 0 || index >= int64(len(arr.Arr)) {
-		return nil, errors.New("index out of range")
+	rawCastedArr, ok := arr.([]interface{})
+
+	if index < 0 || index >= int64(len(rawCastedArr)) {
+		return CreateNil(), errors.New("index out of range")
 	}
 
-	return arr.Arr[index], nil
+	v, ok := rawCastedArr[index].(*Sexpression)
+
+	if ok {
+		return v, nil
+	}
+
+	return CreateNativeValue(rawCastedArr[index]), nil
 }
 
-func NewGetNativeArray() SExpression {
-	return &_get_native_array{}
+func NewGetIndexNativeArray() *Sexpression {
+	return CreateSubroutine("get-index-array", _subr_get_native_array_Apply)
 }
 
-type _set_native_array struct{}
-
-func (_ *_set_native_array) TypeId() string {
-	return "subroutine.set-native-array"
-}
-
-func (_ *_set_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_set_native_array) String() string {
-	return "#<subr set-native-array>"
-}
-
-func (_ *_set_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_set_native_array) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.set-native-array"
-}
-
-func (_ *_set_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func _set_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	argsArr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 3 != len(argsArr) {
-		return nil, errors.New("wrong number of arguments")
+	if 3 != arrSize {
+		return CreateNil(), errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := argsArr[0]._native_arr.([]interface{})
 
-	index := argsArr[1].(Number).GetValue()
+	index := argsArr[1]._number
 
-	if index < 0 || index >= int64(len(arr.Arr)) {
-		return nil, errors.New("index out of range")
+	if index < 0 || index >= int64(arrSize) {
+		return CreateNil(), errors.New("index out of range")
 	}
 
-	arr.Arr[index] = argsArr[2]
+	arr[index] = argsArr[2]
 
 	return argsArr[2], nil
 }
 
-func NewSetNativeArray() SExpression {
-	return &_set_native_array{}
+func NewSetIndexNativeArray() *Sexpression {
+	return CreateSubroutine("set-index-array", _set_native_array_Apply)
 }
 
-type _length_native_array struct{}
-
-func (_ *_length_native_array) TypeId() string {
-	return "subroutine.length-native-array"
-}
-
-func (_ *_length_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_length_native_array) String() string {
-	return "#<subr length-native-array>"
-}
-
-func (_ *_length_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_length_native_array) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.length-native-array"
-}
-
-func (_ *_length_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func _subr__length_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	argsArr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
 	if 1 != len(argsArr) {
-		return nil, errors.New("wrong number of arguments")
+		return CreateNil(), errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	_, ok := argsArr[0]._native_arr.([]interface{})
 
-	return NewInt(int64(len(arr.Arr))), nil
+	if !ok {
+		return CreateNil(), errors.New("wrong type of arguments")
+	}
+
+	return CreateInt(int64(arrSize)), nil
 }
 
-func NewLengthNativeArray() SExpression {
-	return &_length_native_array{}
+func NewLengthNativeArray() *Sexpression {
+	return CreateSubroutine("length-array", _subr__length_native_array_Apply)
 }
 
-type _append_native_array struct{}
-
-func (_ *_append_native_array) TypeId() string {
-	return "subroutine.append-native-array"
-}
-
-func (_ *_append_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_append_native_array) String() string {
-	return "#<subr append-native-array>"
-}
-
-func (_ *_append_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_append_native_array) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.append-native-array"
-}
-
-func (_ *_append_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func _subr_append_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	argsArr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 2 != len(argsArr) {
-		return nil, errors.New("wrong number of arguments")
+	if 2 != arrSize {
+		return CreateNil(), errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := argsArr[0]._native_arr.([]interface{})
 
-	arr.Arr = append(arr.Arr, argsArr[1])
+	arr = append(arr, argsArr[1])
 
-	return arr, nil
+	argsArr[0]._native_arr = arr
+
+	return argsArr[0], nil
 }
 
-func NewAppendNativeArray() SExpression {
-	return &_append_native_array{}
+func NewAppendNativeArray() *Sexpression {
+	return CreateSubroutine("append-array", _subr_append_native_array_Apply)
 }
 
-type _native_array_to_list struct{}
-
-func (_ *_native_array_to_list) TypeId() string {
-	return "subroutine.native-array-to-list"
-}
-
-func (_ *_native_array_to_list) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_native_array_to_list) String() string {
-	return "#<subr native-array-to-list>"
-}
-
-func (_ *_native_array_to_list) IsList() bool {
-	return false
-}
-
-func (_ *_native_array_to_list) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.native-array-to-list"
-}
-
-func (_ *_native_array_to_list) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func _subr_native_array_to_list_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	argsArr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 1 != len(argsArr) {
-		return nil, errors.New("wrong number of arguments")
+	if 1 != arrSize {
+		return CreateNil(), errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr, ok := argsArr[0]._native_arr.([]*Sexpression)
 
-	return ToConsCell(arr.Arr), nil
+	if !ok {
+		return CreateNil(), errors.New("wrong type of arguments")
+	}
+
+	return ToConsCell(arr), nil
 }
 
-func NewNativeArrayToList() SExpression {
-	return &_native_array_to_list{}
+func NewNativeArrayToList() *Sexpression {
+	return CreateSubroutine("array->list", _subr_native_array_to_list_Apply)
 }
 
-type _list_to_native_array struct{}
-
-func (_ *_list_to_native_array) TypeId() string {
-	return "subroutine.list-to-native-array"
-}
-
-func (_ *_list_to_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_list_to_native_array) String() string {
-	return "#<subr list-to-native-array>"
-}
-
-func (_ *_list_to_native_array) IsList() bool {
-	return false
-}
-
-func (_ *_list_to_native_array) Equals(sexp SExpression) bool {
-	return sexp.TypeId() == "subroutine.list-to-native-array"
-}
-
-func (_ *_list_to_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func _subr_list_to_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	argsArr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 1 != len(argsArr) {
-		return nil, errors.New("wrong number of arguments")
+	if 1 != arrSize {
+		return CreateNil(), errors.New("wrong number of arguments")
 	}
 
-	consCell, err := ToArray(argsArr[0])
+	nativeArr, _, err := ToArray(argsArr[0])
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	return &_native_array{
-		Arr: consCell,
+	return &Sexpression{
+		_sexp_type_id: SexpressionTypeNativeArray,
+		_native_arr:   nativeArr,
 	}, nil
 }
 
-func NewListToNativeArray() SExpression {
-	return &_list_to_native_array{}
+func NewListToNativeArray() *Sexpression {
+	return CreateSubroutine("list->array", _subr_list_to_native_array_Apply)
 }
 
-type _foreach_native_array struct{}
-
-func (_ *_foreach_native_array) TypeId() string {
-	return "special_form.foreach-native-array"
-}
-
-func (_ *_foreach_native_array) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_foreach_native_array) String() string {
-	return "#<syntax foreach-native-array>"
-}
-
-func (_ *_foreach_native_array) IsList() bool {
-	return false
-}
-
-func (l *_foreach_native_array) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
+func _syntax_foreach_native_array_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
+	args, argsLen, err := ToArray(arguments)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 2 > len(args) {
-		return nil, errors.New("need arguments size is 2")
+	if 2 > argsLen {
+		return CreateNil(), errors.New("need arguments size is 2")
 	}
 
 	nativeArray, err := Eval(ctx, args[0], env)
 
-	if err != nil || nativeArray.SExpressionTypeId() != SExpressionTypeNativeArray {
-		return nil, errors.New("need arguments type is native_array")
+	if err != nil || nativeArray.SexpressionTypeId() != SexpressionTypeNativeArray {
+		return CreateNil(), errors.New("need arguments type is native_array")
 	}
 
-	rawLambda, err := Eval(ctx, args[1], env)
+	lambda, err := Eval(ctx, args[1], env)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if rawLambda.SExpressionTypeId() != SExpressionTypeClosure {
-		return nil, errors.New("need arguments type is closure")
+	if lambda.SexpressionTypeId() != SexpressionTypeClosure {
+		return CreateNil(), errors.New("need arguments type is closure")
 	}
-
-	lambda := rawLambda.(Closure)
 
 	if lambda.GetFormalsCount() != 1 && lambda.GetFormalsCount() != 2 {
-		return nil, errors.New("need arguments size is 1 or 2")
+		return CreateNil(), errors.New("need arguments size is 1 or 2")
 	}
 
+	sexpConveterArr, sexpConveterr := nativeArray._native_arr.([]*Sexpression)
+
+	var convertMode = false
+	if !sexpConveterr {
+		convertMode = true
+	}
+
+	if convertMode {
+		nativeArr, okNativeConvert := nativeArray._native_arr.([]interface{})
+		if !okNativeConvert {
+			return CreateNil(), errors.New("need arguments type is native_array")
+		}
+		if lambda.GetFormalsCount() == 2 {
+			var argsSexp = CreateEmptyList()
+			for i, v := range nativeArr {
+				argsSexp._cell._car = CreateInt(int64(i))
+				argsSexp._cell._cdr = CreateConsCell(CreateNativeValue(v), CreateNil())
+				_, err := lambda._applyFunc(lambda, ctx, env, argsSexp)
+
+				if err != nil {
+					return CreateNil(), err
+				}
+			}
+			return CreateNil(), nil
+		}
+		var childArgsSexp = CreateEmptyList()
+		var argsSexp = CreateConsCell(CreateNil(), childArgsSexp)
+		for _, v := range nativeArr {
+			argsSexp._cell._car = CreateNativeValue(v)
+			_, lambdaRunErr := lambda._applyFunc(lambda, ctx, env, argsSexp)
+
+			if lambdaRunErr != nil {
+				return CreateNil(), lambdaRunErr
+			}
+		}
+	}
 	if lambda.GetFormalsCount() == 2 {
-		var argsSexp = _cons_cell{
-			Car: NewNil(),
-			Cdr: NewNil(),
-		}
-		for i, v := range nativeArray.(*_native_array).Arr {
-			argsSexp.Car = NewInt(int64(i))
-			argsSexp.Cdr = NewConsCell(v, NewNil())
-			_, err := lambda.Apply(ctx, env, &argsSexp)
+		var argsSexp = CreateEmptyList()
+		for i, v := range sexpConveterArr {
+			argsSexp._cell._car = CreateInt(int64(i))
+			argsSexp._cell._cdr = CreateConsCell(v, CreateNil())
+			_, err := lambda._applyFunc(lambda, ctx, env, argsSexp)
 
 			if err != nil {
-				return nil, err
+				return CreateNil(), err
 			}
 		}
-		return NewNil(), nil
-	} else {
-		var childArgsSexp = _cons_cell{
-			Car: NewNil(),
-			Cdr: NewNil(),
-		}
-		var argsSexp = _cons_cell{
-			Car: NewNil(),
-			Cdr: &childArgsSexp,
-		}
-		for _, v := range nativeArray.(*_native_array).Arr {
-			argsSexp.Car = v
-			_, err := lambda.Apply(ctx, env, &argsSexp)
-
-			if err != nil {
-				return nil, err
-			}
-		}
-		return NewNil(), nil
+		return CreateNil(), nil
 	}
+	var childArgsSexp = CreateEmptyList()
+	var argsSexp = CreateConsCell(CreateNil(), childArgsSexp)
+	for _, v := range sexpConveterArr {
+		argsSexp._cell._car = v
+		_, lambdaRunErr := lambda._applyFunc(lambda, ctx, env, argsSexp)
+
+		if lambdaRunErr != nil {
+			return CreateNil(), lambdaRunErr
+		}
+	}
+	return CreateNil(), nil
 }
 
-func NewForeachNativeArray() SExpression {
-	return &_foreach_native_array{}
+func NewForeachNativeArray() *Sexpression {
+	return CreateSpecialForm("foreach-array", _syntax_foreach_native_array_Apply)
 }

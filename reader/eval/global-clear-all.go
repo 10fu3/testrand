@@ -2,35 +2,13 @@ package eval
 
 import "context"
 
-type _global_clear_all struct{}
-
-func (_ *_global_clear_all) TypeId() string {
-	return "subroutine.global_clear_all"
-}
-
-func (_ *_global_clear_all) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_global_clear_all) String() string {
-	return "#<subr global_clear_all>"
-}
-
-func (_ *_global_clear_all) IsList() bool {
-	return false
-}
-
-func (l *_global_clear_all) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_global_clear_all) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if err := env.GetSuperGlobalEnv().ClearAll(); err != nil {
-		return nil, err
+func _subr_global_clear_all_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if err := env._env_superGlobalEnv.ClearAll(); err != nil {
+		return CreateNil(), err
 	}
-	return NewNil(), nil
+	return CreateNil(), nil
 }
 
-func NewGlobalClearAll() SExpression {
-	return &_global_clear_all{}
+func NewGlobalClearAll() *Sexpression {
+	return CreateSubroutine("global-clear-all", _subr_global_clear_all_Apply)
 }

@@ -1,411 +1,496 @@
 package eval
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/dustinxie/lockfree"
+	"github.com/dustinxie/lockfree/hashmap"
 	"strconv"
 	"strings"
+	"testrand/cmap"
+	"testrand/reader/infra"
 )
 
-type SExpression interface {
-	TypeId() string
-	SExpressionTypeId() SExpressionType
-	String() string
-	IsList() bool
-	Equals(sexp SExpression) bool
+var _symbolTable = lockfree.NewHashMap(hashmap.BucketSizeOption(18))
+
+type _cell struct {
+	_car *Sexpression
+	_cdr *Sexpression
 }
 
-type Subroutine interface {
-	SExpression
-	Apply(arg SExpression)
+type Sexpression struct {
+	_symbol       *Sexpression
+	_boolean      bool
+	_number       int64
+	_string       string
+	_sexp_type_id SexpressionType
+
+	_apply_env          *Sexpression
+	_apply_id           string
+	_apply_body         *Sexpression
+	_apply_formals      []*Sexpression
+	_apply_formalsCount uint64
+	_applyFunc          func(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error)
+
+	env *Sexpression
+
+	_env_frame          cmap.ConcurrentMap[string, *Sexpression]
+	_env_parent         *Sexpression
+	_env_parentId       string
+	_env_globalEnv      *Sexpression
+	_env_superGlobalEnv infra.ISuperGlobalEnv
+
+	_cell *_cell
+
+	_native_value interface{}
+
+	_native_arr interface{}
+
+	_native_map cmap.ConcurrentMap[string, interface{}]
+}
+type CallableConstructorArgs struct {
+	Id           string
+	FormalsCount int
+	Fn           func(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error)
+	Env          *Sexpression
 }
 
-type Symbol interface {
-	SExpression
-	GetValue() string
+func CreateNil() *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeNil}
 }
 
-type symbol struct {
-	name string
+func CreateEmptyList() *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeConsCell, _cell: &_cell{_car: &Sexpression{}, _cdr: &Sexpression{}}}
 }
 
-func (s *symbol) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSymbol
+func CreateSymbol(symbol string) *Sexpression {
+	if sexp, ok := _symbolTable.Get(symbol); ok {
+		return sexp.(*Sexpression)
+	}
+
+	createdSymbol := &Sexpression{_sexp_type_id: SexpressionTypeSymbol, _symbol: &Sexpression{_sexp_type_id: SexpressionTypeString, _string: symbol}}
+
+	_symbolTable.Set(symbol, createdSymbol)
+
+	return createdSymbol
 }
 
-func (s *symbol) TypeId() string {
-	return "symbol"
+func Quote() *Sexpression {
+	return CreateSymbol("quote")
 }
 
-func (s *symbol) IsList() bool {
-	return false
+func GetSymbol(symbol string) *Sexpression {
+	return CreateSymbol(symbol)
 }
 
-func (s *symbol) String() string {
-	return s.name
+func CreateInt(number int64) *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeNumber, _number: number}
 }
 
-func (s *symbol) Equals(sexp SExpression) bool {
-	if sexp.TypeId() != "symbol" {
+func CreateBool(boolean bool) *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeBool, _boolean: boolean}
+}
+
+func CreateString(str string) *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeString, _string: str}
+}
+
+func CreateConsCell(car *Sexpression, cdr *Sexpression) *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeConsCell, _cell: &_cell{_car: car, _cdr: cdr}}
+}
+
+func CreateClosure(body *Sexpression,
+	formals []*Sexpression,
+	env *Sexpression,
+	formalsCount uint64) (*Sexpression, error) {
+
+	if env._sexp_type_id != SexpressionTypeEnvironment {
+		return &Sexpression{}, errors.New("not environment")
+	}
+
+	if body._sexp_type_id != SexpressionTypeConsCell {
+		return &Sexpression{}, errors.New("not cons cell")
+	}
+
+	return &Sexpression{
+		_sexp_type_id:       SexpressionTypeClosure,
+		_apply_body:         body,
+		_apply_formals:      formals,
+		_apply_env:          env,
+		_apply_formalsCount: formalsCount,
+		_applyFunc:          _closure_run,
+	}, nil
+}
+
+func CreateSubroutine(name string, fn func(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error)) *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeSubroutine, _apply_id: "subr " + name, _applyFunc: fn}
+}
+
+func CreateSpecialForm(name string, fn func(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error)) *Sexpression {
+	return &Sexpression{_sexp_type_id: SexpressionTypeSpecialForm, _apply_id: "syntax " + name, _applyFunc: fn}
+}
+
+func CreateNativeArray(arr interface{}) *Sexpression {
+	return &Sexpression{_native_arr: arr, _sexp_type_id: SexpressionTypeNativeArray}
+}
+
+func CreateNativeHashmap(m cmap.ConcurrentMap[string, interface{}]) *Sexpression {
+	return &Sexpression{_native_map: m, _sexp_type_id: SexpressionTypeNativeHashmap}
+}
+
+func CreateNativeValue(v interface{}) *Sexpression {
+	return &Sexpression{_native_value: v, _sexp_type_id: SexpressionTypeNativeValue}
+}
+
+func (s *Sexpression) SexpressionTypeId() SexpressionType {
+	return s._sexp_type_id
+}
+
+func (s *Sexpression) IsList() bool {
+	if s._sexp_type_id != SexpressionTypeConsCell {
 		return false
 	}
-	return s.name == (sexp).(Symbol).GetValue()
-}
-
-func (s *symbol) GetValue() string {
-	return s.name
-}
-
-func NewSymbol(sym string) Symbol {
-	return &symbol{name: sym}
-}
-
-type _int struct {
-	Value int64
-}
-
-func (i *_int) GetValue() int64 {
-	return i.Value
-}
-
-func (i *_int) String() string {
-	return strconv.FormatInt(i.Value, 10)
-}
-
-func (i *_int) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeNumber
-}
-
-func (i *_int) TypeId() string {
-	return "number"
-}
-
-func (i *_int) IsList() bool {
-	return false
-}
-
-func (i *_int) Equals(sexp SExpression) bool {
-	if "number" != sexp.TypeId() {
+	if s._cell == nil {
 		return false
 	}
-	return i.GetValue() == sexp.(Number).GetValue()
-}
-
-type Number interface {
-	GetValue() int64
-	String() string
-	SExpression
-}
-
-func NewInt(val int64) Number {
-	return &_int{
-		Value: val,
+	look := s
+	for {
+		if look._cell._cdr._sexp_type_id == SexpressionTypeNil {
+			return true
+		}
+		if look._cell._cdr._sexp_type_id != SexpressionTypeConsCell {
+			return false
+		}
+		look = look._cell._cdr
 	}
 }
 
-type Bool interface {
-	GetValue() bool
-	String() string
-	SExpression
-}
+func (s *Sexpression) String() string {
+	switch s._sexp_type_id {
+	case SexpressionTypeNumber:
+		return strconv.FormatInt(s._number, 10)
+	case SexpressionTypeBool:
+		if s._boolean {
+			return "#t"
+		}
+		return "#f"
+	case SexpressionTypeString:
+		return fmt.Sprintf("\"%s\"", s._string)
+	case SexpressionTypeNil:
+		return "#nil"
+	case SexpressionTypeConsCell:
+		if SexpressionTypeSymbol == s._cell._car._sexp_type_id {
+			if s._cell._car._symbol == Quote() &&
+				s._cell._cdr._sexp_type_id == SexpressionTypeConsCell &&
+				s._cell._cdr._cell._cdr._sexp_type_id == SexpressionTypeNil {
+				return fmt.Sprintf("'%s", s._cell._cdr._cell._car.String())
+			}
+		}
+		var joinedString strings.Builder
+		joinedString.WriteString("(")
+		var lookCell *_cell = s._cell
 
-type _bool struct {
-	Value bool
-}
+		for {
+			if lookCell._car._sexp_type_id != SexpressionTypeNil {
+				joinedString.WriteString(lookCell._car.String())
+				if lookCell._cdr._sexp_type_id == SexpressionTypeConsCell {
+					if lookCell._cdr._cell._car._sexp_type_id != SexpressionTypeNil && lookCell._cdr._cell._cdr._sexp_type_id != SexpressionTypeNil {
+						joinedString.WriteString(" ")
+					}
+				}
+			}
+			if lookCell._cdr._sexp_type_id != SexpressionTypeConsCell {
+				if lookCell._cdr._sexp_type_id != SexpressionTypeNil {
+					joinedString.WriteString(" . " + lookCell._cdr.String())
+				}
+				joinedString.WriteString(")")
+				break
+			}
+			lookCell = lookCell._cdr._cell
+		}
+		return joinedString.String()
+	case SexpressionTypeSubroutine:
+		return fmt.Sprintf("#<subr %s>", s._apply_id)
+	case SexpressionTypeSpecialForm:
+		return fmt.Sprintf("#<syntax %s>", s._apply_id)
+	case SexpressionTypeClosure:
+		return "#<closure>"
+	case SexpressionTypeNativeHashmap:
+		return fmt.Sprintf("#<native-hashmap>")
+	case SexpressionTypeNativeArray:
+		return fmt.Sprintf("#<native-array>")
+	case SexpressionTypeEnvironment:
+		return "#<environment>"
 
-func (b *_bool) Equals(sexp SExpression) bool {
-	if "bool" != sexp.TypeId() {
-		return false
-	}
-
-	return b.Value == sexp.(Bool).GetValue()
-}
-
-func (b *_bool) GetValue() bool {
-	return b.Value
-}
-
-func (b *_bool) String() string {
-	if b.Value {
-		return "#t"
-	}
-	return "#f"
-}
-
-func (b *_bool) TypeId() string {
-	return "bool"
-}
-
-func (b *_bool) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeBool
-}
-
-func (b *_bool) IsList() bool {
-	return false
-}
-
-var trueSexp = &_bool{Value: true}
-var falseSexp = &_bool{Value: false}
-
-func NewBool(b bool) Bool {
-	if b {
-		return trueSexp
-	}
-	return falseSexp
-}
-
-type Str interface {
-	GetValue() string
-	String() string
-	SExpression
-}
-
-type _string struct {
-	Value string
-}
-
-func NewString(s string) Str {
-	return &_string{Value: s}
-}
-
-func (s *_string) Equals(sexp SExpression) bool {
-	if "string" != sexp.TypeId() {
-		return false
-	}
-	return s.Value == sexp.(Str).GetValue()
-}
-
-func (s *_string) GetValue() string {
-	return s.Value
-}
-
-func (s *_string) String() string {
-	return fmt.Sprintf("\"%s\"", s.Value)
-}
-
-func (s *_string) TypeId() string {
-	return "string"
-}
-
-func (s *_string) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeString
-}
-
-func (s *_string) IsList() bool {
-	return false
-}
-
-type Nil interface {
-	SExpression
-}
-
-type _nil struct {
-}
-
-func (n *_nil) Equals(sexp SExpression) bool {
-	return "nil" == sexp.TypeId()
-}
-
-func (n *_nil) TypeId() string {
-	return "nil"
-}
-
-func (n *_nil) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeNil
-}
-
-func (n *_nil) String() string {
-	return "#nil"
-}
-
-func (n *_nil) IsList() bool {
-	return false
-}
-
-func NewNil() Nil {
-	return &_nil{}
-}
-
-type ConsCell interface {
-	SExpression
-	GetCar() SExpression
-	GetCdr() SExpression
-}
-
-type _cons_cell struct {
-	Car SExpression
-	Cdr SExpression
-}
-
-func (cell *_cons_cell) Equals(sexp SExpression) bool {
-	if "cons_cell" != sexp.TypeId() {
-		return false
-	}
-	c := sexp.(ConsCell)
-	if !cell.Car.Equals(c.GetCar()) {
-		return false
-	}
-	return !cell.Cdr.Equals(c.GetCdr())
-}
-
-func NewConsCell(car SExpression, cdr SExpression) ConsCell {
-	return &_cons_cell{
-		Car: car,
-		Cdr: cdr,
+	default:
+		return s._symbol._string
 	}
 }
 
-func JoinList(left, right SExpression) (ConsCell, error) {
+func (s *Sexpression) Equals(sexp *Sexpression) bool {
+	switch s._sexp_type_id {
+	case SexpressionTypeNumber:
+		return s._number == sexp._number
+	case SexpressionTypeBool:
+		return s._boolean == sexp._boolean
+	case SexpressionTypeString:
+		return s._string == sexp._string
+	case SexpressionTypeNil:
+		return s._sexp_type_id == sexp._sexp_type_id
+	case SexpressionTypeConsCell:
+		if sexp._sexp_type_id != SexpressionTypeConsCell {
+			return false
+		}
+		return s._cell._car.Equals(sexp._cell._car) && s._cell._cdr.Equals(sexp._cell._cdr)
+	case SexpressionTypeSubroutine:
+		return s._apply_id == sexp._apply_id
+	case SexpressionTypeSpecialForm:
+		return s._apply_id == sexp._apply_id
+	case SexpressionTypeClosure:
+		panic("not implemented")
+	case SexpressionTypeNativeHashmap:
+		panic("not implemented")
+	case SexpressionTypeNativeArray:
+		panic("not implemented")
+	case SexpressionTypeEnvironment:
+		panic("not implemented")
+	default:
+		return s._symbol == sexp._symbol
+	}
+}
+
+func (s *Sexpression) IsCallable() bool {
+	return s._sexp_type_id == SexpressionTypeSubroutine || s._sexp_type_id == SexpressionTypeSpecialForm || s._sexp_type_id == SexpressionTypeClosure
+}
+
+func (s *Sexpression) GetFormalsCount() uint64 {
+	return s._apply_formalsCount
+}
+
+func (s *Sexpression) GetEnvParentId() string {
+	return s._env_parentId
+}
+
+func (s *Sexpression) IsNumber() bool {
+	return s._sexp_type_id == SexpressionTypeNumber
+}
+
+func (s *Sexpression) IsString() bool {
+	return s._sexp_type_id == SexpressionTypeString
+}
+
+func (s *Sexpression) IsBool() bool {
+	return s._sexp_type_id == SexpressionTypeBool
+}
+
+func (s *Sexpression) IsSymbol() bool {
+	return s._sexp_type_id == SexpressionTypeSymbol
+}
+
+func (s *Sexpression) IsNil() bool {
+	return s._sexp_type_id == SexpressionTypeNil
+}
+
+func (s *Sexpression) IsConsCell() bool {
+	return s._sexp_type_id == SexpressionTypeConsCell
+}
+
+func (s *Sexpression) IsSubroutine() bool {
+	return s._sexp_type_id == SexpressionTypeSubroutine
+}
+
+func (s *Sexpression) IsSpecialForm() bool {
+	return s._sexp_type_id == SexpressionTypeSpecialForm
+}
+
+func (s *Sexpression) IsClosure() bool {
+	return s._sexp_type_id == SexpressionTypeClosure
+}
+
+func (s *Sexpression) IsNativeHashmap() bool {
+	return s._sexp_type_id == SexpressionTypeNativeHashmap
+}
+
+func (s *Sexpression) IsNativeArray() bool {
+	return s._sexp_type_id == SexpressionTypeNativeArray
+}
+
+func (s *Sexpression) IsEnvironment() bool {
+	return s._sexp_type_id == SexpressionTypeEnvironment
+}
+
+func (s *Sexpression) IsNativeValue() bool {
+	return s._sexp_type_id == SexpressionTypeNativeValue
+}
+
+func (s *Sexpression) GetValueFromFrame(key *Sexpression) (*Sexpression, bool) {
+	if !s.IsEnvironment() {
+		return CreateNil(), false
+	}
+
+	if !key.IsSymbol() {
+		return CreateNil(), false
+	}
+
+	v, ok := s._env_frame.Get(key._symbol._string)
+
+	if !ok {
+		parentFrame := s._env_parent
+		for {
+			if parentFrame == nil {
+				return CreateNil(), false
+			}
+			parentGet, parentOk := parentFrame._env_frame.Get(key._symbol._string)
+			if !parentOk {
+				parentFrame = parentFrame._env_parent
+				continue
+			}
+			return parentGet, true
+		}
+	}
+	return v, true
+}
+
+func JoinList(left, right *Sexpression) (*Sexpression, error) {
 
 	if !left.IsList() {
-		return nil, errors.New("left is not a list")
+		return &Sexpression{}, errors.New("left is not a list")
 	}
 
 	if !right.IsList() {
-		return nil, errors.New("right is not a list")
+		return &Sexpression{}, errors.New("right is not a list")
 	}
 
-	baseRoot := left.(*_cons_cell)
+	baseRoot := left
 	baseLook := baseRoot
 
-	copyRoot := &_cons_cell{
-		Car: NewNil(),
-		Cdr: NewNil(),
+	copyRoot := &Sexpression{
+		_cell: &_cell{
+			_car: left,
+			_cdr: right,
+		},
 	}
+
 	copyLook := copyRoot
 
 	for {
-		if IsEmptyList(baseLook.GetCdr()) {
-			copyLook.Car = baseLook.GetCar()
-			copyLook.Cdr = right
+		var cdr = baseLook._cell._cdr
+		if IsEmptyList(cdr) {
+			copyLook._cell._car = baseLook._cell._car
+			copyLook._cell._cdr = right
 			return copyRoot, nil
 		} else {
-			copyLook.Car = baseLook.GetCar()
-			copyLook.Cdr = NewConsCell(NewNil(), NewNil())
-			copyLook = copyLook.Cdr.(*_cons_cell)
-			baseLook = baseLook.GetCdr().(*_cons_cell)
-		}
-	}
-}
+			copyLook._cell._car = baseLook._cell._car
+			//copyLook.Car = baseLook.GetCar()
 
-func (cell *_cons_cell) TypeId() string {
-	return "cons_cell"
-}
-
-func (cell *_cons_cell) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeConsCell
-}
-
-func (cell *_cons_cell) String() string {
-	if "symbol" == cell.Car.TypeId() && "quote" == ((cell.Car).(Symbol)).GetValue() && cell.Cdr.TypeId() == "cons_cell" && "nil" == ((cell.Cdr).(ConsCell)).GetCdr().TypeId() {
-		return fmt.Sprintf("'%s", ((cell.Cdr).(ConsCell)).GetCar().String())
-	}
-	var joinedString strings.Builder
-	joinedString.WriteString("(")
-	var lookCell ConsCell = cell
-
-	for {
-		if lookCell.GetCar().TypeId() != "nil" {
-			joinedString.WriteString(lookCell.GetCar().String())
-			if lookCell.GetCdr().TypeId() == "cons_cell" {
-				if lookCell.GetCdr().(ConsCell).GetCar().TypeId() != "nil" && lookCell.GetCdr().(ConsCell).GetCdr().TypeId() != "nil" {
-					joinedString.WriteString(" ")
-				}
+			copyLook._cell._cdr = &Sexpression{
+				_cell: &_cell{
+					_car: &Sexpression{},
+					_cdr: &Sexpression{},
+				},
 			}
+			copyLook = copyLook._cell._cdr
+			baseLook = baseLook._cell._cdr
 		}
-
-		if lookCell.GetCdr().TypeId() != "cons_cell" {
-			if lookCell.GetCdr().TypeId() != "nil" {
-				joinedString.WriteString(" . " + lookCell.GetCdr().String())
-			}
-			joinedString.WriteString(")")
-			break
-		}
-		lookCell = (lookCell.GetCdr()).(ConsCell)
 	}
-	return joinedString.String()
 }
 
-func ToArray(sexp SExpression) ([]SExpression, error) {
-	list := make([]SExpression, 0, 0)
+func ToArray(sexp *Sexpression) ([]*Sexpression, uint64, error) {
+
+	if sexp._sexp_type_id != SexpressionTypeConsCell {
+		return []*Sexpression{}, 0, errors.New("need list")
+	}
+
+	list := make([]*Sexpression, 0, 0)
 	look := sexp
-	var tail SExpression
-	var tailCell ConsCell
+	var tail *Sexpression
+	var tailCell *_cell
+	size := uint64(0)
 	for {
-		if SExpressionTypeConsCell != look.SExpressionTypeId() {
-			return nil, errors.New("need list")
+		if SexpressionTypeConsCell != look._sexp_type_id {
+			return nil, 0, errors.New("need list")
 		}
-		tail = look.(ConsCell)
-		if SExpressionTypeConsCell != tail.SExpressionTypeId() {
-			return nil, errors.New("need list")
+		tail = look
+		if SexpressionTypeConsCell != tail._sexp_type_id {
+			return nil, 0, errors.New("need list")
 		}
-		tailCell = tail.(ConsCell)
-		if SExpressionTypeNil == tailCell.GetCar().SExpressionTypeId() && SExpressionTypeNil == tailCell.GetCdr().SExpressionTypeId() {
+		tailCell = tail._cell
+		if SexpressionTypeNil == tailCell._car._sexp_type_id && SexpressionTypeNil == tailCell._cdr._sexp_type_id {
 			break
 		}
-		list = append(list, look.(ConsCell).GetCar())
-		look = look.(ConsCell).GetCdr()
+		list = append(list, look._cell._car)
+		look = look._cell._cdr
+		size++
 	}
-	return list, nil
+	return list, size, nil
 }
 
-func (cell *_cons_cell) IsList() bool {
-	if "cons_cell" == cell.Cdr.TypeId() {
-		if IsEmptyList(cell.Cdr) {
-			return true
-		}
-		return cell.Cdr.IsList()
-	}
-	return false
-}
-
-func (cell *_cons_cell) GetCar() SExpression {
-	return cell.Car
-}
-
-func (cell *_cons_cell) GetCdr() SExpression {
-	return cell.Cdr
-}
-
-func ToConsCell(list []SExpression) ConsCell {
-	var head = (NewConsCell(NewNil(), NewNil())).(*_cons_cell)
+func ToConsCell(list []*Sexpression) *Sexpression {
+	var head = &Sexpression{_sexp_type_id: SexpressionTypeConsCell, _cell: &_cell{
+		_car: &Sexpression{},
+		_cdr: &Sexpression{},
+	}}
 	var look = head
-	var beforeLook *_cons_cell = nil
 
 	for _, sexp := range list {
-		look.Car = sexp
-		look.Cdr = NewConsCell(NewNil(), NewNil())
-		beforeLook = look
-		look = (look.Cdr).(*_cons_cell)
+		look._cell._car = sexp
+		look._cell._cdr = &Sexpression{_sexp_type_id: SexpressionTypeConsCell, _cell: &_cell{
+			_car: &Sexpression{},
+			_cdr: &Sexpression{},
+		}}
+		look = look._cell._cdr
 	}
-	if beforeLook != nil {
-		beforeLook.Cdr = NewConsCell(NewNil(), NewNil())
+	if look._cell._cdr._sexp_type_id != SexpressionTypeNil {
+		look._cell._cdr = &Sexpression{_sexp_type_id: SexpressionTypeNil}
 	}
+
 	return head
 }
 
-func IsEmptyList(list SExpression) bool {
-	if "cons_cell" != list.TypeId() {
+func IsEmptyList(list *Sexpression) bool {
+
+	if SexpressionTypeConsCell != list.SexpressionTypeId() {
 		return false
 	}
-	tmp := (list).(ConsCell)
 
-	return "nil" == tmp.GetCar().TypeId() && "nil" == tmp.GetCdr().TypeId()
+	return SexpressionTypeNil == list._cell._car._sexp_type_id && SexpressionTypeNil == list._cell._cdr._sexp_type_id
 }
 
-type SExpressionType int
+type SexpressionType int
 
 const (
-	SExpressionTypeSymbol SExpressionType = iota
-	SExpressionTypeNumber
-	SExpressionTypeBool
-	SExpressionTypeString
-	SExpressionTypeNil
-	SExpressionTypeConsCell
-	SExpressionTypeSubroutine
-	SExpressionTypeSpecialForm
-	SExpressionTypeClosure
-	SExpressionTypeNativeHashmap
-	SExpressionTypeNativeArray
-	SExpressionTypeEnvironment
+	SexpressionTypeNil SexpressionType = iota
+	SexpressionTypeSymbol
+	SexpressionTypeNumber
+	SexpressionTypeBool
+	SexpressionTypeString
+	SexpressionTypeConsCell
+	SexpressionTypeSubroutine
+	SexpressionTypeSpecialForm
+	SexpressionTypeClosure
+	SexpressionTypeNativeHashmap
+	SexpressionTypeNativeArray
+	SexpressionTypeEnvironment
+	SexpressionTypeNativeValue
 )
+
+var SexpressionTypeNames = map[SexpressionType]string{
+	SexpressionTypeNil:           "nil",
+	SexpressionTypeSymbol:        "symbol",
+	SexpressionTypeNumber:        "number",
+	SexpressionTypeBool:          "bool",
+	SexpressionTypeString:        "string",
+	SexpressionTypeConsCell:      "cons_cell",
+	SexpressionTypeSubroutine:    "subroutine",
+	SexpressionTypeSpecialForm:   "special_form",
+	SexpressionTypeClosure:       "closure",
+	SexpressionTypeNativeHashmap: "native_hashmap",
+	SexpressionTypeNativeArray:   "native_array",
+	SexpressionTypeEnvironment:   "environment",
+	SexpressionTypeNativeValue:   "native_value",
+}
+
+func (s SexpressionType) String() string {
+	return SexpressionTypeNames[s]
+}

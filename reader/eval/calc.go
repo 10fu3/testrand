@@ -5,285 +5,172 @@ import (
 	"errors"
 )
 
-type _add struct{}
-
-func (_ *_add) TypeId() string {
-	return "subroutine.add"
-}
-
-func (_ *_add) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_add) String() string {
-	return "#<subr +>"
-}
-
-func (_ *_add) IsList() bool {
-	return false
-}
-
-func (a *_add) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ *_add) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func _sub_add_Apply(self *Sexpression, ctx context.Context, _ *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if args._sexp_type_id != SexpressionTypeConsCell {
+		return CreateNil(), errors.New("need arguments")
 	}
 
 	if IsEmptyList(args) {
-		return NewInt(0), nil
+		return CreateInt(0), nil
 	}
 
-	arr, err := ToArray(args)
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
-	var result Number = nil
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	var result = int64(0)
+	if arr[0]._sexp_type_id != SexpressionTypeNumber {
+		return CreateNil(), errors.New("need arguments type is number, but got " + arr[0]._sexp_type_id.String())
 	}
-	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
-		if "number" != arr[arrIndex].TypeId() {
-			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
+	result = arr[0]._number
+	for ; arrIndex < arrSize; arrIndex++ {
+		if !arr[arrIndex].IsNumber() {
+			return CreateNil(), errors.New("need arguments type is number, but got " + arr[arrIndex]._sexp_type_id.String())
 		}
-		result = NewInt(result.GetValue() + arr[arrIndex].(Number).GetValue())
+		result = result + arr[arrIndex]._number
 	}
-	return result, nil
+	return CreateInt(result), nil
 }
 
-func NewAdd() SExpression {
-	return &_add{}
+func NewAdd() *Sexpression {
+	return CreateSubroutine("add", _sub_add_Apply)
 }
 
-type _minus struct{}
-
-func (_ *_minus) TypeId() string {
-	return "subroutine.minus"
-}
-
-func (_ *_minus) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_minus) String() string {
-	return "#<subr ->"
-}
-
-func (_ *_minus) IsList() bool {
-	return false
-}
-
-func (a *_minus) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ *_minus) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func _sub_minus_Apply(self *Sexpression, ctx context.Context, _ *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if args._sexp_type_id != SexpressionTypeConsCell {
+		return CreateNil(), errors.New("need arguments")
 	}
 
 	if IsEmptyList(args) {
-		return NewInt(0), nil
+		return CreateInt(0), nil
 	}
 
-	arr, err := ToArray(args)
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
-	var result Number = nil
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	var result = int64(0)
+	if !arr[0].IsNumber() {
+		return CreateNil(), errors.New("need arguments type is number, but got " + arr[0]._sexp_type_id.String())
 	}
-	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
-		if "number" != arr[arrIndex].TypeId() {
-			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
+	result = arr[0]._number
+	for ; arrIndex < arrSize; arrIndex++ {
+		if !arr[arrIndex].IsNumber() {
+			return CreateNil(), errors.New("need arguments type is number, but got " + arr[arrIndex]._sexp_type_id.String())
 		}
-		result = NewInt(result.GetValue() - arr[arrIndex].(Number).GetValue())
+		result = result - arr[arrIndex]._number
 	}
-	return result, nil
+	return CreateInt(result), nil
 }
 
-func NewMinus() SExpression {
-	return &_minus{}
+func NewSub() *Sexpression {
+	return CreateSubroutine("sub", _sub_minus_Apply)
 }
 
-type _multiply struct{}
-
-func (_ *_multiply) TypeId() string {
-	return "subroutine.multiply"
-}
-
-func (_ *_multiply) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_multiply) String() string {
-	return "#<subr *>"
-}
-
-func (_ *_multiply) IsList() bool {
-	return false
-}
-
-func (a *_multiply) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ *_multiply) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func _sub_mul_Apply(self *Sexpression, ctx context.Context, _ *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if !args.IsConsCell() {
+		return CreateNil(), errors.New("need arguments")
 	}
 
 	if IsEmptyList(args) {
-		return NewInt(0), nil
+		return CreateInt(0), nil
 	}
 
-	arr, err := ToArray(args)
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
-	var result Number = nil
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	var result = int64(1)
+	if !arr[0].IsNumber() {
+		return CreateNil(), errors.New("need arguments type is number, but got " + arr[0]._sexp_type_id.String())
 	}
-	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
-		if "number" != arr[arrIndex].TypeId() {
-			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
+	result = arr[0]._number
+	for ; arrIndex < arrSize; arrIndex++ {
+		if !arr[arrIndex].IsNumber() {
+			return CreateNil(), errors.New("need arguments type is number, but got " + arr[arrIndex]._sexp_type_id.String())
 		}
-		result = NewInt(result.GetValue() * arr[arrIndex].(Number).GetValue())
+		result = result * arr[arrIndex]._number
 	}
-	return result, nil
+	return CreateInt(result), nil
 }
 
-func NewMultiply() SExpression {
-	return &_multiply{}
+func NewMul() *Sexpression {
+	return CreateSubroutine("*", _sub_mul_Apply)
 }
 
-type _divide struct{}
-
-func (_ *_divide) TypeId() string {
-	return "subroutine.divide"
-}
-
-func (_ *_divide) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_divide) String() string {
-	return "#<subr />"
-}
-
-func (_ *_divide) IsList() bool {
-	return false
-}
-
-func (a *_divide) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ *_divide) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func _sub_div_Apply(self *Sexpression, ctx context.Context, _ *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if !args.IsConsCell() {
+		return CreateNil(), errors.New("need arguments")
 	}
 
 	if IsEmptyList(args) {
-		return NewInt(0), nil
+		return CreateInt(0), nil
 	}
 
-	arr, err := ToArray(args)
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
-	var result Number = nil
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	var result = int64(1)
+	if !arr[0].IsNumber() {
+		return CreateNil(), errors.New("need arguments type is number, but got " + arr[0]._sexp_type_id.String())
 	}
-	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
-		if "number" != arr[arrIndex].TypeId() {
-			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
+	result = arr[0]._number
+	for ; arrIndex < arrSize; arrIndex++ {
+		if !arr[arrIndex].IsNumber() {
+			return CreateNil(), errors.New("need arguments type is number, but got " + arr[arrIndex]._sexp_type_id.String())
 		}
-		result = NewInt(result.GetValue() / arr[arrIndex].(Number).GetValue())
+		result = result / arr[arrIndex]._number
 	}
-	return result, nil
+	return CreateInt(result), nil
 }
 
-func NewDivide() SExpression {
-	return &_divide{}
+func NewDiv() *Sexpression {
+	return CreateSubroutine("/", _sub_div_Apply)
 }
 
-type _mod struct{}
-
-func (_ *_mod) TypeId() string {
-	return "subroutine.mod"
-}
-
-func (_ *_mod) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_mod) String() string {
-	return "#<subr %>"
-}
-
-func (_ *_mod) IsList() bool {
-	return false
-}
-
-func (a *_mod) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ *_mod) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func _sub_mod_Apply(self *Sexpression, ctx context.Context, _ *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if !args.IsConsCell() {
+		return CreateNil(), errors.New("need arguments")
 	}
 
 	if IsEmptyList(args) {
-		return NewInt(0), nil
+		return CreateInt(0), nil
 	}
 
-	arr, err := ToArray(args)
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
+	arrIndex := uint64(1)
 
-	if len(arr) != 2 {
-		return nil, errors.New("need arguments size is 2")
+	var result = int64(1)
+	if !arr[0].IsNumber() {
+		return CreateNil(), errors.New("need arguments type is number, but got " + arr[0]._sexp_type_id.String())
 	}
-
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	result = arr[0]._number
+	for ; arrIndex < arrSize; arrIndex++ {
+		if !arr[arrIndex].IsNumber() {
+			return CreateNil(), errors.New("need arguments type is number, but got " + arr[arrIndex]._sexp_type_id.String())
+		}
+		result = result % arr[arrIndex]._number
 	}
-
-	if "number" != arr[1].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[1].TypeId())
-	}
-
-	base := arr[0].(Number).GetValue()
-	target := arr[1].(Number).GetValue()
-
-	return NewInt(base % target), nil
+	return CreateInt(result), nil
 }
 
-func NewMod() SExpression {
-	return &_mod{}
+func NewMod() *Sexpression {
+	return CreateSubroutine("%", _sub_mod_Apply)
 }

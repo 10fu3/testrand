@@ -19,7 +19,7 @@ func main() {
 		fmt.Println("cant use etcd and super global environment")
 	}
 
-	completed, addMethod := eval.StartReceiveServer(env.GetParentId(), ctx)
+	completed, addMethod := eval.StartReceiveServer(env.GetEnvParentId(), ctx)
 	eval.PutReceiveQueueMethod = addMethod
 	go func() {
 		completed()
@@ -28,18 +28,16 @@ func main() {
 	stdin := bufio.NewReader(os.Stdin)
 	read := eval.New(stdin)
 	for {
-		result, err := read.Read()
-		if err != nil {
-			fmt.Println(err.Error())
+		result, readErr := read.Read()
+		if readErr != nil {
+			fmt.Println(readErr.Error())
 			continue
 		}
-		result, err = eval.Eval(ctx, result, env)
-		if err != nil {
-			fmt.Println(err.Error())
+		result, runErr := eval.Eval(ctx, result, env)
+		if runErr != nil {
+			fmt.Println(runErr)
 			continue
 		}
-		if result != nil {
-			fmt.Println(result)
-		}
+		fmt.Println(result)
 	}
 }

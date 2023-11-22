@@ -5,41 +5,24 @@ import (
 	"errors"
 )
 
-type _apply struct{}
-
-func (_ *_apply) TypeId() string {
-	return "subroutine.apply"
-}
-
-func (_ *_apply) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_apply) String() string {
-	return "#<subr apply>"
-}
-
-func (_ *_apply) IsList() bool {
-	return false
-}
-
-func (a *_apply) Equals(sexp SExpression) bool {
-	return a.TypeId() == sexp.TypeId()
-}
-
-func (_ *_apply) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _sub_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) != 2 {
-		return nil, errors.New("malformed apply")
+	if arrSize != 2 {
+		return CreateNil(), errors.New("malformed apply")
 	}
 	car := arr[0]
 	cdr := arr[1]
-	return car.(Callable).Apply(ctx, env, cdr)
+
+	if !car.IsCallable() {
+		return CreateNil(), errors.New("first argument is not callable")
+	}
+
+	return car._applyFunc(self, ctx, env, cdr)
 }
 
-func NewApply() SExpression {
-	return &_apply{}
+func NewApply() *Sexpression {
+	return CreateSubroutine("apply", _sub_Apply)
 }

@@ -5,40 +5,18 @@ import (
 	"errors"
 )
 
-type _quote struct{}
-
-func (_ *_quote) TypeId() string {
-	return "special_form.quote"
-}
-
-func (_ *_quote) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_quote) String() string {
-	return "#<syntax quote>"
-}
-
-func (_ *_quote) IsList() bool {
-	return false
-}
-
-func (q *_quote) Equals(sexp SExpression) bool {
-	return q.TypeId() == sexp.TypeId()
-}
-
-func (_ *_quote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _syntax_quote_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) != 1 {
-		return nil, errors.New("malformed quote")
+	if arrSize != 1 {
+		return CreateNil(), errors.New("malformed quote")
 	}
 	return arr[0], nil
 }
 
-func NewQuote() SExpression {
-	return &_quote{}
+func NewQuote() *Sexpression {
+	return CreateSpecialForm("quote", _syntax_quote_Apply)
 }

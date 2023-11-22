@@ -5,59 +5,37 @@ import (
 	"errors"
 )
 
-type _set struct{}
-
-func (_ *_set) TypeId() string {
-	return "special_form.set"
-}
-
-func (_ *_set) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_set) String() string {
-	return "#<syntax #set>"
-}
-
-func (_ *_set) IsList() bool {
-	return false
-}
-
-func (s *_set) Equals(sexp SExpression) bool {
-	return s.TypeId() == sexp.TypeId()
-}
-
-func (_ *_set) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
+func _syntax_set_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
+	if SexpressionTypeConsCell != arguments._sexp_type_id {
+		return CreateNil(), errors.New("type error")
 	}
 
-	cell := arguments.(ConsCell)
+	cell := arguments._cell
 
-	name := cell.GetCar().(Symbol)
+	name := cell._car._symbol
 
-	if IsEmptyList(cell.GetCdr()) {
-		return nil, errors.New("need 3rd arguments")
+	if IsEmptyList(cell._cdr) {
+		return CreateNil(), errors.New("need 3rd arguments")
 	}
 
-	initValue := cell.GetCdr().(ConsCell)
+	initValue := cell._cdr._cell
 
-	if !IsEmptyList(initValue.GetCdr()) {
-		return nil, errors.New("need less than 3 params")
+	if !IsEmptyList(initValue._cdr) {
+		return CreateNil(), errors.New("need less than 3 params")
 	}
-	evaluatedInitValue, err := Eval(ctx, initValue.GetCar(), env)
+	evaluatedInitValue, err := Eval(ctx, initValue._car, env)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	err = env.Set(name, evaluatedInitValue)
+	env._env_frame.Set(name._string, evaluatedInitValue)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	return name, nil
 }
 
-func NewSet() SExpression {
-	return &_set{}
+func NewSet() *Sexpression {
+	return CreateSpecialForm("set!", _syntax_set_Apply)
 }

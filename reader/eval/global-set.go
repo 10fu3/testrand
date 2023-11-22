@@ -7,80 +7,53 @@ import (
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
-type _global_set struct {
-}
-
-func (_ *_global_set) TypeId() string {
-	return "special_form.global_set"
-}
-
-func (_ *_global_set) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_global_set) String() string {
-	return "#<syntax global_set>"
-}
-
-func (_ *_global_set) IsList() bool {
-	return false
-}
-
-func (l *_global_set) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
+func _syntax_global_set_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if !args.IsConsCell() {
+		return CreateNil(), errors.New("type error")
 	}
 
-	cell := args.(ConsCell)
+	cell := args._cell
 
-	if cell.GetCar().TypeId() != "symbol" {
-		return nil, errors.New("need 1st arguments type is symbol")
+	if !cell._car.IsSymbol() {
+		return CreateNil(), errors.New("need 1st arguments type is symbol")
 	}
 
-	name := cell.GetCar().(Symbol)
+	name := cell._car._symbol
 
-	if IsEmptyList(cell.GetCdr()) {
-		return nil, errors.New("need 3rd arguments")
+	if IsEmptyList(cell._cdr) {
+		return CreateNil(), errors.New("need 3rd arguments")
 	}
 
-	initValue := cell.GetCdr().(ConsCell)
+	initValue := cell._cdr._cell
 
-	if !IsEmptyList(initValue.GetCdr()) {
-		return nil, errors.New("need less than 3 params")
+	if !IsEmptyList(initValue._cdr) {
+		return CreateNil(), errors.New("need less than 3 params")
 	}
-	evaluatedInitValue, err := Eval(ctx, initValue.GetCar(), env)
+	evaluatedInitValue, err := Eval(ctx, initValue._car, env)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	err = func() error {
-		var err error
 		if ctx.Value("transaction") != nil {
 			transaction := ctx.Value("transaction").(concurrency.STM)
-			if err != nil {
-				return err
-			}
-			transaction.Put(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()), evaluatedInitValue.String())
+			transaction.Put(fmt.Sprintf("/env/%s/%s", env._env_parentId, name._string), evaluatedInitValue.String())
 		} else {
-			err = env.GetSuperGlobalEnv().Put(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()), evaluatedInitValue.String(), nil)
+			err = env._env_superGlobalEnv.Put(fmt.Sprintf("/env/%s/%s", env._env_parentId, name.String()), evaluatedInitValue.String(), nil)
 		}
 		return err
 	}()
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 	return name, nil
 }
 
-func NewGlobalSet() SExpression {
-	return &_global_set{}
+func NewGlobalSet() *Sexpression {
+	return CreateSpecialForm("global-set", _syntax_global_set_Apply)
 }

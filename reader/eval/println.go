@@ -6,48 +6,26 @@ import (
 	"fmt"
 )
 
-type _println struct{}
-
-func (_ *_println) TypeId() string {
-	return "subroutine.print"
-}
-
-func (_ *_println) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (_ *_println) String() string {
-	return "#<subr print>"
-}
-
-func (_ *_println) IsList() bool {
-	return false
-}
-
-func (p *_println) Equals(sexp SExpression) bool {
-	return p.TypeId() == sexp.TypeId()
-}
-
-func (_ *_println) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _subr_println_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
-	if len(arr) < 1 {
-		return nil, errors.New("need args size is 1")
+	if arrSize < 1 {
+		return CreateNil(), errors.New("need args size is 1")
 	}
 
-	for i := 0; i < len(arr); i++ {
+	for i := uint64(0); i < arrSize; i++ {
 		fmt.Print(arr[i])
-		if i+1 == len(arr) {
+		if i+1 == arrSize {
 			fmt.Println()
 			break
 		}
 		fmt.Print(" ")
 	}
-	return NewNil(), nil
+	return CreateNil(), nil
 }
 
-func NewPrintln() SExpression {
-	return &_println{}
+func NewPrintln() *Sexpression {
+	return CreateSubroutine("println", _subr_println_Apply)
 }

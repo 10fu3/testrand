@@ -5,45 +5,23 @@ import (
 	"errors"
 )
 
-type _string_to_symbol struct{}
-
-func (s *_string_to_symbol) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func _subr_string_to_symbol_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	arr, arrSize, err := ToArray(args)
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if 1 != len(arr) {
-		return nil, errors.New("need arguments size is 1")
+	if 1 != arrSize {
+		return CreateNil(), errors.New("need arguments size is 1")
 	}
 
-	if "string" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is string, but got " + arr[0].TypeId())
+	if SexpressionTypeString != arr[0]._sexp_type_id {
+		return CreateNil(), errors.New("need arguments type is string, but got " + arr[0]._sexp_type_id.String())
 	}
 
-	return NewSymbol(arr[0].(Str).GetValue()), nil
+	return CreateSymbol(arr[0]._string), nil
 }
 
-func (s *_string_to_symbol) TypeId() string {
-	return "subroutine.string_to_symbol"
-}
-
-func (s *_string_to_symbol) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSubroutine
-}
-
-func (s *_string_to_symbol) String() string {
-	return "#<subr string_to_symbol>"
-}
-
-func (s *_string_to_symbol) IsList() bool {
-	return false
-}
-
-func (s *_string_to_symbol) Equals(sexp SExpression) bool {
-	return s.TypeId() == sexp.TypeId()
-}
-
-func NewStringToSymbol() SExpression {
-	return &_string_to_symbol{}
+func NewStringToSymbol() *Sexpression {
+	return CreateSubroutine("string->symbol", _subr_string_to_symbol_Apply)
 }

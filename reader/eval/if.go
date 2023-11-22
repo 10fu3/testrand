@@ -6,42 +6,15 @@ import (
 	"fmt"
 )
 
-type _if struct {
-}
-
-func NewIf() SExpression {
-	return &_if{}
-}
-
-func (_ *_if) TypeId() string {
-	return "special_form.if"
-}
-
-func (_ *_if) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_if) String() string {
-	return "#<syntax #if>"
-}
-
-func (_ *_if) IsList() bool {
-	return false
-}
-
-func (i *_if) Equals(sexp SExpression) bool {
-	return i.TypeId() == sexp.TypeId()
-}
-
-func (_ *_if) Apply(ctx context.Context, env Environment, argument SExpression) (SExpression, error) {
-	args, err := ToArray(argument)
+func _syntax_if_Apply(self *Sexpression, ctx context.Context, env *Sexpression, arguments *Sexpression) (*Sexpression, error) {
+	args, argsLen, err := ToArray(arguments)
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	if len(args) <= 1 || len(args) >= 4 {
-		return nil, errors.New(fmt.Sprintf("too many argument: %d", len(args)))
+	if argsLen <= 1 || argsLen >= 4 {
+		return CreateNil(), errors.New(fmt.Sprintf("too many argument: %d", len(args)))
 	}
 	argsIndex := 0
 
@@ -54,13 +27,17 @@ func (_ *_if) Apply(ctx context.Context, env Environment, argument SExpression) 
 		return Eval(ctx, statement, env)
 	}
 
-	if evaluated.Equals(NewBool(false)) {
-		if len(args) == 2 {
-			return NewNil(), nil
+	if evaluated.Equals(CreateBool(false)) {
+		if argsLen == 2 {
+			return CreateNil(), nil
 		}
 		argsIndex++
 		onFalse := args[argsIndex]
 		return Eval(ctx, onFalse, env)
 	}
 	return Eval(ctx, onTrue, env)
+}
+
+func NewIf() *Sexpression {
+	return CreateSpecialForm("if", _syntax_if_Apply)
 }

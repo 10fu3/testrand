@@ -9,79 +9,56 @@ import (
 	"strings"
 )
 
-type _global_get struct {
-}
-
-func (_ *_global_get) TypeId() string {
-	return "special_form.global_get"
-}
-
-func (_ *_global_get) SExpressionTypeId() SExpressionType {
-	return SExpressionTypeSpecialForm
-}
-
-func (_ *_global_get) String() string {
-	return "#<syntax global_get>"
-}
-
-func (_ *_global_get) IsList() bool {
-	return false
-}
-
-func (l *_global_get) Equals(sexp SExpression) bool {
-	return l.TypeId() == sexp.TypeId()
-}
-
-func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
+func _syntax_global_get_Apply(self *Sexpression, ctx context.Context, env *Sexpression, args *Sexpression) (*Sexpression, error) {
+	if !args.IsConsCell() {
+		return CreateNil(), errors.New("type error")
 	}
 
-	cell := args.(ConsCell)
+	cell := args._cell
 
-	name := cell.GetCar().(Symbol)
+	name := cell._car._symbol
 
-	defaultArg := (func() SExpression {
-		if IsEmptyList(cell.GetCdr()) {
-			return NewNil()
+	defaultArg := (func() *Sexpression {
+		if IsEmptyList(cell._cdr) {
+			return CreateNil()
 		}
-		return cell.GetCdr().(ConsCell).GetCar()
+		return cell._cdr._cell._car
 	})()
 
 	var err error
 
 	if err != nil {
-		return nil, err
+		return CreateNil(), err
 	}
 
-	var result SExpression
+	var result *Sexpression
 	if ctx.Value("transaction") != nil {
 		transaction := ctx.Value("transaction").(concurrency.STM)
-		existKey := transaction.Rev(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
+		existKey := transaction.Rev(fmt.Sprintf("/env/%s/%s", env._env_parentId, name.String()))
 
-		if defaultArg.TypeId() != "nil" && existKey == 0 {
+		if !defaultArg.IsNil() && existKey == 0 {
 			return defaultArg, nil
 		}
 
-		var r = transaction.Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
+		var r = transaction.Get(fmt.Sprintf("/env/%s/%s", env._env_parentId, name.String()))
 		input := strings.NewReader(fmt.Sprintf("%s\n", r))
-		reader := New(bufio.NewReader(input))
-		result, err = reader.Read()
-		reader = nil
+		rd := New(bufio.NewReader(input))
+		result, err = rd.Read()
+		rd = nil
 
 	} else {
-		r, err := env.GetSuperGlobalEnv().Get(fmt.Sprintf("/env/%s/%s", env.GetParentId(), name.String()))
-		if err != nil {
-			return nil, err
+		r, globalGetErr := env._env_superGlobalEnv.Get(fmt.Sprintf("/env/%s/%s", env._env_parentId, name.String()))
+		if globalGetErr != nil {
+			return CreateNil(), globalGetErr
 		}
 		input := strings.NewReader(fmt.Sprintf("%s\n", r))
-		reader := New(bufio.NewReader(input))
-		result, err = reader.Read()
-		reader = nil
+		rd := New(bufio.NewReader(input))
+		result, err = rd.Read()
+		rd = nil
 	}
 	return result, err
 }
 
-func NewGlobalGet() SExpression {
-	return &_global_get{}
+func NewGlobalGet() *Sexpression {
+	return CreateSpecialForm("global-get", _syntax_global_get_Apply)
 }
