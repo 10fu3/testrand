@@ -35,11 +35,34 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 			return nil, err
 		}
 		if SExpressionTypeClosure == appliedType || SExpressionTypeSubroutine == appliedType {
-			appliedArgs, err := evalArgument(ctx, cell.GetCdr(), env)
+			if !cell.IsList() {
+				return nil, errors.New("not list")
+			}
+			arr, toArrErr := ToArray(cell.GetCdr())
+			if toArrErr != nil {
+				return nil, toArrErr
+			}
+
+			rootEvaluetedArgs := &_cons_cell{}
+			lookEvalutedArg := rootEvaluetedArgs
+			for i, v := range arr {
+				evaluatedArg, evalutedArgErr := Eval(ctx, v, env)
+				if evalutedArgErr != nil {
+					return nil, err
+				}
+				if evaluatedArg == nil {
+					return nil, errors.New("evaluated arg is nil")
+				}
+				lookEvalutedArg.Car = evaluatedArg
+				lookEvalutedArg.Cdr = NewConsCell(NewNil(), NewNil())
+				if i < len(arr) {
+					lookEvalutedArg = (lookEvalutedArg.Cdr).(*_cons_cell)
+				}
+			}
 			if err != nil {
 				return nil, err
 			}
-			return applied.(Callable).Apply(ctx, env, appliedArgs)
+			return applied.(Callable).Apply(ctx, env, rootEvaluetedArgs)
 		}
 		if SExpressionTypeSpecialForm == appliedType {
 			if err != nil {
@@ -50,26 +73,6 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 
 	}
 	return nil, errors.New("unknown eval: " + sexp.String())
-}
-
-func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
-	if "cons_cell" != sexp.TypeId() {
-		return Eval(ctx, sexp, env)
-	}
-
-	cell := sexp.(ConsCell)
-
-	carEvaluated, err := Eval(ctx, cell.GetCar(), env)
-	if err != nil {
-		return nil, err
-	}
-
-	cdrEvaluated, err := evalArgument(ctx, cell.GetCdr(), env)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewConsCell(carEvaluated, cdrEvaluated), nil
 }
 
 type _eval struct{}
