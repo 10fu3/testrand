@@ -3,7 +3,6 @@ package eval
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"go.etcd.io/etcd/client/v3/concurrency"
 	"strings"
@@ -32,20 +31,15 @@ func (l *_global_get) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_global_get) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
-	}
+func (_ *_global_get) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	cell := args.(ConsCell)
-
-	name := cell.GetCar().(Symbol)
+	name := args[0].(Symbol)
 
 	defaultArg := (func() SExpression {
-		if IsEmptyList(cell.GetCdr()) {
+		if argsLength == 1 {
 			return NewNil()
 		}
-		return cell.GetCdr().(ConsCell).GetCar()
+		return args[1]
 	})()
 
 	var err error

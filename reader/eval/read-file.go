@@ -28,14 +28,8 @@ func (l *_file_read) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_file_read) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
-
-	if 1 > len(args) {
+func (_ *_file_read) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+	if 1 > argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 

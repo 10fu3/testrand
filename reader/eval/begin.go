@@ -24,16 +24,12 @@ func (b *_begin) Equals(sexp SExpression) bool {
 	return b.TypeId() == sexp.TypeId()
 }
 
-func (_ *_begin) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
+func (_ *_begin) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
 	last := NewNil()
+	var err error
 
-	for _, sexp := range arr {
+	for _, sexp := range args {
 		last, err = Eval(ctx, sexp, env)
 		if err != nil {
 			return nil, err

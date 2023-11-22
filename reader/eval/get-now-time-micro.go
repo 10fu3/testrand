@@ -27,7 +27,7 @@ func (l *_get_now_time_nano) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_get_now_time_nano) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func (_ *_get_now_time_nano) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	return NewInt(time.Now().UnixNano()), nil
 }
 

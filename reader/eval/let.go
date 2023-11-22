@@ -27,39 +27,32 @@ func (l *_let) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func (_ *_let) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if args.TypeId() != "cons_cell" {
+	if argsLength < 2 {
 		return nil, errors.New("malformed let")
 	}
 
-	arr, err := ToArray(args.(ConsCell))
+	bindings := args[0]
+	body := args[1]
 
-	if err != nil {
-		return nil, err
-	}
-	if len(arr) < 2 {
-		return nil, errors.New("malformed let")
-	}
-
-	bindings := arr[0]
-	body := arr[1]
-
-	bindingsArr, err := ToArray(bindings)
+	bindingsArr, bindingsArrLength, err := ToArray(bindings)
 	if err != nil {
 		return nil, err
 	}
 
-	temporaryParams := make([]SExpression, 0)
-	params := make([]SExpression, 0)
+	temporaryParamsLen := bindingsArrLength
+	paramsLen := bindingsArrLength
+	temporaryParams := make([]SExpression, temporaryParamsLen)
+	params := make([]SExpression, paramsLen)
 
-	for i := 0; i < len(bindingsArr); i++ {
-		varnameValuePair, err := ToArray(bindingsArr[i])
-		if err != nil {
+	for i := uint64(0); i < bindingsArrLength; i++ {
+		varnameValuePair, varnameValuePairLen, varnameValuePairErr := ToArray(bindingsArr[i])
+		if varnameValuePairErr != nil {
 			return nil, err
 		}
 
-		if len(varnameValuePair) != 2 || varnameValuePair[0].TypeId() != "symbol" {
+		if varnameValuePairLen != 2 || varnameValuePair[0].TypeId() != "symbol" {
 			return nil, errors.New("malformed let")
 		}
 
@@ -71,15 +64,13 @@ func (_ *_let) Apply(ctx context.Context, env Environment, args SExpression) (SE
 		params = append(params, evaluatedParams)
 	}
 
-	paramsForConsCell := ToConsCell(params)
-
-	closure, err := NewClosure(body, temporaryParams, env, len(temporaryParams))
+	closure, err := NewClosure(body, temporaryParams, env, temporaryParamsLen)
 
 	if err != nil {
 		return nil, err
 	}
 
-	r, err := closure.Apply(ctx, env, paramsForConsCell)
+	r, err := closure.Apply(ctx, env, params, paramsLen)
 
 	return r, err
 }

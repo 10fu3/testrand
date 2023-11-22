@@ -7,21 +7,17 @@ import (
 
 type _symbol_name struct{}
 
-func (s *_symbol_name) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-	if err != nil {
-		return nil, err
-	}
+func (s *_symbol_name) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 1 != len(arr) {
+	if 1 != argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	if "symbol" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is symbol, but got " + arr[0].TypeId())
+	if "symbol" != args[0].TypeId() {
+		return nil, errors.New("need arguments type is symbol, but got " + args[0].TypeId())
 	}
 
-	return NewString(arr[0].(Symbol).GetValue()), nil
+	return NewString(args[0].(Symbol).GetValue()), nil
 }
 
 func (s *_symbol_name) TypeId() string {

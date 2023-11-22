@@ -27,25 +27,21 @@ func (q *_foreach) Equals(sexp SExpression) bool {
 	return q.TypeId() == sexp.TypeId()
 }
 
-func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func (_ *_foreach) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-	if len(arr) != 2 {
+	if argsLength != 2 {
 		return nil, errors.New("malformed foreach")
 	}
 
 	//this is the list of items to iterate over
-	list, err := Eval(ctx, arr[0], env)
+	list, err := Eval(ctx, args[0], env)
 
 	if err != nil {
 		return nil, err
 	}
 
 	//get body
-	body := arr[1]
+	body := args[1]
 
 	if !body.IsList() {
 		return nil, errors.New("foreach: second argument must be a lambda")
@@ -77,7 +73,11 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 	}
 
 	//get the list as an array
-	listArr, err := ToArray(list)
+	listArr, _, err := ToArray(list)
+
+	if err != nil {
+		return nil, err
+	}
 
 	rawClosure, err := Eval(ctx, body, env)
 
@@ -93,12 +93,12 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args SExpression)
 
 	for i := 0; i < len(listArr); i++ {
 		if hasParamsForIndex {
-			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewInt(int64(i)), NewConsCell(NewNil(), NewNil()))))
+			_, err := closure.Apply(ctx, env, []SExpression{listArr[i], NewInt(int64(i))}, 2)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			_, err := closure.Apply(ctx, env, NewConsCell(listArr[i], NewConsCell(NewNil(), NewNil())))
+			_, err := closure.Apply(ctx, env, []SExpression{listArr[i]}, 1)
 			if err != nil {
 				return nil, err
 			}

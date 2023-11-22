@@ -29,13 +29,9 @@ func (l *_cdr) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_cdr) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_cdr) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 1 > len(args) {
+	if 1 > argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 
@@ -44,10 +40,6 @@ func (_ *_cdr) Apply(ctx context.Context, env Environment, arguments SExpression
 	}
 
 	cons := args[0].(ConsCell)
-
-	if err != nil {
-		return nil, err
-	}
 
 	return cons.GetCdr(), nil
 }

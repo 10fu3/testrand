@@ -27,18 +27,13 @@ func (l *_void) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_void) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
+func (_ *_void) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 1 != len(args) {
+	if 1 != argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	_, err = Eval(ctx, args[0], env)
+	_, err := Eval(ctx, args[0], env)
 
 	if err != nil {
 		return nil, err

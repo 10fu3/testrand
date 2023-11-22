@@ -7,19 +7,13 @@ import (
 
 type _to_string struct{}
 
-func (s *_to_string) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func (s *_to_string) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(arr) != 1 {
+	if argsLength != 1 {
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	return NewString(arr[0].String()), nil
+	return NewString(args[0].String()), nil
 }
 
 func (s *_to_string) TypeId() string {

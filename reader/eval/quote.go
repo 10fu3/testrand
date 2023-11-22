@@ -27,16 +27,11 @@ func (q *_quote) Equals(sexp SExpression) bool {
 	return q.TypeId() == sexp.TypeId()
 }
 
-func (_ *_quote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-	if len(arr) != 1 {
+func (_ *_quote) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+	if argsLength != 1 {
 		return nil, errors.New("malformed quote")
 	}
-	return arr[0], nil
+	return args[0], nil
 }
 
 func NewQuote() SExpression {

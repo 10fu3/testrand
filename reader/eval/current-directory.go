@@ -27,7 +27,7 @@ func (l *_current_directory) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_current_directory) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_current_directory) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	p, err := os.Getwd()
 
 	if err != nil {

@@ -96,16 +96,11 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 }
 
 // this function is lisp interpter function for quasiquote
-func (_ *_quasiquote) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-	if len(arr) != 1 {
+func (_ *_quasiquote) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+	if argsLength != 1 {
 		return nil, errors.New("malformed quote")
 	}
-	return _innerEvalQuasiquote(ctx, env, arr[0])
+	return _innerEvalQuasiquote(ctx, env, args[0])
 }
 
 func NewQuasiquote() SExpression {

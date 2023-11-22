@@ -28,13 +28,13 @@ func (i *_is_not) Equals(sexp SExpression) bool {
 	return i.TypeId() == sexp.TypeId()
 }
 
-func (_ *_is_not) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
-	}
-	argCell := arguments.(ConsCell)
+func (_ *_is_not) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	first := argCell.GetCar()
+	if argsLength != 1 {
+		return nil, errors.New("malformed not")
+	}
+
+	first := args[0]
 
 	if "bool" != first.TypeId() {
 		return first, nil

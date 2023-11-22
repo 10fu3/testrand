@@ -28,18 +28,14 @@ func (p *_println) Equals(sexp SExpression) bool {
 	return p.TypeId() == sexp.TypeId()
 }
 
-func (_ *_println) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-	if err != nil {
-		return nil, err
-	}
-	if len(arr) < 1 {
+func (_ *_println) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+	if argsLength < 1 {
 		return nil, errors.New("need args size is 1")
 	}
 
-	for i := 0; i < len(arr); i++ {
-		fmt.Print(arr[i])
-		if i+1 == len(arr) {
+	for i := uint64(0); i < argsLength; i++ {
+		fmt.Print(args[i])
+		if i+1 == argsLength {
 			fmt.Println()
 			break
 		}

@@ -29,16 +29,12 @@ func (l *_file_read_line) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_file_read_line) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	// 1st filepath string
 	// 2nd on-load-line function
 	// 3rd on-load-end function
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
 
-	if 2 > len(args) {
+	if 2 > argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 
@@ -53,7 +49,7 @@ func (_ *_file_read_line) Apply(ctx context.Context, env Environment, arguments 
 
 	var fp *os.File
 
-	fp, err = os.Open(path)
+	fp, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}

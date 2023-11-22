@@ -27,26 +27,22 @@ func (l *_lambda) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_lambda) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_lambda) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 2 != len(args) {
+	if 2 != argsLength {
 		return nil, errors.New("need arguments size is 2")
 	}
 
 	params := args[0]
 	body := args[1]
 
-	formalsArr, err := ToArray(params)
+	formalsArr, formalsArrLength, err := ToArray(params)
 
 	if err != nil {
 		return nil, err
 	}
 
-	closure, err := NewClosure(body, formalsArr, env, len(formalsArr))
+	closure, err := NewClosure(body, formalsArr, env, formalsArrLength)
 
 	if err != nil {
 		return nil, err

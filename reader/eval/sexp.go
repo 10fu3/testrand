@@ -326,18 +326,19 @@ func (cell *_cons_cell) String() string {
 	return joinedString.String()
 }
 
-func ToArray(sexp SExpression) ([]SExpression, error) {
+func ToArray(sexp SExpression) ([]SExpression, uint64, error) {
 	list := make([]SExpression, 0, 0)
 	look := sexp
 	var tail SExpression
 	var tailCell ConsCell
+	var count = uint64(0)
 	for {
 		if SExpressionTypeConsCell != look.SExpressionTypeId() {
-			return nil, errors.New("need list")
+			return nil, 0, errors.New("need list")
 		}
 		tail = look.(ConsCell)
 		if SExpressionTypeConsCell != tail.SExpressionTypeId() {
-			return nil, errors.New("need list")
+			return nil, 0, errors.New("need list")
 		}
 		tailCell = tail.(ConsCell)
 		if SExpressionTypeNil == tailCell.GetCar().SExpressionTypeId() && SExpressionTypeNil == tailCell.GetCdr().SExpressionTypeId() {
@@ -345,8 +346,9 @@ func ToArray(sexp SExpression) ([]SExpression, error) {
 		}
 		list = append(list, look.(ConsCell).GetCar())
 		look = look.(ConsCell).GetCdr()
+		count++
 	}
-	return list, nil
+	return list, count, nil
 }
 
 func (cell *_cons_cell) IsList() bool {
@@ -367,21 +369,20 @@ func (cell *_cons_cell) GetCdr() SExpression {
 	return cell.Cdr
 }
 
-func ToConsCell(list []SExpression) ConsCell {
-	var head = (NewConsCell(NewNil(), NewNil())).(*_cons_cell)
-	var look = head
-	var beforeLook *_cons_cell = nil
+func ToConsCell(list []SExpression, argsLength uint64) ConsCell {
+	var cells = make([]_cons_cell, argsLength+1)
+	var look = &cells[0]
 
-	for _, sexp := range list {
+	for i, sexp := range list {
 		look.Car = sexp
-		look.Cdr = NewConsCell(NewNil(), NewNil())
-		beforeLook = look
+		look.Cdr = &(cells[i+1])
+		if uint64(i) == argsLength-1 {
+			look.Cdr = NewConsCell(NewNil(), NewNil())
+		}
 		look = (look.Cdr).(*_cons_cell)
 	}
-	if beforeLook != nil {
-		beforeLook.Cdr = NewConsCell(NewNil(), NewNil())
-	}
-	return head
+
+	return &cells[0]
 }
 
 func IsEmptyList(list SExpression) bool {

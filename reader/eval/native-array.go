@@ -61,7 +61,7 @@ func (_ *_new_native_array) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.new-native-array"
 }
 
-func (_ *_new_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func (_ *_new_native_array) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	return &_native_array{
 		Arr: make([]SExpression, 0),
 	}, nil
@@ -93,20 +93,15 @@ func (_ *_get_native_array) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.get-native-array"
 }
 
-func (_ *_get_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_get_native_array) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 2 != len(argsArr) {
+	if 2 != argsLength {
 		return nil, errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := args[0].(*_native_array)
 
-	index := argsArr[1].(Number).GetValue()
+	index := args[1].(Number).GetValue()
 
 	if index < 0 || index >= int64(len(arr.Arr)) {
 		return nil, errors.New("index out of range")
@@ -141,28 +136,23 @@ func (_ *_set_native_array) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.set-native-array"
 }
 
-func (_ *_set_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_set_native_array) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 3 != len(argsArr) {
+	if 3 != len(args) {
 		return nil, errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := args[0].(*_native_array)
 
-	index := argsArr[1].(Number).GetValue()
+	index := args[1].(Number).GetValue()
 
 	if index < 0 || index >= int64(len(arr.Arr)) {
 		return nil, errors.New("index out of range")
 	}
 
-	arr.Arr[index] = argsArr[2]
+	arr.Arr[index] = args[2]
 
-	return argsArr[2], nil
+	return args[2], nil
 }
 
 func NewSetNativeArray() SExpression {
@@ -191,18 +181,13 @@ func (_ *_length_native_array) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.length-native-array"
 }
 
-func (_ *_length_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_length_native_array) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 1 != len(argsArr) {
+	if 1 != argsLength {
 		return nil, errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := args[0].(*_native_array)
 
 	return NewInt(int64(len(arr.Arr))), nil
 }
@@ -233,20 +218,15 @@ func (_ *_append_native_array) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.append-native-array"
 }
 
-func (_ *_append_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_append_native_array) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 2 != len(argsArr) {
+	if 2 != argsLength {
 		return nil, errors.New("wrong number of arguments")
 	}
 
-	arr := argsArr[0].(*_native_array)
+	arr := args[0].(*_native_array)
 
-	arr.Arr = append(arr.Arr, argsArr[1])
+	arr.Arr = append(arr.Arr, args[1])
 
 	return arr, nil
 }
@@ -277,20 +257,15 @@ func (_ *_native_array_to_list) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.native-array-to-list"
 }
 
-func (_ *_native_array_to_list) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_native_array_to_list) Apply(ctx context.Context, env Environment, argsArr []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 1 != len(argsArr) {
+	if 1 != argsLength {
 		return nil, errors.New("wrong number of arguments")
 	}
 
 	arr := argsArr[0].(*_native_array)
 
-	return ToConsCell(arr.Arr), nil
+	return ToConsCell(arr.Arr, uint64(len(arr.Arr))), nil
 }
 
 func NewNativeArrayToList() SExpression {
@@ -319,18 +294,13 @@ func (_ *_list_to_native_array) Equals(sexp SExpression) bool {
 	return sexp.TypeId() == "subroutine.list-to-native-array"
 }
 
-func (_ *_list_to_native_array) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_list_to_native_array) Apply(ctx context.Context, env Environment, argsArr []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if 1 != len(argsArr) {
+	if 1 != argsLength {
 		return nil, errors.New("wrong number of arguments")
 	}
 
-	consCell, err := ToArray(argsArr[0])
+	consCell, _, err := ToArray(argsArr[0])
 
 	if err != nil {
 		return nil, err
@@ -367,13 +337,9 @@ func (l *_foreach_native_array) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 2 > len(args) {
+	if 2 > argsLength {
 		return nil, errors.New("need arguments size is 2")
 	}
 
@@ -400,14 +366,8 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, argu
 	}
 
 	if lambda.GetFormalsCount() == 2 {
-		var argsSexp = _cons_cell{
-			Car: NewNil(),
-			Cdr: NewNil(),
-		}
 		for i, v := range nativeArray.(*_native_array).Arr {
-			argsSexp.Car = NewInt(int64(i))
-			argsSexp.Cdr = NewConsCell(v, NewNil())
-			_, err := lambda.Apply(ctx, env, &argsSexp)
+			_, err := lambda.Apply(ctx, env, []SExpression{NewInt(int64(i)), v}, 2)
 
 			if err != nil {
 				return nil, err
@@ -415,17 +375,8 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, argu
 		}
 		return NewNil(), nil
 	} else {
-		var childArgsSexp = _cons_cell{
-			Car: NewNil(),
-			Cdr: NewNil(),
-		}
-		var argsSexp = _cons_cell{
-			Car: NewNil(),
-			Cdr: &childArgsSexp,
-		}
 		for _, v := range nativeArray.(*_native_array).Arr {
-			argsSexp.Car = v
-			_, err := lambda.Apply(ctx, env, &argsSexp)
+			_, err := lambda.Apply(ctx, env, []SExpression{v}, 1)
 
 			if err != nil {
 				return nil, err

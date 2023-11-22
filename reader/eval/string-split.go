@@ -28,27 +28,23 @@ func (s *_string_split) Equals(sexp SExpression) bool {
 	return s.TypeId() == sexp.TypeId()
 }
 
-func (_ *_string_split) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-	if err != nil {
-		return nil, err
-	}
-	if len(arr) < 1 {
+func (_ *_string_split) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+	if argsLength < 1 {
 		return nil, errors.New("need args size is 1")
 	}
 
-	if arr[0].TypeId() != "string" {
+	if args[0].TypeId() != "string" {
 		return nil, errors.New("need args type is string")
 	}
 
-	str := arr[0].(Str).GetValue()
+	str := args[0].(Str).GetValue()
 
 	var sep string
-	if len(arr) == 2 {
-		if arr[1].TypeId() != "string" {
+	if argsLength == 2 {
+		if args[1].TypeId() != "string" {
 			return nil, errors.New("need args type is string")
 		}
-		sep = arr[1].(Str).GetValue()
+		sep = args[1].(Str).GetValue()
 	} else {
 		sep = ""
 	}

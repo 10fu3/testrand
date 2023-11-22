@@ -28,17 +28,9 @@ func (l *_wait) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_wait) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
-	}
-	arguments := args.(ConsCell)
+func (_ *_wait) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if !IsEmptyList(arguments.GetCdr()) {
-		return nil, errors.New("need arguments length is 1")
-	}
-
-	waitTime, err := Eval(ctx, arguments.GetCar(), env)
+	waitTime, err := Eval(ctx, args[0], env)
 	if err != nil {
 		return nil, err
 	}

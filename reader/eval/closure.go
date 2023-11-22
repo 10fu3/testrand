@@ -10,16 +10,16 @@ type _closure struct {
 	body         SExpression
 	formals      []SExpression
 	env          Environment
-	formalsCount int
+	formalsCount uint64
 }
 
 type Closure interface {
 	SExpression
-	GetFormalsCount() int
+	GetFormalsCount() uint64
 	Callable
 }
 
-func NewClosure(body SExpression, formals []SExpression, env Environment, formalsCount int) (Callable, error) {
+func NewClosure(body SExpression, formals []SExpression, env Environment, formalsCount uint64) (Callable, error) {
 	return &_closure{body: body, formals: formals, env: env, formalsCount: formalsCount}, nil
 }
 
@@ -46,19 +46,13 @@ func (c *_closure) Equals(args SExpression) bool {
 	return args.(*_closure) == c
 }
 
-func (c *_closure) GetFormalsCount() int {
+func (c *_closure) GetFormalsCount() uint64 {
 	return c.formalsCount
 }
 
-func (c *_closure) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
+func (c *_closure) Apply(ctx context.Context, _ Environment, loopArgs []SExpression, loopArgsLength uint64) (SExpression, error) {
 
-	loopArgs, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(loopArgs) != len(c.formals) {
+	if loopArgsLength != c.formalsCount {
 		return nil, errors.New(fmt.Sprintf("not match argument size: %d != %d", len(loopArgs), len(c.formals)))
 	}
 
