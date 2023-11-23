@@ -28,7 +28,7 @@ func (_ *_global_clear_all) Apply(ctx context.Context, env Environment, args []S
 	if err := env.GetSuperGlobalEnv().ClearAll(); err != nil {
 		return nil, err
 	}
-	return NewNil(), nil
+	return NewConsCell(NewNil(), NewNil()), nil
 }
 
 func NewGlobalClearAll() SExpression {

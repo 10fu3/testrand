@@ -373,7 +373,7 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, args
 				return nil, err
 			}
 		}
-		return NewNil(), nil
+		return NewConsCell(NewNil(), NewNil()), nil
 	} else {
 		for _, v := range nativeArray.(*_native_array).Arr {
 			_, err := lambda.Apply(ctx, env, []SExpression{v}, 1)
@@ -382,7 +382,7 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, args
 				return nil, err
 			}
 		}
-		return NewNil(), nil
+		return NewConsCell(NewNil(), NewNil()), nil
 	}
 }
 

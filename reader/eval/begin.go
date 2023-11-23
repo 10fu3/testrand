@@ -26,15 +26,16 @@ func (b *_begin) Equals(sexp SExpression) bool {
 
 func (_ *_begin) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	last := NewNil()
+	var last SExpression = nil
 	var err error
 
-	for _, sexp := range args {
-		last, err = Eval(ctx, sexp, env)
+	for i := uint64(0); i < argsLength; i++ {
+		last, err = Eval(ctx, args[i], env)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	return last, err
 }
 

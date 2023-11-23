@@ -163,7 +163,7 @@ func (_ *_get_native_hashmap) Apply(ctx context.Context, env Environment, args [
 		if 3 == len(args) {
 			return args[2], nil
 		}
-		return NewNil(), nil
+		return NewConsCell(NewNil(), NewNil()), nil
 	}
 
 	return v, nil
@@ -223,7 +223,7 @@ func (_ *_key_value_pair_foreach_native_hashmap) Apply(ctx context.Context, env 
 	}
 	nativeHashMap.(*_native_hashmap).Unlock()
 
-	return NewNil(), nil
+	return NewConsCell(NewNil(), NewNil()), nil
 }
 
 func NewKeyValuePairNativeHashmap() SExpression {

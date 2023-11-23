@@ -24,20 +24,27 @@ type environment struct {
 	globalEnv      Environment
 	superGlobalEnv infra.ISuperGlobalEnv
 	parentId       string
-	mutex          sync.RWMutex
+	Mutex          sync.RWMutex
 }
 
 func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
-	e.mutex.RLock()
+	e.Mutex.RLock()
 	if value, ok := e.frame[symbol.GetValue()]; ok {
-		e.mutex.RUnlock()
+		e.Mutex.RUnlock()
 		return value, nil
 	}
-	e.mutex.RUnlock()
-	if e.parent == nil {
-		return nil, errors.New("UndefinedEvaluate")
+	e.Mutex.RUnlock()
+
+	var lookParent = e.parent
+	for {
+		if lookParent == nil {
+			return nil, errors.New(fmt.Sprintf("UndefinedEvaluate: %s", symbol.GetValue()))
+		}
+		if value, ok := lookParent.(*environment).frame[symbol.GetValue()]; ok {
+			return value, nil
+		}
+		lookParent = lookParent.(*environment).parent
 	}
-	return e.parent.GetValue(symbol)
 }
 
 func (e *environment) GetGlobalEnv() Environment {
@@ -45,21 +52,21 @@ func (e *environment) GetGlobalEnv() Environment {
 }
 
 func (e *environment) Define(symbol Symbol, sexp SExpression) {
-	e.mutex.Lock()
+	e.Mutex.Lock()
 	e.frame[symbol.GetValue()] = sexp
-	e.mutex.Unlock()
+	e.Mutex.Unlock()
 }
 
 func (e *environment) Set(symbol Symbol, sexp SExpression) error {
-	e.mutex.RLock()
+	e.Mutex.RLock()
 	if _, ok := e.frame[symbol.GetValue()]; ok {
-		e.mutex.RUnlock()
-		e.mutex.Lock()
+		e.Mutex.RUnlock()
+		e.Mutex.Lock()
 		e.frame[symbol.GetValue()] = sexp
-		e.mutex.Unlock()
+		e.Mutex.Unlock()
 		return nil
 	}
-	e.mutex.RUnlock()
+	e.Mutex.RUnlock()
 	if e.parent == nil {
 		return errors.New("UndefinedEvaluate")
 	}
@@ -97,17 +104,6 @@ func (e *environment) Equals(args SExpression) bool {
 	return args.(*environment) == e
 }
 
-func NewEnvironment(parent Environment) (Environment, error) {
-	env := &environment{
-		frame:          map[string]SExpression{},
-		parent:         parent,
-		globalEnv:      parent.GetGlobalEnv(),
-		superGlobalEnv: parent.GetSuperGlobalEnv(),
-		parentId:       parent.GetParentId(),
-	}
-	return env, nil
-}
-
 func NewEnvironmentForClosure(parent Environment, frame map[string]SExpression) (Environment, error) {
 	env := &environment{
 		frame:          frame,
@@ -127,6 +123,11 @@ func GetDefaultFunction() map[string]SExpression {
 		"or":                      NewOr(),
 		"if":                      NewIf(),
 		"eq?":                     NewIsEq(),
+		">":                       NewIsGreaterThan(),
+		"<":                       NewIsLessThan(),
+		"=":                       NewIsNumEqual(),
+		">=":                      NewIsGreaterThanOrEqual(),
+		"<=":                      NewIsLessThanOrEqual(),
 		"not":                     NewIsNot(),
 		"define":                  NewDefine(),
 		"set":                     NewSet(),
@@ -181,6 +182,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"list->array":             NewListToNativeArray(),
 		"foreach-array":           NewForeachNativeArray(),
 		"void":                    NewVoid(),
+		"cons":                    NewCons(),
 	}
 }
 

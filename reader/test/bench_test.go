@@ -36,8 +36,8 @@ func BenchmarkRead(b *testing.B) {
 	}
 	b.StartTimer()
 	result, err = eval.Eval(ctx, result, env)
-	fmt.Println(result)
 	b.StopTimer()
+	fmt.Println(result)
 	if err != nil {
 		panic(err)
 	}

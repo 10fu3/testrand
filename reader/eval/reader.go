@@ -96,7 +96,7 @@ func (r *reader) sExpression() (SExpression, error) {
 			}
 			r.Token = nextToken
 		}
-		return NewNil(), nil
+		return NewConsCell(NewNil(), NewNil()), nil
 	}
 	if r.Token.GetKind() == token.TokenKindQuote {
 		nextToken, err := r.GetNextToken()

@@ -327,7 +327,7 @@ func (cell *_cons_cell) String() string {
 }
 
 func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
-	var list []SExpression
+	var list = make([]SExpression, 1, 2)
 	look := sexp
 
 	var count = uint64(0)
@@ -341,7 +341,7 @@ func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
 		if count < uint64(cap(list)) {
 			list = list[:count+1] // slice の延長
 			list[count] = look.(ConsCell).GetCar()
-		} else if cap(list) < len(list)+1 {
+		} else if cap(list) < len(list)+2 {
 			list = append(list, look.(ConsCell).GetCar(), nil)
 		}
 
