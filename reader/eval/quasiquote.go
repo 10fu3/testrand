@@ -12,8 +12,8 @@ func (_ *_quasiquote) TypeId() string {
 	return "special_form.quasiquote"
 }
 
-func (_ *_quasiquote) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_quasiquote) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_quasiquote) String() string {

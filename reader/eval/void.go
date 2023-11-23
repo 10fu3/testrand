@@ -11,8 +11,8 @@ func (_ *_void) TypeId() string {
 	return "special_form.void"
 }
 
-func (_ *_void) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_void) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_void) String() string {

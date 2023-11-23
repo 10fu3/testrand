@@ -17,8 +17,8 @@ func (_ *_if) TypeId() string {
 	return "special_form.if"
 }
 
-func (_ *_if) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_if) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_if) String() string {

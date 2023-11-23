@@ -12,8 +12,8 @@ func (_ *_file_read) TypeId() string {
 	return "subroutine.read-line-file"
 }
 
-func (_ *_file_read) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_file_read) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_file_read) String() string {

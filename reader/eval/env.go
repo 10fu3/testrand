@@ -78,8 +78,8 @@ func (e *environment) TypeId() string {
 	return "environment"
 }
 
-func (e *environment) AtomId() SExpressionType {
-	return SExpressionTypeEnvironment
+func (e *environment) AtomId() AtomType {
+	return AtomTypeEnvironment
 }
 
 func (e *environment) String() string {

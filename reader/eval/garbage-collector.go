@@ -11,8 +11,8 @@ func (s *_force_gc) TypeId() string {
 	return "subroutine.force_gc"
 }
 
-func (s *_force_gc) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (s *_force_gc) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (s *_force_gc) String() string {

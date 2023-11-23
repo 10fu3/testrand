@@ -8,15 +8,15 @@ import (
 func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
 	sexpType := sexp.AtomId()
 	switch sexpType {
-	case SExpressionTypeNumber,
-		SExpressionTypeString,
-		SExpressionTypeBool,
-		SExpressionTypeEnvironment,
-		SExpressionTypeNil,
-		SExpressionTypeNativeArray,
-		SExpressionTypeNativeHashmap:
+	case AtomTypeNumber,
+		AtomTypeString,
+		AtomTypeBool,
+		AtomTypeEnvironment,
+		AtomTypeNil,
+		AtomTypeNativeArray,
+		AtomTypeNativeHashmap:
 		return sexp, nil
-	case SExpressionTypeSymbol:
+	case AtomTypeSymbol:
 
 		v, err := env.GetValue(sexp.(Symbol))
 
@@ -24,7 +24,7 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 			return nil, err
 		}
 		return v, nil
-	case SExpressionTypeConsCell:
+	case AtomTypeConsCell:
 		cell := sexp.(ConsCell)
 		applied, err := Eval(ctx, cell.GetCar(), env)
 		if err != nil {
@@ -34,7 +34,7 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 		if err != nil {
 			return nil, err
 		}
-		if SExpressionTypeClosure == appliedType || SExpressionTypeSubroutine == appliedType {
+		if AtomTypeClosure == appliedType || AtomTypeSubroutine == appliedType {
 			argsArr, argsArrSize, argsErr := ToArray(cell.GetCdr())
 			appliedArgs := make([]SExpression, argsArrSize)
 
@@ -48,7 +48,7 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 
 			return applied.(Callable).Apply(ctx, env, appliedArgs, argsArrSize)
 		}
-		if SExpressionTypeSpecialForm == appliedType {
+		if AtomTypeSpecialForm == appliedType {
 			args, length, toArrErr := ToArray(cell.GetCdr())
 			if toArrErr != nil {
 				return nil, err
@@ -98,8 +98,8 @@ func (_ *_eval) TypeId() string {
 	return "subroutine.eval"
 }
 
-func (_ *_eval) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_eval) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_eval) String() string {

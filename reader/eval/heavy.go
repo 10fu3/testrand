@@ -80,8 +80,8 @@ func (_ *_heavy) TypeId() string {
 	return "special_form.heavy"
 }
 
-func (_ *_heavy) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_heavy) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_heavy) String() string {

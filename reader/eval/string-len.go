@@ -12,8 +12,8 @@ func (_ *_string_len) TypeId() string {
 	return "subroutine.string-len"
 }
 
-func (_ *_string_len) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_string_len) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_string_len) String() string {

@@ -14,8 +14,8 @@ func (_ *_global_set) TypeId() string {
 	return "special_form.global_set"
 }
 
-func (_ *_global_set) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_global_set) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_global_set) String() string {

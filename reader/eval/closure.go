@@ -27,8 +27,8 @@ func (c *_closure) TypeId() string {
 	return "closure"
 }
 
-func (c *_closure) AtomId() SExpressionType {
-	return SExpressionTypeClosure
+func (c *_closure) AtomId() AtomType {
+	return AtomTypeClosure
 }
 
 func (c *_closure) String() string {

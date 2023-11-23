@@ -11,8 +11,8 @@ func (_ *_apply) TypeId() string {
 	return "subroutine.apply"
 }
 
-func (_ *_apply) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_apply) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_apply) String() string {

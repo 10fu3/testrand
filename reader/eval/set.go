@@ -11,8 +11,8 @@ func (_ *_set) TypeId() string {
 	return "special_form.set"
 }
 
-func (_ *_set) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_set) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_set) String() string {

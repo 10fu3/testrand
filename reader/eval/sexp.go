@@ -9,7 +9,7 @@ import (
 
 type SExpression interface {
 	TypeId() string
-	AtomId() SExpressionType
+	AtomId() AtomType
 	String() string
 	IsList() bool
 	Equals(sexp SExpression) bool
@@ -29,8 +29,8 @@ type symbol struct {
 	name string
 }
 
-func (s *symbol) AtomId() SExpressionType {
-	return SExpressionTypeSymbol
+func (s *symbol) AtomId() AtomType {
+	return AtomTypeSymbol
 }
 
 func (s *symbol) TypeId() string {
@@ -72,8 +72,8 @@ func (i *_int) String() string {
 	return strconv.FormatInt(i.Value, 10)
 }
 
-func (i *_int) AtomId() SExpressionType {
-	return SExpressionTypeNumber
+func (i *_int) AtomId() AtomType {
+	return AtomTypeNumber
 }
 
 func (i *_int) TypeId() string {
@@ -136,8 +136,8 @@ func (b *_bool) TypeId() string {
 	return "bool"
 }
 
-func (b *_bool) AtomId() SExpressionType {
-	return SExpressionTypeBool
+func (b *_bool) AtomId() AtomType {
+	return AtomTypeBool
 }
 
 func (b *_bool) IsList() bool {
@@ -187,8 +187,8 @@ func (s *_string) TypeId() string {
 	return "string"
 }
 
-func (s *_string) AtomId() SExpressionType {
-	return SExpressionTypeString
+func (s *_string) AtomId() AtomType {
+	return AtomTypeString
 }
 
 func (s *_string) IsList() bool {
@@ -210,8 +210,8 @@ func (n *_nil) TypeId() string {
 	return "nil"
 }
 
-func (n *_nil) AtomId() SExpressionType {
-	return SExpressionTypeNil
+func (n *_nil) AtomId() AtomType {
+	return AtomTypeNil
 }
 
 func (n *_nil) String() string {
@@ -292,8 +292,8 @@ func (cell *_cons_cell) TypeId() string {
 	return "cons_cell"
 }
 
-func (cell *_cons_cell) AtomId() SExpressionType {
-	return SExpressionTypeConsCell
+func (cell *_cons_cell) AtomId() AtomType {
+	return AtomTypeConsCell
 }
 
 func (cell *_cons_cell) String() string {
@@ -332,10 +332,10 @@ func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
 
 	var count = uint64(0)
 	for {
-		if SExpressionTypeConsCell != look.AtomId() {
+		if AtomTypeConsCell != look.AtomId() {
 			return nil, 0, errors.New("need list")
 		}
-		if SExpressionTypeNil == look.GetCar().AtomId() && SExpressionTypeNil == look.GetCdr().AtomId() {
+		if AtomTypeNil == look.GetCar().AtomId() && AtomTypeNil == look.GetCdr().AtomId() {
 			break
 		}
 		if count < uint64(cap(list)) {
@@ -352,7 +352,7 @@ func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
 }
 
 func ToArray(sexp SExpression) ([]SExpression, uint64, error) {
-	if sexp.AtomId() != SExpressionTypeConsCell {
+	if sexp.AtomId() != AtomTypeConsCell {
 		return nil, 0, errors.New("need list")
 	}
 	return _toArray(sexp.(ConsCell))
@@ -401,19 +401,19 @@ func IsEmptyList(list SExpression) bool {
 	return "nil" == tmp.GetCar().TypeId() && "nil" == tmp.GetCdr().TypeId()
 }
 
-type SExpressionType int
+type AtomType int
 
 const (
-	SExpressionTypeSymbol SExpressionType = iota
-	SExpressionTypeNumber
-	SExpressionTypeBool
-	SExpressionTypeString
-	SExpressionTypeNil
-	SExpressionTypeConsCell
-	SExpressionTypeSubroutine
-	SExpressionTypeSpecialForm
-	SExpressionTypeClosure
-	SExpressionTypeNativeHashmap
-	SExpressionTypeNativeArray
-	SExpressionTypeEnvironment
+	AtomTypeSymbol AtomType = iota
+	AtomTypeNumber
+	AtomTypeBool
+	AtomTypeString
+	AtomTypeNil
+	AtomTypeConsCell
+	AtomTypeSubroutine
+	AtomTypeSpecialForm
+	AtomTypeClosure
+	AtomTypeNativeHashmap
+	AtomTypeNativeArray
+	AtomTypeEnvironment
 )

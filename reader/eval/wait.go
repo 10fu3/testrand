@@ -12,8 +12,8 @@ func (_ *_wait) TypeId() string {
 	return "special_form.wait"
 }
 
-func (_ *_wait) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_wait) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_wait) String() string {

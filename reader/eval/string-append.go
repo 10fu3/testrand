@@ -11,8 +11,8 @@ func (_ *_string_append) TypeId() string {
 	return "subroutine.string-append"
 }
 
-func (_ *_string_append) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_string_append) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_string_append) String() string {

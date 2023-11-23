@@ -12,8 +12,8 @@ func (_ *_print) TypeId() string {
 	return "subroutine.print"
 }
 
-func (_ *_print) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_print) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_print) String() string {

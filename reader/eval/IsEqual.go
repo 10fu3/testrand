@@ -12,8 +12,8 @@ func (_ *_is_equals) TypeId() string {
 	return "subroutine.is_equals"
 }
 
-func (_ *_is_equals) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_is_equals) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_is_equals) String() string {

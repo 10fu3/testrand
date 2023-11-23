@@ -20,8 +20,8 @@ func (s *_to_string) TypeId() string {
 	return "subroutine.to_string"
 }
 
-func (s *_to_string) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (s *_to_string) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (s *_to_string) String() string {

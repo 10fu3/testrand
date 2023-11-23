@@ -12,8 +12,8 @@ func (_ *_string_split) TypeId() string {
 	return "subroutine.string-split"
 }
 
-func (_ *_string_split) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_string_split) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_string_split) String() string {

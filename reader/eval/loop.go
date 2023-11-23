@@ -12,8 +12,8 @@ func (_ *_loop) TypeId() string {
 	return "special_form.loop"
 }
 
-func (_ *_loop) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_loop) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_loop) String() string {

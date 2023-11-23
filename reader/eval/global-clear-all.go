@@ -8,8 +8,8 @@ func (_ *_global_clear_all) TypeId() string {
 	return "subroutine.global_clear_all"
 }
 
-func (_ *_global_clear_all) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_global_clear_all) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_global_clear_all) String() string {

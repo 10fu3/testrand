@@ -24,8 +24,8 @@ func (s *_symbol_name) TypeId() string {
 	return "subroutine.symbol_name"
 }
 
-func (s *_symbol_name) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (s *_symbol_name) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (s *_symbol_name) String() string {

@@ -11,8 +11,8 @@ func (_ *_foreach) TypeId() string {
 	return "special_form.foreach"
 }
 
-func (_ *_foreach) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_foreach) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_foreach) String() string {

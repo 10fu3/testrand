@@ -14,8 +14,8 @@ func (_ *_native_array) TypeId() string {
 	return "native_array"
 }
 
-func (_ *_native_array) AtomId() SExpressionType {
-	return SExpressionTypeNativeArray
+func (_ *_native_array) AtomId() AtomType {
+	return AtomTypeNativeArray
 }
 
 func (l *_native_array) String() string {
@@ -45,8 +45,8 @@ func (_ *_new_native_array) TypeId() string {
 	return "subroutine.new-native-array"
 }
 
-func (_ *_new_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_new_native_array) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_new_native_array) String() string {
@@ -77,8 +77,8 @@ func (_ *_get_native_array) TypeId() string {
 	return "subroutine.get-native-array"
 }
 
-func (_ *_get_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_get_native_array) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_get_native_array) String() string {
@@ -120,8 +120,8 @@ func (_ *_set_native_array) TypeId() string {
 	return "subroutine.set-native-array"
 }
 
-func (_ *_set_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_set_native_array) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_set_native_array) String() string {
@@ -165,8 +165,8 @@ func (_ *_length_native_array) TypeId() string {
 	return "subroutine.length-native-array"
 }
 
-func (_ *_length_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_length_native_array) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_length_native_array) String() string {
@@ -202,8 +202,8 @@ func (_ *_append_native_array) TypeId() string {
 	return "subroutine.append-native-array"
 }
 
-func (_ *_append_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_append_native_array) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_append_native_array) String() string {
@@ -241,8 +241,8 @@ func (_ *_native_array_to_list) TypeId() string {
 	return "subroutine.native-array-to-list"
 }
 
-func (_ *_native_array_to_list) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_native_array_to_list) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_native_array_to_list) String() string {
@@ -278,8 +278,8 @@ func (_ *_list_to_native_array) TypeId() string {
 	return "subroutine.list-to-native-array"
 }
 
-func (_ *_list_to_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSubroutine
+func (_ *_list_to_native_array) AtomId() AtomType {
+	return AtomTypeSubroutine
 }
 
 func (_ *_list_to_native_array) String() string {
@@ -321,8 +321,8 @@ func (_ *_foreach_native_array) TypeId() string {
 	return "special_form.foreach-native-array"
 }
 
-func (_ *_foreach_native_array) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_foreach_native_array) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_foreach_native_array) String() string {
@@ -345,7 +345,7 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, args
 
 	nativeArray, err := Eval(ctx, args[0], env)
 
-	if err != nil || nativeArray.AtomId() != SExpressionTypeNativeArray {
+	if err != nil || nativeArray.AtomId() != AtomTypeNativeArray {
 		return nil, errors.New("need arguments type is native_array")
 	}
 
@@ -355,7 +355,7 @@ func (_ *_foreach_native_array) Apply(ctx context.Context, env Environment, args
 		return nil, err
 	}
 
-	if rawLambda.AtomId() != SExpressionTypeClosure {
+	if rawLambda.AtomId() != AtomTypeClosure {
 		return nil, errors.New("need arguments type is closure")
 	}
 

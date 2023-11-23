@@ -11,8 +11,8 @@ func (_ *_lambda) TypeId() string {
 	return "special_form.lambda"
 }
 
-func (_ *_lambda) AtomId() SExpressionType {
-	return SExpressionTypeSpecialForm
+func (_ *_lambda) AtomId() AtomType {
+	return AtomTypeSpecialForm
 }
 
 func (_ *_lambda) String() string {
