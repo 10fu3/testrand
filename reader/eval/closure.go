@@ -56,7 +56,7 @@ func (c *_closure) Apply(ctx context.Context, _ Environment, loopArgs []SExpress
 		return nil, errors.New(fmt.Sprintf("not match argument size: %d != %d", len(loopArgs), len(c.formals)))
 	}
 
-	frame := map[string]SExpression{}
+	frame := make(map[string]SExpression, c.formalsCount)
 
 	var argElem SExpression = NewNil()
 

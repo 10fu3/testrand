@@ -17,7 +17,6 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 		AtomTypeNativeHashmap:
 		return sexp, nil
 	case AtomTypeSymbol:
-
 		v, err := env.GetValue(sexp.(Symbol))
 
 		if err != nil {
@@ -58,38 +57,6 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 
 	}
 	return nil, errors.New("unknown eval: " + sexp.String())
-}
-
-func evalArgument(ctx context.Context, sexp SExpression, env Environment) ([]SExpression, uint64, error) {
-	if "cons_cell" != sexp.TypeId() {
-		result, err := Eval(ctx, sexp, env)
-		return []SExpression{result}, 1, err
-	}
-
-	if IsEmptyList(sexp) {
-		return []SExpression{}, 0, nil
-	}
-
-	cell := sexp.(ConsCell)
-
-	carEvaluated, err := Eval(ctx, cell.GetCar(), env)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	cdrEvaluated, size, err := evalArgument(ctx, cell.GetCdr(), env)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if len(cdrEvaluated)+1 < cap(cdrEvaluated) {
-		cdrEvaluated = cdrEvaluated[:len(cdrEvaluated)+1] // slice の延長
-		cdrEvaluated[len(cdrEvaluated)] = carEvaluated
-	} else if cap(cdrEvaluated) < len(cdrEvaluated)+1 {
-		cdrEvaluated = append(cdrEvaluated, carEvaluated)
-	}
-
-	return cdrEvaluated, size + 1, nil
 }
 
 type _eval struct{}
