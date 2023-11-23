@@ -35,14 +35,18 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 			return nil, err
 		}
 		if SExpressionTypeClosure == appliedType || SExpressionTypeSubroutine == appliedType {
-			appliedArgs, argsSize, err := evalArgument(ctx, cell.GetCdr(), env)
-			if err != nil {
-				return nil, err
+			argsArr, argsArrSize, argsErr := ToArray(cell.GetCdr())
+			appliedArgs := make([]SExpression, argsArrSize)
+
+			for i := uint64(0); i < argsArrSize && argsErr == nil; i++ {
+				appliedArgs[i], argsErr = Eval(ctx, argsArr[i], env)
 			}
-			for i, j := 0, len(appliedArgs)-1; i < j; i, j = i+1, j-1 {
-				appliedArgs[i], appliedArgs[j] = appliedArgs[j], appliedArgs[i]
+
+			if argsErr != nil {
+				return nil, argsErr
 			}
-			return applied.(Callable).Apply(ctx, env, appliedArgs, argsSize)
+
+			return applied.(Callable).Apply(ctx, env, appliedArgs, argsArrSize)
 		}
 		if SExpressionTypeSpecialForm == appliedType {
 			args, length, toArrErr := ToArray(cell.GetCdr())
@@ -79,7 +83,7 @@ func evalArgument(ctx context.Context, sexp SExpression, env Environment) ([]SEx
 	}
 
 	if len(cdrEvaluated)+1 < cap(cdrEvaluated) {
-		cdrEvaluated = cdrEvaluated[:len(cdrEvaluated)+2] // slice の延長
+		cdrEvaluated = cdrEvaluated[:len(cdrEvaluated)+1] // slice の延長
 		cdrEvaluated[len(cdrEvaluated)] = carEvaluated
 	} else if cap(cdrEvaluated) < len(cdrEvaluated)+1 {
 		cdrEvaluated = append(cdrEvaluated, carEvaluated)

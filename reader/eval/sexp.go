@@ -326,29 +326,36 @@ func (cell *_cons_cell) String() string {
 	return joinedString.String()
 }
 
-func ToArray(sexp SExpression) ([]SExpression, uint64, error) {
-	list := make([]SExpression, 0, 0)
+func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
+	var list []SExpression
 	look := sexp
-	var tail SExpression
-	var tailCell ConsCell
+
 	var count = uint64(0)
 	for {
 		if SExpressionTypeConsCell != look.SExpressionTypeId() {
 			return nil, 0, errors.New("need list")
 		}
-		tail = look.(ConsCell)
-		if SExpressionTypeConsCell != tail.SExpressionTypeId() {
-			return nil, 0, errors.New("need list")
-		}
-		tailCell = tail.(ConsCell)
-		if SExpressionTypeNil == tailCell.GetCar().SExpressionTypeId() && SExpressionTypeNil == tailCell.GetCdr().SExpressionTypeId() {
+		if SExpressionTypeNil == look.GetCar().SExpressionTypeId() && SExpressionTypeNil == look.GetCdr().SExpressionTypeId() {
 			break
 		}
-		list = append(list, look.(ConsCell).GetCar())
-		look = look.(ConsCell).GetCdr()
+		if count < uint64(cap(list)) {
+			list = list[:count+1] // slice の延長
+			list[count] = look.(ConsCell).GetCar()
+		} else if cap(list) < len(list)+1 {
+			list = append(list, look.(ConsCell).GetCar(), nil)
+		}
+
+		look = look.GetCdr().(ConsCell)
 		count++
 	}
 	return list, count, nil
+}
+
+func ToArray(sexp SExpression) ([]SExpression, uint64, error) {
+	if sexp.SExpressionTypeId() != SExpressionTypeConsCell {
+		return nil, 0, errors.New("need list")
+	}
+	return _toArray(sexp.(ConsCell))
 }
 
 func (cell *_cons_cell) IsList() bool {
