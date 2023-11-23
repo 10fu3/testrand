@@ -8,7 +8,7 @@ func (_ *_get_interaction_environment) TypeId() string {
 	return "subroutine.interaction-environment"
 }
 
-func (_ *_get_interaction_environment) SExpressionTypeId() SExpressionType {
+func (_ *_get_interaction_environment) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

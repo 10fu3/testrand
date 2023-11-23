@@ -9,7 +9,7 @@ import (
 
 type SExpression interface {
 	TypeId() string
-	SExpressionTypeId() SExpressionType
+	AtomId() SExpressionType
 	String() string
 	IsList() bool
 	Equals(sexp SExpression) bool
@@ -29,7 +29,7 @@ type symbol struct {
 	name string
 }
 
-func (s *symbol) SExpressionTypeId() SExpressionType {
+func (s *symbol) AtomId() SExpressionType {
 	return SExpressionTypeSymbol
 }
 
@@ -72,7 +72,7 @@ func (i *_int) String() string {
 	return strconv.FormatInt(i.Value, 10)
 }
 
-func (i *_int) SExpressionTypeId() SExpressionType {
+func (i *_int) AtomId() SExpressionType {
 	return SExpressionTypeNumber
 }
 
@@ -136,7 +136,7 @@ func (b *_bool) TypeId() string {
 	return "bool"
 }
 
-func (b *_bool) SExpressionTypeId() SExpressionType {
+func (b *_bool) AtomId() SExpressionType {
 	return SExpressionTypeBool
 }
 
@@ -187,7 +187,7 @@ func (s *_string) TypeId() string {
 	return "string"
 }
 
-func (s *_string) SExpressionTypeId() SExpressionType {
+func (s *_string) AtomId() SExpressionType {
 	return SExpressionTypeString
 }
 
@@ -210,7 +210,7 @@ func (n *_nil) TypeId() string {
 	return "nil"
 }
 
-func (n *_nil) SExpressionTypeId() SExpressionType {
+func (n *_nil) AtomId() SExpressionType {
 	return SExpressionTypeNil
 }
 
@@ -292,7 +292,7 @@ func (cell *_cons_cell) TypeId() string {
 	return "cons_cell"
 }
 
-func (cell *_cons_cell) SExpressionTypeId() SExpressionType {
+func (cell *_cons_cell) AtomId() SExpressionType {
 	return SExpressionTypeConsCell
 }
 
@@ -332,10 +332,10 @@ func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
 
 	var count = uint64(0)
 	for {
-		if SExpressionTypeConsCell != look.SExpressionTypeId() {
+		if SExpressionTypeConsCell != look.AtomId() {
 			return nil, 0, errors.New("need list")
 		}
-		if SExpressionTypeNil == look.GetCar().SExpressionTypeId() && SExpressionTypeNil == look.GetCdr().SExpressionTypeId() {
+		if SExpressionTypeNil == look.GetCar().AtomId() && SExpressionTypeNil == look.GetCdr().AtomId() {
 			break
 		}
 		if count < uint64(cap(list)) {
@@ -352,7 +352,7 @@ func _toArray(sexp ConsCell) ([]SExpression, uint64, error) {
 }
 
 func ToArray(sexp SExpression) ([]SExpression, uint64, error) {
-	if sexp.SExpressionTypeId() != SExpressionTypeConsCell {
+	if sexp.AtomId() != SExpressionTypeConsCell {
 		return nil, 0, errors.New("need list")
 	}
 	return _toArray(sexp.(ConsCell))

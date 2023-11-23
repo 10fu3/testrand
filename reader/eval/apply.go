@@ -11,7 +11,7 @@ func (_ *_apply) TypeId() string {
 	return "subroutine.apply"
 }
 
-func (_ *_apply) SExpressionTypeId() SExpressionType {
+func (_ *_apply) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

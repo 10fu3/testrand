@@ -12,7 +12,7 @@ func (_ *_is_not) TypeId() string {
 	return "subroutine.is_equals"
 }
 
-func (_ *_is_not) SExpressionTypeId() SExpressionType {
+func (_ *_is_not) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

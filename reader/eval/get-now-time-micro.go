@@ -11,7 +11,7 @@ func (_ *_get_now_time_nano) TypeId() string {
 	return "subroutine.get_now_time_micro"
 }
 
-func (_ *_get_now_time_nano) SExpressionTypeId() SExpressionType {
+func (_ *_get_now_time_nano) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

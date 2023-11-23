@@ -11,7 +11,7 @@ func (_ *_current_directory) TypeId() string {
 	return "subroutine.current-directory"
 }
 
-func (_ *_current_directory) SExpressionTypeId() SExpressionType {
+func (_ *_current_directory) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

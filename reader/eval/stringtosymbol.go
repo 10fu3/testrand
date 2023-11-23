@@ -24,7 +24,7 @@ func (s *_string_to_symbol) TypeId() string {
 	return "subroutine.string_to_symbol"
 }
 
-func (s *_string_to_symbol) SExpressionTypeId() SExpressionType {
+func (s *_string_to_symbol) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

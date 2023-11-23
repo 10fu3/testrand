@@ -11,7 +11,7 @@ func (_ *_foreach) TypeId() string {
 	return "special_form.foreach"
 }
 
-func (_ *_foreach) SExpressionTypeId() SExpressionType {
+func (_ *_foreach) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

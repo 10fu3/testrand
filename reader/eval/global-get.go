@@ -15,7 +15,7 @@ func (_ *_global_get) TypeId() string {
 	return "special_form.global_get"
 }
 
-func (_ *_global_get) SExpressionTypeId() SExpressionType {
+func (_ *_global_get) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

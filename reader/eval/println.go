@@ -12,7 +12,7 @@ func (_ *_println) TypeId() string {
 	return "subroutine.print"
 }
 
-func (_ *_println) SExpressionTypeId() SExpressionType {
+func (_ *_println) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

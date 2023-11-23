@@ -9,7 +9,7 @@ func (_ _or) TypeId() string {
 	return "special_form.or"
 }
 
-func (_ _or) SExpressionTypeId() SExpressionType {
+func (_ _or) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

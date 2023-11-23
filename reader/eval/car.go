@@ -13,7 +13,7 @@ func (_ *_car) TypeId() string {
 	return "subroutine.car"
 }
 
-func (_ *_car) SExpressionTypeId() SExpressionType {
+func (_ *_car) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

@@ -19,7 +19,7 @@ func (_ *_native_hashmap) TypeId() string {
 	return "native.hashmap"
 }
 
-func (_ *_native_hashmap) SExpressionTypeId() SExpressionType {
+func (_ *_native_hashmap) AtomId() SExpressionType {
 	return SExpressionTypeNativeHashmap
 }
 
@@ -45,7 +45,7 @@ func (_ *_new_native_hashmap) TypeId() string {
 	return "subroutine.new-native-hashmap"
 }
 
-func (_ *_new_native_hashmap) SExpressionTypeId() SExpressionType {
+func (_ *_new_native_hashmap) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -78,7 +78,7 @@ func (_ *_put_native_hashmap) TypeId() string {
 	return "subroutine.put-native-hashmap"
 }
 
-func (_ *_put_native_hashmap) SExpressionTypeId() SExpressionType {
+func (_ *_put_native_hashmap) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -125,7 +125,7 @@ func (_ *_get_native_hashmap) TypeId() string {
 	return "subroutine.get-native-hashmap"
 }
 
-func (_ *_get_native_hashmap) SExpressionTypeId() SExpressionType {
+func (_ *_get_native_hashmap) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -179,7 +179,7 @@ func (_ *_key_value_pair_foreach_native_hashmap) TypeId() string {
 	return "special_form.kv-set-native-hashmap"
 }
 
-func (_ *_key_value_pair_foreach_native_hashmap) SExpressionTypeId() SExpressionType {
+func (_ *_key_value_pair_foreach_native_hashmap) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 
@@ -236,7 +236,7 @@ func (_ *_key_value_pair_native_hashmap_to_cons_cell) TypeId() string {
 	return "subroutine.kv-native-hashmap"
 }
 
-func (_ *_key_value_pair_native_hashmap_to_cons_cell) SExpressionTypeId() SExpressionType {
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

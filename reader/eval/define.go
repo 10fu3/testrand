@@ -11,7 +11,7 @@ func (_ *_define) TypeId() string {
 	return "special_form.define"
 }
 
-func (_ *_define) SExpressionTypeId() SExpressionType {
+func (_ *_define) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

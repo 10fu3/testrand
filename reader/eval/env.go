@@ -78,7 +78,7 @@ func (e *environment) TypeId() string {
 	return "environment"
 }
 
-func (e *environment) SExpressionTypeId() SExpressionType {
+func (e *environment) AtomId() SExpressionType {
 	return SExpressionTypeEnvironment
 }
 

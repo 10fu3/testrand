@@ -13,7 +13,7 @@ func (_ *_cdr) TypeId() string {
 	return "subroutine.cdr"
 }
 
-func (_ *_cdr) SExpressionTypeId() SExpressionType {
+func (_ *_cdr) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

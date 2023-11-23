@@ -8,7 +8,7 @@ func (_ *_global_clear_all) TypeId() string {
 	return "subroutine.global_clear_all"
 }
 
-func (_ *_global_clear_all) SExpressionTypeId() SExpressionType {
+func (_ *_global_clear_all) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

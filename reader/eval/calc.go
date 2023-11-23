@@ -11,7 +11,7 @@ func (_ *_add) TypeId() string {
 	return "subroutine.add"
 }
 
-func (_ *_add) SExpressionTypeId() SExpressionType {
+func (_ *_add) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -59,7 +59,7 @@ func (_ *_minus) TypeId() string {
 	return "subroutine.minus"
 }
 
-func (_ *_minus) SExpressionTypeId() SExpressionType {
+func (_ *_minus) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -107,7 +107,7 @@ func (_ *_multiply) TypeId() string {
 	return "subroutine.multiply"
 }
 
-func (_ *_multiply) SExpressionTypeId() SExpressionType {
+func (_ *_multiply) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -155,7 +155,7 @@ func (_ *_divide) TypeId() string {
 	return "subroutine.divide"
 }
 
-func (_ *_divide) SExpressionTypeId() SExpressionType {
+func (_ *_divide) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
@@ -203,7 +203,7 @@ func (_ *_mod) TypeId() string {
 	return "subroutine.mod"
 }
 
-func (_ *_mod) SExpressionTypeId() SExpressionType {
+func (_ *_mod) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

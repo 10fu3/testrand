@@ -11,7 +11,7 @@ func (_ *_transaction) TypeId() string {
 	return "special_form.transaction"
 }
 
-func (_ *_transaction) SExpressionTypeId() SExpressionType {
+func (_ *_transaction) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

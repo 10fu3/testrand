@@ -8,7 +8,7 @@ func (_ *_begin) TypeId() string {
 	return "special_form.begin"
 }
 
-func (_ *_begin) SExpressionTypeId() SExpressionType {
+func (_ *_begin) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

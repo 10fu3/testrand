@@ -12,7 +12,7 @@ func (_ *_string_len) TypeId() string {
 	return "subroutine.string-len"
 }
 
-func (_ *_string_len) SExpressionTypeId() SExpressionType {
+func (_ *_string_len) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

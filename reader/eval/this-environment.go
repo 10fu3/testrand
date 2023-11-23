@@ -8,7 +8,7 @@ func (_ *_this_environment) TypeId() string {
 	return "subroutine.this_environment"
 }
 
-func (_ *_this_environment) SExpressionTypeId() SExpressionType {
+func (_ *_this_environment) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

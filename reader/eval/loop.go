@@ -12,7 +12,7 @@ func (_ *_loop) TypeId() string {
 	return "special_form.loop"
 }
 
-func (_ *_loop) SExpressionTypeId() SExpressionType {
+func (_ *_loop) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

@@ -11,7 +11,7 @@ func (_ *_quote) TypeId() string {
 	return "special_form.quote"
 }
 
-func (_ *_quote) SExpressionTypeId() SExpressionType {
+func (_ *_quote) AtomId() SExpressionType {
 	return SExpressionTypeSpecialForm
 }
 

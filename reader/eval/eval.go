@@ -6,7 +6,7 @@ import (
 )
 
 func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
-	sexpType := sexp.SExpressionTypeId()
+	sexpType := sexp.AtomId()
 	switch sexpType {
 	case SExpressionTypeNumber,
 		SExpressionTypeString,
@@ -30,7 +30,7 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 		if err != nil {
 			return nil, err
 		}
-		appliedType := applied.SExpressionTypeId()
+		appliedType := applied.AtomId()
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +98,7 @@ func (_ *_eval) TypeId() string {
 	return "subroutine.eval"
 }
 
-func (_ *_eval) SExpressionTypeId() SExpressionType {
+func (_ *_eval) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 

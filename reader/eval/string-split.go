@@ -12,7 +12,7 @@ func (_ *_string_split) TypeId() string {
 	return "subroutine.string-split"
 }
 
-func (_ *_string_split) SExpressionTypeId() SExpressionType {
+func (_ *_string_split) AtomId() SExpressionType {
 	return SExpressionTypeSubroutine
 }
 
