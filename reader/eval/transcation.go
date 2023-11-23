@@ -2,7 +2,6 @@ package eval
 
 import (
 	"context"
-	"errors"
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
@@ -28,20 +27,10 @@ func (t *_transaction) Equals(sexp SExpression) bool {
 	return t.TypeId() == sexp.TypeId()
 }
 
-func (_ *_transaction) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
-	}
-
-	cell := args.(ConsCell)
-
-	if !IsEmptyList(cell.GetCdr()) {
-		return nil, errors.New("need less than 2 params")
-	}
+func (_ *_transaction) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
 	ok, err := env.GetSuperGlobalEnv().Transaction(func(stm concurrency.STM) error {
-		_, err := Eval(context.WithValue(ctx, "transaction", stm), cell.GetCar(), env)
+		_, err := Eval(context.WithValue(ctx, "transaction", stm), args[0], env)
 		if err != nil {
 			return err
 		}

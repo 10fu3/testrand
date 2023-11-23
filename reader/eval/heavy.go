@@ -96,12 +96,7 @@ func (h *_heavy) Equals(sexp SExpression) bool {
 	return h.TypeId() == sexp.TypeId()
 }
 
-func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-
-	if err != nil {
-		return nil, err
-	}
+func (_ *_heavy) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
 	if ctx.Value("transaction") != nil {
 		return nil, errors.New("transaction can not use in heavy")
@@ -114,10 +109,10 @@ func (_ *_heavy) Apply(ctx context.Context, env Environment, arguments SExpressi
 		return nil, err
 	}
 
-	if 1 == len(args) {
+	if 1 == argsLength {
 		SendSExpression(args[0], nil, env, ip, conf.SelfOnCompletePort)
 	}
-	if 2 == len(args) {
+	if 2 == argsLength {
 		SendSExpression(args[0], args[1], env, ip, conf.SelfOnCompletePort)
 	}
 	return nil, err

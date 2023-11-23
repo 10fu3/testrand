@@ -24,7 +24,7 @@ func (i *_this_environment) Equals(sexp SExpression) bool {
 	return i.TypeId() == sexp.TypeId()
 }
 
-func (_ *_this_environment) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func (_ *_this_environment) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	return env, nil
 }
 

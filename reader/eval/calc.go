@@ -27,32 +27,24 @@ func (a *_add) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ *_add) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
-	}
+func (_ *_add) Apply(ctx context.Context, _ Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if IsEmptyList(args) {
+	if 0 == argsLength {
 		return NewInt(0), nil
 	}
 
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
 	var result Number = nil
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	if "number" != args[0].TypeId() {
+		return nil, errors.New("need arguments type is number, but got " + args[0].TypeId())
 	}
-	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
-		if "number" != arr[arrIndex].TypeId() {
-			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
+	result = args[0].(Number)
+	for ; arrIndex < argsLength; arrIndex++ {
+		if "number" != args[arrIndex].TypeId() {
+			return nil, errors.New("need arguments type is number, but got " + args[arrIndex].TypeId())
 		}
-		result = NewInt(result.GetValue() + arr[arrIndex].(Number).GetValue())
+		result = NewInt(result.GetValue() + args[arrIndex].(Number).GetValue())
 	}
 	return result, nil
 }
@@ -83,32 +75,24 @@ func (a *_minus) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ *_minus) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func (_ *_minus) Apply(ctx context.Context, _ Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+
+	if argsLength != 2 {
+		return nil, errors.New("need arguments size is 2")
 	}
 
-	if IsEmptyList(args) {
-		return NewInt(0), nil
-	}
-
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
 	var result Number = nil
-	if "number" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
+	if "number" != args[0].TypeId() {
+		return nil, errors.New("need arguments type is number, but got " + args[0].TypeId())
 	}
-	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
-		if "number" != arr[arrIndex].TypeId() {
-			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
+	result = args[0].(Number)
+	for ; arrIndex < argsLength; arrIndex++ {
+		if "number" != args[arrIndex].TypeId() {
+			return nil, errors.New("need arguments type is number, but got " + args[arrIndex].TypeId())
 		}
-		result = NewInt(result.GetValue() - arr[arrIndex].(Number).GetValue())
+		result = NewInt(result.GetValue() - args[arrIndex].(Number).GetValue())
 	}
 	return result, nil
 }
@@ -139,28 +123,20 @@ func (a *_multiply) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ *_multiply) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
-	}
+func (_ *_multiply) Apply(ctx context.Context, _ Environment, arr []SExpression, argsLength uint64) (SExpression, error) {
 
-	if IsEmptyList(args) {
+	if 0 == argsLength {
 		return NewInt(0), nil
 	}
 
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
 	var result Number = nil
 	if "number" != arr[0].TypeId() {
 		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
 	}
 	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
+	for ; arrIndex < argsLength; arrIndex++ {
 		if "number" != arr[arrIndex].TypeId() {
 			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
 		}
@@ -195,28 +171,20 @@ func (a *_divide) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ *_divide) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
+func (_ *_divide) Apply(ctx context.Context, _ Environment, arr []SExpression, argsLength uint64) (SExpression, error) {
+
+	if argsLength != 2 {
+		return nil, errors.New("need arguments size is 2")
 	}
 
-	if IsEmptyList(args) {
-		return NewInt(0), nil
-	}
-
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-	arrIndex := 1
+	arrIndex := uint64(1)
 
 	var result Number = nil
 	if "number" != arr[0].TypeId() {
 		return nil, errors.New("need arguments type is number, but got " + arr[0].TypeId())
 	}
 	result = arr[0].(Number)
-	for ; arrIndex < len(arr); arrIndex++ {
+	for ; arrIndex < argsLength; arrIndex++ {
 		if "number" != arr[arrIndex].TypeId() {
 			return nil, errors.New("need arguments type is number, but got " + arr[arrIndex].TypeId())
 		}
@@ -251,22 +219,9 @@ func (a *_mod) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ *_mod) Apply(ctx context.Context, _ Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
-	}
+func (_ *_mod) Apply(ctx context.Context, _ Environment, arr []SExpression, argsLength uint64) (SExpression, error) {
 
-	if IsEmptyList(args) {
-		return NewInt(0), nil
-	}
-
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(arr) != 2 {
+	if argsLength != 2 {
 		return nil, errors.New("need arguments size is 2")
 	}
 

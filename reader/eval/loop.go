@@ -28,25 +28,17 @@ func (l *_loop) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_loop) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("need arguments")
-	}
-	arguments := args.(ConsCell)
-	if !("cons_cell" == arguments.GetCdr().TypeId()) {
-		return nil, errors.New("need arguments")
-	}
-	rawForms := arguments.GetCdr().(ConsCell)
+func (_ *_loop) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if !IsEmptyList(rawForms.GetCdr()) {
-		return nil, errors.New("argument size must be 2, but got more than 2 arguments")
+	if argsLength != 2 {
+		return nil, errors.New(fmt.Sprintf("malformed loop: %d", len(args)))
 	}
 
 	var evaluatedCond SExpression
 	var err error
 
 	for {
-		evaluatedCond, err = Eval(ctx, arguments.GetCar(), env)
+		evaluatedCond, err = Eval(ctx, args[0], env)
 		if err != nil {
 			return nil, err
 		}
@@ -59,7 +51,7 @@ func (_ *_loop) Apply(ctx context.Context, env Environment, args SExpression) (S
 			return nil, nil
 		}
 
-		_, err := Eval(ctx, rawForms.GetCar(), env)
+		_, err := Eval(ctx, args[1], env)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue

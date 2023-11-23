@@ -27,7 +27,7 @@ func (s *_force_gc) Equals(sexp SExpression) bool {
 	return s.TypeId() == sexp.TypeId()
 }
 
-func (s *_force_gc) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+func (s *_force_gc) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	runtime.GC()
 	return NewBool(true), nil
 }

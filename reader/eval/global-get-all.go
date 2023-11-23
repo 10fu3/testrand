@@ -3,7 +3,6 @@ package eval
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -31,16 +30,7 @@ func (l *_global_get_all) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
-	}
-
-	var err error
-
-	if err != nil {
-		return nil, err
-	}
+func (_ *_global_get_all) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
 	res, err := env.GetSuperGlobalEnv().GetAll()
 

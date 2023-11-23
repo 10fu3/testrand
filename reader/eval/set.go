@@ -27,25 +27,15 @@ func (s *_set) Equals(sexp SExpression) bool {
 	return s.TypeId() == sexp.TypeId()
 }
 
-func (_ *_set) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
+func (_ *_set) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+
+	if argsLength != 2 {
+		return nil, errors.New("malformed set")
 	}
 
-	cell := arguments.(ConsCell)
+	name := args[0].(Symbol)
 
-	name := cell.GetCar().(Symbol)
-
-	if IsEmptyList(cell.GetCdr()) {
-		return nil, errors.New("need 3rd arguments")
-	}
-
-	initValue := cell.GetCdr().(ConsCell)
-
-	if !IsEmptyList(initValue.GetCdr()) {
-		return nil, errors.New("need less than 3 params")
-	}
-	evaluatedInitValue, err := Eval(ctx, initValue.GetCar(), env)
+	evaluatedInitValue, err := Eval(ctx, args[1], env)
 
 	if err != nil {
 		return nil, err

@@ -28,25 +28,17 @@ func (i *_is_equals) Equals(sexp SExpression) bool {
 	return i.TypeId() == sexp.TypeId()
 }
 
-func (_ *_is_equals) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	if "cons_cell" != arguments.TypeId() {
-		return nil, errors.New("type error")
-	}
-	argCell := arguments.(ConsCell)
+func (_ *_is_equals) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	first := argCell.GetCar()
-
-	if "cons_cell" != argCell.GetCdr().TypeId() {
-		return nil, errors.New("type error")
+	if argsLength != 2 {
+		return nil, errors.New("malformed if syntax")
 	}
 
-	second := argCell.GetCdr().(ConsCell)
+	first := args[0]
 
-	if !IsEmptyList(second.GetCdr()) {
-		return nil, errors.New("argument size error")
-	}
+	second := args[1]
 
-	return NewBool(first.Equals(second.GetCar())), nil
+	return NewBool(first.Equals(second)), nil
 }
 
 func NewIsEq() SExpression {

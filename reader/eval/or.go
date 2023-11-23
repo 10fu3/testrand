@@ -25,22 +25,13 @@ func (a _or) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ _or) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-
-	if IsEmptyList(args) {
-		return NewBool(false), nil
-	}
-
-	arr, err := ToArray(args)
-
-	if err != nil {
-		return nil, err
-	}
+func (_ _or) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
 	evaluatedElm := NewConsCell(NewNil(), NewNil()).(SExpression)
+	var err error
 
-	for i := 0; i < len(arr); i++ {
-		evaluatedElm, err = Eval(ctx, arr[i], env)
+	for i := uint64(0); i < argsLength; i++ {
+		evaluatedElm, err = Eval(ctx, args[i], env)
 		if err != nil {
 			return nil, err
 		}

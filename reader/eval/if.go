@@ -33,14 +33,9 @@ func (i *_if) Equals(sexp SExpression) bool {
 	return i.TypeId() == sexp.TypeId()
 }
 
-func (_ *_if) Apply(ctx context.Context, env Environment, argument SExpression) (SExpression, error) {
-	args, err := ToArray(argument)
+func (_ *_if) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if len(args) <= 1 || len(args) >= 4 {
+	if argsLength <= 1 || argsLength >= 4 {
 		return nil, errors.New(fmt.Sprintf("too many argument: %d", len(args)))
 	}
 	argsIndex := 0
@@ -55,7 +50,7 @@ func (_ *_if) Apply(ctx context.Context, env Environment, argument SExpression) 
 	}
 
 	if evaluated.Equals(NewBool(false)) {
-		if len(args) == 2 {
+		if argsLength == 2 {
 			return NewNil(), nil
 		}
 		argsIndex++

@@ -61,7 +61,7 @@ func (l *_new_native_hashmap) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_new_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
+func (_ *_new_native_hashmap) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	return &_native_hashmap{
 		id: uuid.NewString(),
 		M:  make(map[string]SExpression),
@@ -94,13 +94,9 @@ func (l *_put_native_hashmap) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_put_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_put_native_hashmap) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 3 > len(args) {
+	if 3 > argsLength {
 		return nil, errors.New("need arguments size is 3")
 	}
 
@@ -145,13 +141,9 @@ func (l *_get_native_hashmap) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_get_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_get_native_hashmap) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 2 > len(args) {
+	if 2 > argsLength {
 		return nil, errors.New("need arguments size is 2")
 	}
 
@@ -203,13 +195,9 @@ func (l *_key_value_pair_foreach_native_hashmap) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_key_value_pair_foreach_native_hashmap) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_key_value_pair_foreach_native_hashmap) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 2 > len(args) {
+	if 2 > argsLength {
 		return nil, errors.New("need arguments size is 2")
 	}
 
@@ -264,13 +252,9 @@ func (l *_key_value_pair_native_hashmap_to_cons_cell) Equals(sexp SExpression) b
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_key_value_pair_native_hashmap_to_cons_cell) Apply(ctx context.Context, env Environment, arguments SExpression) (SExpression, error) {
-	args, err := ToArray(arguments)
-	if err != nil {
-		return nil, err
-	}
+func (_ *_key_value_pair_native_hashmap_to_cons_cell) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 1 > len(args) {
+	if 1 > argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 

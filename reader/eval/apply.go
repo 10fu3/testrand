@@ -27,17 +27,20 @@ func (a *_apply) Equals(sexp SExpression) bool {
 	return a.TypeId() == sexp.TypeId()
 }
 
-func (_ *_apply) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
+func (_ *_apply) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+	if argsLength != 2 {
+		return nil, errors.New("malformed apply")
+	}
+	car := args[0]
+	cdr := args[1]
+
+	cdrArr, size, err := ToArray(cdr)
+
 	if err != nil {
 		return nil, err
 	}
-	if len(arr) != 2 {
-		return nil, errors.New("malformed apply")
-	}
-	car := arr[0]
-	cdr := arr[1]
-	return car.(Callable).Apply(ctx, env, cdr)
+
+	return car.(Callable).Apply(ctx, env, cdrArr, size)
 }
 
 func NewApply() SExpression {

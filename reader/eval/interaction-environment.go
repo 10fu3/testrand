@@ -24,7 +24,7 @@ func (i *_get_interaction_environment) Equals(sexp SExpression) bool {
 	return i.TypeId() == sexp.TypeId()
 }
 
-func (_ *_get_interaction_environment) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
+func (_ *_get_interaction_environment) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 	return env.GetGlobalEnv(), nil
 }
 

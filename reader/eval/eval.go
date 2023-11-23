@@ -35,41 +35,61 @@ func Eval(ctx context.Context, sexp SExpression, env Environment) (SExpression, 
 			return nil, err
 		}
 		if SExpressionTypeClosure == appliedType || SExpressionTypeSubroutine == appliedType {
-			appliedArgs, err := evalArgument(ctx, cell.GetCdr(), env)
-			if err != nil {
-				return nil, err
+			argsArr, argsArrSize, argsErr := ToArray(cell.GetCdr())
+			appliedArgs := make([]SExpression, argsArrSize)
+
+			for i := uint64(0); i < argsArrSize && argsErr == nil; i++ {
+				appliedArgs[i], argsErr = Eval(ctx, argsArr[i], env)
 			}
-			return applied.(Callable).Apply(ctx, env, appliedArgs)
+
+			if argsErr != nil {
+				return nil, argsErr
+			}
+
+			return applied.(Callable).Apply(ctx, env, appliedArgs, argsArrSize)
 		}
 		if SExpressionTypeSpecialForm == appliedType {
-			if err != nil {
+			args, length, toArrErr := ToArray(cell.GetCdr())
+			if toArrErr != nil {
 				return nil, err
 			}
-			return applied.(Callable).Apply(ctx, env, cell.GetCdr())
+			return applied.(Callable).Apply(ctx, env, args, length)
 		}
 
 	}
 	return nil, errors.New("unknown eval: " + sexp.String())
 }
 
-func evalArgument(ctx context.Context, sexp SExpression, env Environment) (SExpression, error) {
+func evalArgument(ctx context.Context, sexp SExpression, env Environment) ([]SExpression, uint64, error) {
 	if "cons_cell" != sexp.TypeId() {
-		return Eval(ctx, sexp, env)
+		result, err := Eval(ctx, sexp, env)
+		return []SExpression{result}, 1, err
+	}
+
+	if IsEmptyList(sexp) {
+		return []SExpression{}, 0, nil
 	}
 
 	cell := sexp.(ConsCell)
 
 	carEvaluated, err := Eval(ctx, cell.GetCar(), env)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	cdrEvaluated, err := evalArgument(ctx, cell.GetCdr(), env)
+	cdrEvaluated, size, err := evalArgument(ctx, cell.GetCdr(), env)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return NewConsCell(carEvaluated, cdrEvaluated), nil
+	if len(cdrEvaluated)+1 < cap(cdrEvaluated) {
+		cdrEvaluated = cdrEvaluated[:len(cdrEvaluated)+1] // slice の延長
+		cdrEvaluated[len(cdrEvaluated)] = carEvaluated
+	} else if cap(cdrEvaluated) < len(cdrEvaluated)+1 {
+		cdrEvaluated = append(cdrEvaluated, carEvaluated)
+	}
+
+	return cdrEvaluated, size + 1, nil
 }
 
 type _eval struct{}
@@ -94,24 +114,19 @@ func (e *_eval) Equals(sexp SExpression) bool {
 	return e.TypeId() == sexp.TypeId()
 }
 
-func (_ *_eval) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	argsArr, err := ToArray(args)
+func (_ *_eval) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if err != nil {
-		return nil, err
-	}
-
-	if len(argsArr) != 2 {
+	if argsLength != 2 {
 		return nil, errors.New("malformed eval")
 	}
 
-	targetEnv, err := Eval(ctx, argsArr[1].(Environment), env)
+	targetEnv, err := Eval(ctx, args[1].(Environment), env)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return Eval(ctx, argsArr[0], targetEnv.(Environment))
+	return Eval(ctx, args[0], targetEnv.(Environment))
 }
 
 func NewEval() SExpression {

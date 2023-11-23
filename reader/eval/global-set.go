@@ -30,24 +30,19 @@ func (l *_global_set) Equals(sexp SExpression) bool {
 	return l.TypeId() == sexp.TypeId()
 }
 
-func (_ *_global_set) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	if "cons_cell" != args.TypeId() {
-		return nil, errors.New("type error")
+func (_ *_global_set) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
+
+	if argsLength != 2 {
+		return nil, errors.New("need less than 2 params")
 	}
 
-	cell := args.(ConsCell)
-
-	if cell.GetCar().TypeId() != "symbol" {
+	if args[0].TypeId() != "symbol" {
 		return nil, errors.New("need 1st arguments type is symbol")
 	}
 
-	name := cell.GetCar().(Symbol)
+	name := args[0].(Symbol)
 
-	if IsEmptyList(cell.GetCdr()) {
-		return nil, errors.New("need 3rd arguments")
-	}
-
-	initValue := cell.GetCdr().(ConsCell)
+	initValue := args[1].(ConsCell)
 
 	if !IsEmptyList(initValue.GetCdr()) {
 		return nil, errors.New("need less than 3 params")

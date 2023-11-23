@@ -7,21 +7,17 @@ import (
 
 type _string_to_symbol struct{}
 
-func (s *_string_to_symbol) Apply(ctx context.Context, env Environment, args SExpression) (SExpression, error) {
-	arr, err := ToArray(args)
-	if err != nil {
-		return nil, err
-	}
+func (s *_string_to_symbol) Apply(ctx context.Context, env Environment, args []SExpression, argsLength uint64) (SExpression, error) {
 
-	if 1 != len(arr) {
+	if 1 != argsLength {
 		return nil, errors.New("need arguments size is 1")
 	}
 
-	if "string" != arr[0].TypeId() {
-		return nil, errors.New("need arguments type is string, but got " + arr[0].TypeId())
+	if "string" != args[0].TypeId() {
+		return nil, errors.New("need arguments type is string, but got " + args[0].TypeId())
 	}
 
-	return NewSymbol(arr[0].(Str).GetValue()), nil
+	return NewSymbol(args[0].(Str).GetValue()), nil
 }
 
 func (s *_string_to_symbol) TypeId() string {
