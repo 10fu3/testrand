@@ -19,13 +19,12 @@ type Environment interface {
 }
 
 type environment struct {
-	frame              map[string]SExpression
-	symbolWarpEnvCache map[string]*environment
-	parent             Environment
-	globalEnv          Environment
-	superGlobalEnv     infra.ISuperGlobalEnv
-	parentId           string
-	Mutex              sync.RWMutex
+	frame          map[string]SExpression
+	parent         Environment
+	globalEnv      Environment
+	superGlobalEnv infra.ISuperGlobalEnv
+	parentId       string
+	Mutex          sync.RWMutex
 }
 
 func (e *environment) GetValue(symbol Symbol) (SExpression, error) {
