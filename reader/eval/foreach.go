@@ -105,7 +105,7 @@ func (_ *_foreach) Apply(ctx context.Context, env Environment, args []SExpressio
 		}
 	}
 
-	return NewNil(), nil
+	return NewConsCell(NewNil(), NewNil()), nil
 }
 
 func NewForeach() SExpression {

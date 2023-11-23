@@ -37,7 +37,7 @@ func (_ *_global_get) Apply(ctx context.Context, env Environment, args []SExpres
 
 	defaultArg := (func() SExpression {
 		if argsLength == 1 {
-			return NewNil()
+			return NewConsCell(NewNil(), NewNil())
 		}
 		return args[1]
 	})()

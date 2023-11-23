@@ -41,7 +41,7 @@ func (_ *_println) Apply(ctx context.Context, env Environment, args []SExpressio
 		}
 		fmt.Print(" ")
 	}
-	return NewNil(), nil
+	return NewConsCell(NewNil(), NewNil()), nil
 }
 
 func NewPrintln() SExpression {

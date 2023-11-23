@@ -72,7 +72,7 @@ func (_ *_file_read_line) Apply(ctx context.Context, env Environment, args []SEx
 		return Eval(ctx, evalTarget, env)
 	}
 
-	return NewNil(), nil
+	return NewConsCell(NewNil(), NewNil()), nil
 }
 
 func NewFileReadLine() SExpression {

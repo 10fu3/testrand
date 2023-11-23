@@ -127,6 +127,11 @@ func GetDefaultFunction() map[string]SExpression {
 		"or":                      NewOr(),
 		"if":                      NewIf(),
 		"eq?":                     NewIsEq(),
+		">":                       NewIsGreaterThan(),
+		"<":                       NewIsLessThan(),
+		"=":                       NewIsNumEqual(),
+		">=":                      NewIsGreaterThanOrEqual(),
+		"<=":                      NewIsLessThanOrEqual(),
 		"not":                     NewIsNot(),
 		"define":                  NewDefine(),
 		"set":                     NewSet(),
@@ -181,6 +186,7 @@ func GetDefaultFunction() map[string]SExpression {
 		"list->array":             NewListToNativeArray(),
 		"foreach-array":           NewForeachNativeArray(),
 		"void":                    NewVoid(),
+		"cons":                    NewCons(),
 	}
 }
 

@@ -51,7 +51,7 @@ func (_ *_if) Apply(ctx context.Context, env Environment, args []SExpression, ar
 
 	if evaluated.Equals(NewBool(false)) {
 		if argsLength == 2 {
-			return NewNil(), nil
+			return NewConsCell(NewNil(), NewNil()), nil
 		}
 		argsIndex++
 		onFalse := args[argsIndex]

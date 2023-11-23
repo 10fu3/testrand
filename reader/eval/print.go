@@ -33,7 +33,7 @@ func (_ *_print) Apply(ctx context.Context, env Environment, args []SExpression,
 		return nil, errors.New("need args size is 1")
 	}
 	fmt.Print(args[0])
-	return NewNil(), nil
+	return NewConsCell(NewNil(), NewNil()), nil
 }
 
 func NewPrint() SExpression {

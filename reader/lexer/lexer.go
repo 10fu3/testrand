@@ -116,8 +116,6 @@ func (l *lexer) GetNextToken() (token.Token, error) {
 			return token.NewTokenByBool(true), nil
 		case "#f":
 			return token.NewTokenByBool(false), nil
-		case "#nil":
-			return token.NewTokenByNil(), nil
 		}
 		return nil, errors.New("invalid # constant")
 	}
