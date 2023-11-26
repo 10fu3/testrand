@@ -60,14 +60,15 @@ func (c *_closure) Apply(ctx context.Context, _ Environment, loopArgs []SExpress
 
 	var argElem SExpression = NewNil()
 
-	for formalsIndex, formalElem := range c.formals {
+	for formalsIndex := uint64(0); formalsIndex < c.formalsCount; formalsIndex++ {
 		argElem = loopArgs[formalsIndex]
-		if "symbol" == formalElem.TypeId() {
-			frame[formalElem.(Symbol).GetValue()] = argElem
+		formalsElem := c.formals[formalsIndex]
+		if AtomTypeSymbol == formalsElem.AtomId() {
+			frame[formalsElem.(Symbol).GetValue()] = loopArgs[formalsIndex]
 			break
 		}
-		if "cons_cell" == formalElem.TypeId() {
-			cellFormals := formalElem.(ConsCell)
+		if AtomTypeConsCell == formalsElem.AtomId() {
+			cellFormals := formalsElem.(ConsCell)
 			if "symbol" != cellFormals.GetCar().TypeId() {
 				return nil, errors.New("need symbol")
 			}
