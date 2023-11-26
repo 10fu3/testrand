@@ -53,22 +53,22 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 		if err != nil {
 			return nil, err
 		}
-		innerPairCarEvalueted, err := Eval(ctx, innerPairCarQuoteEvaluated, env)
+		innerPairCarEvaluated, err := Eval(ctx, innerPairCarQuoteEvaluated, env)
 		if err != nil {
 			return nil, err
 		}
-		if !innerPairCarEvalueted.IsList() {
+		if !innerPairCarEvaluated.IsList() {
 			return nil, errors.New("unquote-splicing must be followed by a list")
 		}
 		if IsEmptyList(innerPair.GetCdr()) {
-			cdrEvaluated, err := _innerEvalQuasiquote(ctx, env, cdr)
-			if err != nil {
-				return nil, err
+			cdrEvaluated, cdrEvaluatedErr := _innerEvalQuasiquote(ctx, env, cdr)
+			if cdrEvaluatedErr != nil {
+				return nil, cdrEvaluatedErr
 			}
-			joined, err := JoinList(innerPairCarEvalueted, cdrEvaluated)
+			joined, cdrEvaluatedErr := JoinList(innerPairCarEvaluated, cdrEvaluated)
 
-			if err != nil {
-				return nil, err
+			if cdrEvaluatedErr != nil {
+				return nil, cdrEvaluatedErr
 			}
 
 			return joined, nil
@@ -77,7 +77,7 @@ func _innerEvalQuasiquote(ctx context.Context, env Environment, x SExpression) (
 		if err != nil {
 			return nil, err
 		}
-		return NewConsCell(innerPairCarEvalueted, innerPairCdrEvaluated), nil
+		return NewConsCell(innerPairCarEvaluated, innerPairCdrEvaluated), nil
 	}
 	carEvaluated, err := _innerEvalQuasiquote(ctx, env, car)
 	if err != nil {
